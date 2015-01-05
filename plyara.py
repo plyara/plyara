@@ -36,7 +36,8 @@ def build_lexer():
        'NEWLINE',
        'STAR',
        'HYPHEN',
-       'AMPERSAND'
+       'AMPERSAND',
+       'NEQUALS'
     ]
 
     reserved = {
@@ -64,6 +65,13 @@ def build_lexer():
         r'/\*(.|\n)*?\*/'
         t.lineno += t.value.count('\n')
         pass
+
+    # Define a rule so we can track line numbers
+    def t_NEWLINE(t):
+        r'\n+'
+        t.lexer.lineno += t.value.count('\n')
+        t.value = t.value
+        return t
 
     def t_SECTIONMETA(t):
         r'meta:'
@@ -115,24 +123,19 @@ def build_lexer():
         t.value = t.value
         return t
 
-    # Define a rule so we can track line numbers
-    def t_NEWLINE(t):
-        r'\n+'
-        t.lexer.lineno += len(t.value)
-        t.value = t.value
-        return t
 
     # A string containing ignored characters (spaces and tabs)
-    t_ignore  = ' \t'
+    t_ignore  = ' \t\r'
 
     # Error handling rule
     def t_error(t):
-        print("Illegal character '%s'" % t.value[0])
+        print("Illegal character " + t.value[0] + " at line " + str(t.lexer.lineno))
         t.lexer.skip(1)
 
     # Regular expression rules for simple tokens
     t_LPAREN  = r'\('
     t_RPAREN  = r'\)'
+    t_NEQUALS = r'!='
     t_EQUALS = r'='
     t_LBRACE = r'{'
     t_RBRACE = r'}'
