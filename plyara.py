@@ -37,7 +37,8 @@ def build_lexer():
        'STAR',
        'HYPHEN',
        'AMPERSAND',
-       'NEQUALS'
+       'NEQUALS',
+       'EQUIVALENT'
     ]
 
     reserved = {
@@ -135,6 +136,7 @@ def build_lexer():
     # Regular expression rules for simple tokens
     t_LPAREN  = r'\('
     t_RPAREN  = r'\)'
+    t_EQUIVALENT = r'=='
     t_NEQUALS = r'!='
     t_EQUALS = r'='
     t_LBRACE = r'{'
@@ -188,8 +190,23 @@ def extract_rules(all_tokens):
     #Rules list to contain all dictionaries that describe a Yara rule.
     rules = []
 
+    #list of imports for a rule.  List gets reset after it is added to a new rule.
+    rule_imports = []
+
     while len(all_tokens) > 0:
         token = all_tokens.pop(0)
+
+        if token["type"] == "IMPORT":
+            #we have an 'import' token...next should be the import name string
+            token = all_tokens.pop(0)
+            if token["type"] != "STRING":
+                sys.stderr.write("expected an STRING token for import...syntax error? exiting.\n")
+                exit(1)
+            else:
+                #add the import without quotes
+                rule_imports.append(token["value"][1:-1])
+                continue
+
         if token["type"] == "RULE":
             #we have a 'rule' token...next should be the rule name
             token = all_tokens.pop(0)
@@ -201,6 +218,11 @@ def extract_rules(all_tokens):
                 #====================================RULE CREATION
                 rule = {}
                 rule["name"] = token["value"]
+
+                #set the imports list, and then reset the object
+                rule["rule_imports"] = rule_imports
+                rule_imports = []
+
                 #sys.stderr.write("working on rule " + rule["name"] + "\n")
                 token = all_tokens.pop(0)
                 #------------------------------------START TAGS
