@@ -1,4 +1,3 @@
-__author__ = 'christianbuia'
 import ply.lex as lex
 import sys
 import json
