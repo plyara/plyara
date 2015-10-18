@@ -117,7 +117,7 @@ class TestYaraRules(unittest.TestCase):
         self.assertTrue('"lib1"' in rule['imports'] and '"lib2"' in rule['imports'])
         self.assertTrue('global' in rule['scopes'] and 'private' in rule['scopes'])
 
-  def xtest_plyara_script(self):
+  def test_plyara_script(self):
 
     cwd = os.getcwd()
     base_dir = cwd[:cwd.rindex('/')]

@@ -1,7 +1,10 @@
+import sys
+
 import ply.lex as lex
 import ply.yacc as yacc
 
-__name__ = 'interp'
+sys.dont_write_bytecode
+
 
 class ElementTypes:
   '''An enumeration of the element types emitted by the parser to the interpreter.'''
