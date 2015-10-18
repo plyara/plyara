@@ -1,6 +1,7 @@
 import ply.lex as lex
 import ply.yacc as yacc
 
+__name__ = 'interp'
 
 class ElementTypes:
   '''An enumeration of the element types emitted by the parser to the interpreter.'''
@@ -296,7 +297,7 @@ def t_error(t):
   t.lexer.skip(1)
 
 
-lexer = lex.lex(debug=True)
+lexer = lex.lex(debug=False)
 
 ########################################################################################################################
 # PARSER
@@ -477,7 +478,7 @@ def p_condition(p):
 def p_error(p):
     raise TypeError("unknown text at %r ; token of type %r" % (p.value, p.type))
 
-parser = yacc.yacc(debug=True)
+parser = yacc.yacc(debug=False)
 
 
 

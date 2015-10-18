@@ -1,10 +1,18 @@
+# coding=utf-8
+import ast
+import os
+import subprocess
+import sys
 import unittest
-import interp.interp as interp
+
+import plyara.interp.interp as interp
 
 #todo - get rid of this
 import pprint
 
 class TestYaraRules(unittest.TestCase):
+
+  _PLYARA_SCRIPT_NAME = "plyara.py"
 
   def test_multiple_rules(self):
 
@@ -38,7 +46,7 @@ class TestYaraRules(unittest.TestCase):
     rule ThirdRule {condition: false}
     '''
 
-    result = interp.parseString(inputString, isPrintDebug=True)
+    result = interp.parseString(inputString, isPrintDebug=False)
     #Assert two rules are derived.
     self.assertEqual(len(result), 3)
 
@@ -47,8 +55,8 @@ class TestYaraRules(unittest.TestCase):
     self.assertTrue([x["name"] for x in result[0]['strings']] == ['$a','$b'])
 
     #todo - get rid of this
-    pp = pprint.PrettyPrinter(indent=2)
-    pp.pprint(result)
+    #pp = pprint.PrettyPrinter(indent=2)
+    #pp.pprint(result)
 
   def test_rule_name_imports_and_scopes(self):
 
@@ -73,15 +81,14 @@ class TestYaraRules(unittest.TestCase):
     import "lib2"
     private global rule ten {meta: i = "j" strings: $a = "b" condition: true }
 
-
     '''
 
-    result = interp.parseString(inputStringNIS, isPrintDebug=True)
+    result = interp.parseString(inputStringNIS, isPrintDebug=False)
 
     #todo - get rid of this
-    print("------")
-    pp = pprint.PrettyPrinter(indent=2)
-    pp.pprint(result)
+    #print("------")
+    #pp = pprint.PrettyPrinter(indent=2)
+    #pp.pprint(result)
 
 
     self.assertEqual(len(result), 10)
@@ -110,7 +117,21 @@ class TestYaraRules(unittest.TestCase):
         self.assertTrue('"lib1"' in rule['imports'] and '"lib2"' in rule['imports'])
         self.assertTrue('global' in rule['scopes'] and 'private' in rule['scopes'])
 
+  def xtest_plyara_script(self):
 
+    cwd = os.getcwd()
+    base_dir = cwd[:cwd.rindex('/')]
+    script_path = base_dir + "/plyara/" + self._PLYARA_SCRIPT_NAME
+
+    script_process = subprocess.Popen([sys.executable, script_path, cwd + '/test_file.txt'],
+                                      stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    process_stdout, process_stderr = script_process.communicate()
+    print(process_stdout)
+    print(process_stderr)
+    rule_list = ast.literal_eval(process_stdout.decode('utf-8'))
+
+    self.assertTrue(len(rule_list) == 3)
 
 if __name__ == '__main__':
     unittest.main()
