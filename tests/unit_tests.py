@@ -5,10 +5,8 @@ import subprocess
 import sys
 import unittest
 
-import plyara.interp.interp as interp
+import plyara.interp as interp
 
-#todo - get rid of this
-import pprint
 
 class TestYaraRules(unittest.TestCase):
 
@@ -47,16 +45,11 @@ class TestYaraRules(unittest.TestCase):
     '''
 
     result = interp.parseString(inputString, isPrintDebug=False)
-    #Assert two rules are derived.
-    self.assertEqual(len(result), 3)
 
+    self.assertEqual(len(result), 3)
     self.assertEqual(result[0]['metadata']['author'], '"Andrés Iniesta"')
     self.assertEqual(result[0]['metadata']['date'], '"2015-01-01"')
     self.assertTrue([x["name"] for x in result[0]['strings']] == ['$a','$b'])
-
-    #todo - get rid of this
-    #pp = pprint.PrettyPrinter(indent=2)
-    #pp.pprint(result)
 
   def test_rule_name_imports_and_scopes(self):
 
@@ -84,12 +77,6 @@ class TestYaraRules(unittest.TestCase):
     '''
 
     result = interp.parseString(inputStringNIS, isPrintDebug=False)
-
-    #todo - get rid of this
-    #print("------")
-    #pp = pprint.PrettyPrinter(indent=2)
-    #pp.pprint(result)
-
 
     self.assertEqual(len(result), 10)
 

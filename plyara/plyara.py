@@ -1,6 +1,6 @@
 import sys
 
-import interp.interp as interp
+import interp
 
 
 class PlyaraParser:
