@@ -3,6 +3,7 @@ import sys
 import ply.lex as lex
 import ply.yacc as yacc
 
+# Appears that Ply needs to read the source, so disable bytecode.
 sys.dont_write_bytecode
 
 
@@ -16,6 +17,7 @@ class ElementTypes:
   IMPORT = 5
   TERM = 6
   SCOPE = 7
+  TAG = 8
 
 class ParserInterpreter:
   '''Interpret the output of the parser and produce an alternative representation of Yara rules.'''
@@ -28,6 +30,7 @@ class ParserInterpreter:
   importsAccumulator = []
   termAccumulator = []
   scopeAccumulator = []
+  tagAccumulator = []
 
   isPrintDebug = False
 
@@ -74,6 +77,9 @@ class ParserInterpreter:
     elif elementType == ElementTypes.SCOPE:
       self.scopeAccumulator.append(elementValue)
 
+    elif elementType ==ElementTypes.TAG:
+      self.tagAccumulator.append(elementValue)
+
   def readAndResetAccumulators(self):
     '''Adds accumulated elements to the current rule and resets the accumulators.'''
     if len(self.importsAccumulator) > 0:
@@ -87,6 +93,10 @@ class ParserInterpreter:
     if len(self.scopeAccumulator) > 0:
       self.currentRule["scopes"] = self.scopeAccumulator
       self.scopeAccumulator = []
+
+    if len(self.tagAccumulator) > 0:
+      self.currentRule["tags"] = self.tagAccumulator
+      self.tagAccumulator = []
 
   def printDebugMessage(self, message):
     '''Prints a debug message emitted by the parser if self.isPrintDebug is True.'''
@@ -141,8 +151,6 @@ tokens = [
   'LESSTHAN',
   'PERIOD',
   'COLON',
-  'COMMENT',
-  'NEWLINE',
   'STAR',
   'HYPHEN',
   'AMPERSAND',
@@ -167,7 +175,6 @@ reserved = {
   'global': 'GLOBAL',
   'import': 'IMPORT',
   'in': 'IN',
-  'include': 'INCLUDE',
   'int8': 'INT8',
   'int16': 'INT16',
   'int32': 'INT32',
@@ -312,7 +319,7 @@ def p_rules(p):
 
 
 def p_rule(p):
-  '''rule : imports_and_scopes rule_header ID LBRACE rule_body RBRACE'''
+  '''rule : imports_and_scopes rule_header ID tag_section LBRACE rule_body RBRACE'''
 
   parserInterpreter.printDebugMessage('matched rule ' + str(p[3]))
   parserInterpreter.addElement(ElementTypes.RULE_NAME, str(p[3]))
@@ -339,6 +346,19 @@ def p_import(p):
 def p_scopes(p):
   '''scopes : scopes scope
             | scope'''
+
+def p_tag_section(p):
+  '''tag_section : COLON tags
+                 | '''
+
+def p_tags(p):
+  '''tags : tags tag
+          | tag'''
+
+def p_tag(p):
+  'tag : ID'
+  parserInterpreter.printDebugMessage('matched tag ' + str(p[1]))
+  parserInterpreter.addElement(ElementTypes.TAG, p[1])
 
 def p_scope(p):
   '''scope : PRIVATE
@@ -430,6 +450,7 @@ def p_condition(p):
           | DOTDOT
           | EQUIVALENT
           | EQUALS
+          | NEQUALS
           | PLUS
           | PIPE
           | BACKSLASH

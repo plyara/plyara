@@ -11,7 +11,7 @@ rule FirstRule {
 
 import "bingo"
 import "bango"
-rule SecondRule {
+rule SecondRule : aTag {
   meta:
     author = "Ivan Rakitić"
     date = "2015-02-01"

@@ -31,7 +31,7 @@ class TestYaraRules(unittest.TestCase):
 
     import "bingo"
     import "bango"
-    rule SecondRule {
+    rule SecondRule : aTag {
       meta:
         author = "Ivan Rakitić"
         date = "2015-02-01"
@@ -95,7 +95,7 @@ class TestYaraRules(unittest.TestCase):
 
     for rule in result:
       rule_name = rule["rule_name"]
-      if rule_name== 'four':
+      if rule_name == 'four':
         self.assertTrue('scopes' not in rule)
         self.assertTrue('imports' not in rule)
       if rule_name == 'five':
@@ -117,6 +117,27 @@ class TestYaraRules(unittest.TestCase):
         self.assertTrue('"lib1"' in rule['imports'] and '"lib2"' in rule['imports'])
         self.assertTrue('global' in rule['scopes'] and 'private' in rule['scopes'])
 
+  def test_tags(self):
+
+    inputTags = r'''
+
+    rule eleven: tag1 {meta: i = "j" strings: $a = "b" condition: true }
+
+    rule twelve : tag1 tag2 {meta: i = "j" strings: $a = "b" condition: true }
+
+    '''
+
+    result = interp.parseString(inputTags, isPrintDebug=False)
+
+    for rule in result:
+      rule_name = rule["rule_name"]
+      if rule_name == 'eleven':
+        self.assertTrue(len(rule['tags']) == 1 and 'tag1' in rule['tags'])
+      if rule_name == 'twelve':
+        self.assertTrue(len(rule['tags']) == 2 and
+                        'tag1' in rule['tags'] and 'tag2' in rule['tags'])
+
+
   def test_plyara_script(self):
 
     cwd = os.getcwd()
@@ -127,11 +148,9 @@ class TestYaraRules(unittest.TestCase):
                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     process_stdout, process_stderr = script_process.communicate()
-    print(process_stdout)
-    print(process_stderr)
     rule_list = ast.literal_eval(process_stdout.decode('utf-8'))
-
     self.assertTrue(len(rule_list) == 3)
+
 
 if __name__ == '__main__':
     unittest.main()
