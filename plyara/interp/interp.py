@@ -157,6 +157,7 @@ tokens = [
   'NEQUALS',
   'EQUIVALENT',
   'DOTDOT',
+  'HEXNUM',
   'NUM'
 ]
 
@@ -232,14 +233,24 @@ def t_COMMENT(t):
 
 # http://comments.gmane.org/gmane.comp.python.ply/134
 def t_MCOMMENT(t):
-  r'/\*(.|\n)*?\*/'
-  t.lineno += t.value.count('\n')
+  #r'/\*(.|\n)*?\*/'
+  r'/\*(.|\n|\r|\r\n)*?\*/'
+  if '\r\n' in t.value:
+    t.lineno += t.value.count('\r\n')
+  else:
+    t.lineno += t.value.count('\n')
   pass
 
 # Define a rule so we can track line numbers
 def t_NEWLINE(t):
-  r'\n+'
-  t.lexer.lineno += t.value.count('\n')
+  #r'\n+'
+  r'(\n|\r|\r\n)+'
+  t.lexer.lineno += len(t.value)
+  t.value = t.value
+  pass
+
+def t_HEXNUM(t):
+  r'0x[A-Fa-f0-9]+'
   t.value = t.value
   return t
 
@@ -259,7 +270,8 @@ def t_SECTIONCONDITION(t):
   return t
 
 def t_STRING(t):
-  r'".+?"(?<!\\")'
+  #r'".+?"(?<![^\\]\\")'
+  r'".+?"(?<![^\\]\\")(?<![^\\][\\]{3}")(?<![^\\][\\]{5}")'
   t.value = t.value
   return t
 
@@ -283,8 +295,13 @@ def t_STRINGNAME_ARRAY(t):
   t.value = t.value
   return t
 
+def t_NUM(t):
+  r'\d+|0x\d+'
+  t.value = t.value
+  return t
+
 def t_ID(t):
-  r'[a-zA-Z]{1}[a-zA-Z_0-9]*'
+  r'[a-zA-Z_]{1}[a-zA-Z_0-9]*'
   t.type = reserved.get(t.value, 'ID')  # Check for reserved words
   return t
 
@@ -293,19 +310,17 @@ def t_STRINGCOUNT(t):
   t.value = t.value
   return t
 
-def t_NUM(t):
-  r'\d+'
-  t.value = t.value
-  return t
 
 # A string containing ignored characters (spaces and tabs)
-t_ignore = ' \t\r\n'
+#t_ignore = ' \t\r\n'
+t_ignore = ' \t'
 
 # Error handling rule
 def t_error(t):
   raise TypeError("Illegal character " + t.value[0] + " at line " + str(t.lexer.lineno))
   t.lexer.skip(1)
 
+precedence = (('right', 'NUM') , ('right', 'ID'), ('right', 'HEXNUM'))
 
 lexer = lex.lex(debug=False)
 
@@ -397,7 +412,11 @@ def p_meta_kvs(p):
   parserInterpreter.printDebugMessage('...matched meta kvs')
 
 def p_meta_kv(p):
-  'meta_kv : ID EQUALS STRING'
+  '''meta_kv : ID EQUALS STRING
+             | ID EQUALS ID
+             | ID EQUALS TRUE
+             | ID EQUALS FALSE
+             | ID EQUALS NUM'''
   key = str(p[1])
   value = str(p[3])
   parserInterpreter.printDebugMessage('matched meta kv: ' + key + " equals " + value)
@@ -442,7 +461,10 @@ def p_expression(p):
                 | term'''
 
 def p_condition(p):
-  '''term : NUM
+  '''term : ID
+          | STRING
+          | NUM
+          | HEXNUM
           | LPAREN
           | RPAREN
           | LBRACK
@@ -503,6 +525,3 @@ def p_error(p):
     raise TypeError("unknown text at %r ; token of type %r" % (p.value, p.type))
 
 parser = yacc.yacc(debug=False)
-
-
-

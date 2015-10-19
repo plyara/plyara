@@ -43,7 +43,7 @@ class TestYaraRules(unittest.TestCase):
         for all of them : ( # > 2 )
     }
 
-    rule ThirdRule {condition: false}
+    rule ThirdRule {condition: uint32(0) == 0xE011CFD0}
     '''
 
     result = interp.parseString(inputString, isPrintDebug=False)
@@ -64,7 +64,7 @@ class TestYaraRules(unittest.TestCase):
 
     rule four {meta: i = "j" strings: $a = "b" condition: true }
 
-    global rule five {meta: i = "j" strings: $a = "b" condition: true }
+    global rule five {meta: i = "j" strings: $a = "b" condition: false }
 
     private rule six {meta: i = "j" strings: $a = "b" condition: true }
 
