@@ -334,14 +334,10 @@ def p_rules(p):
 
 
 def p_rule(p):
-  '''rule : imports_and_scopes rule_header ID tag_section LBRACE rule_body RBRACE'''
+  '''rule : imports_and_scopes RULE ID tag_section LBRACE rule_body RBRACE'''
 
   parserInterpreter.printDebugMessage('matched rule ' + str(p[3]))
   parserInterpreter.addElement(ElementTypes.RULE_NAME, str(p[3]))
-
-def p_rule_header(p):
-  '''rule_header : RULE
-               | GLOBAL RULE'''
 
 def p_imports_and_scopes(p):
   '''imports_and_scopes : imports
