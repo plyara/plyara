@@ -45,7 +45,6 @@ class TestYaraRules(unittest.TestCase):
     '''
 
     result = interp.parseString(inputString, isPrintDebug=False)
-
     self.assertEqual(len(result), 3)
     self.assertEqual(result[0]['metadata']['author'], '"Andrés Iniesta"')
     self.assertEqual(result[0]['metadata']['date'], '"2015-01-01"')
@@ -123,6 +122,35 @@ class TestYaraRules(unittest.TestCase):
       if rule_name == 'twelve':
         self.assertTrue(len(rule['tags']) == 2 and
                         'tag1' in rule['tags'] and 'tag2' in rule['tags'])
+
+  def test_tags(self):
+
+    inputTags = r'''
+
+    rule thirteen
+    {
+    meta:
+    my_identifier_1 = ""
+    my_identifier_2 = 24
+    my_identifier_3 = true
+
+    strings:
+        $my_text_string = "text here"
+        $my_hex_string = { E2 34 A1 C8 23 FB }
+
+    condition:
+        $my_text_string or $my_hex_string
+    }
+
+    '''
+
+    result = interp.parseString(inputTags, isPrintDebug=False)
+
+    for rule in result:
+      rule_name = rule["rule_name"]
+      if rule_name == 'thirteen':
+        self.assertTrue(len(rule['metadata']) == 3 )
+
 
 
   def test_plyara_script(self):
