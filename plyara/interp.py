@@ -34,6 +34,20 @@ class ParserInterpreter:
 
   isPrintDebug = False
 
+  def reset(self):
+      self.rules = []
+
+      self.currentRule = {}
+
+      self.stringModifiersAccumulator = []
+      self.importsAccumulator = []
+      self.termAccumulator = []
+      self.scopeAccumulator = []
+      self.tagAccumulator = []
+
+      self.isPrintDebug = False
+
+
   def addElement(self, elementType, elementValue):
     '''Accepts elements from the parser and uses them to construct a representation of the Yara rule.'''
 
@@ -114,6 +128,8 @@ def parseString(inputString, isPrintDebug=False):
 
   if isPrintDebug:
     parserInterpreter.isPrintDebug = True
+
+  parserInterpreter.reset()
 
   # Run the PLY parser, which emits messages to parserInterpreter.
   parser.parse(inputString)
@@ -521,3 +537,4 @@ def p_error(p):
     raise TypeError("unknown text at %r ; token of type %r" % (p.value, p.type))
 
 parser = yacc.yacc(debug=False)
+
