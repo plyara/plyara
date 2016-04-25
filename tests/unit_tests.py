@@ -44,7 +44,9 @@ class TestYaraRules(unittest.TestCase):
     rule ThirdRule {condition: uint32(0) == 0xE011CFD0}
     '''
 
+    interp.ParserInterpreter.rules = []
     result = interp.parseString(inputString, isPrintDebug=False)
+
     self.assertEqual(len(result), 3)
     self.assertEqual(result[0]['metadata']['author'], '"Andrés Iniesta"')
     self.assertEqual(result[0]['metadata']['date'], '"2015-01-01"')
@@ -75,9 +77,10 @@ class TestYaraRules(unittest.TestCase):
 
     '''
 
+    interp.ParserInterpreter.rules = []
     result = interp.parseString(inputStringNIS, isPrintDebug=False)
 
-    self.assertEqual(len(result), 10)
+    self.assertEqual(len(result), 7)
 
     for rule in result:
       rule_name = rule["rule_name"]
@@ -113,6 +116,7 @@ class TestYaraRules(unittest.TestCase):
 
     '''
 
+    interp.ParserInterpreter.rules = []
     result = interp.parseString(inputTags, isPrintDebug=False)
 
     for rule in result:
@@ -123,7 +127,7 @@ class TestYaraRules(unittest.TestCase):
         self.assertTrue(len(rule['tags']) == 2 and
                         'tag1' in rule['tags'] and 'tag2' in rule['tags'])
 
-  def test_tags(self):
+  def test_empty_string(self):
 
     inputTags = r'''
 
@@ -144,6 +148,7 @@ class TestYaraRules(unittest.TestCase):
 
     '''
 
+    interp.ParserInterpreter.rules = []
     result = interp.parseString(inputTags, isPrintDebug=False)
 
     for rule in result:
