@@ -34,7 +34,7 @@ class ParserInterpreter:
 
   isPrintDebug = False
 
-  def reset(self):
+  def reset(self, isPrintDebug=False):
       self.rules = []
 
       self.currentRule = {}
@@ -45,7 +45,7 @@ class ParserInterpreter:
       self.scopeAccumulator = []
       self.tagAccumulator = []
 
-      self.isPrintDebug = False
+      self.isPrintDebug = isPrintDebug
 
 
   def addElement(self, elementType, elementValue):
@@ -129,7 +129,7 @@ def parseString(inputString, isPrintDebug=False):
   if isPrintDebug:
     parserInterpreter.isPrintDebug = True
 
-  parserInterpreter.reset()
+  parserInterpreter.reset(isPrintDebug=isPrintDebug)
 
   # Run the PLY parser, which emits messages to parserInterpreter.
   parser.parse(inputString)
