@@ -297,7 +297,7 @@ def t_BYTESTRING(t):
   return t
 
 def t_REXSTRING(t):
-  r'\/.+\/(?=\s|$)'
+  r'\/.+(\/[ismx]*)(?=\s|\)|$)'
   t.value = t.value
   return t
 
@@ -527,7 +527,8 @@ def p_condition(p):
           | UINT32BE
           | STRINGNAME
           | STRINGNAME_ARRAY
-          | STRINGCOUNT'''
+          | STRINGCOUNT
+          | REXSTRING'''
 
   parserInterpreter.printDebugMessage('...matched a term: ' + p[1])
   parserInterpreter.addElement(ElementTypes.TERM, p[1])
