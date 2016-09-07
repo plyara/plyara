@@ -65,7 +65,13 @@ class ParserInterpreter:
       if "metadata" not in self.currentRule:
         self.currentRule["metadata"] = {elementValue[0]: elementValue[1]}
       else:
-        self.currentRule["metadata"][elementValue[0]] = elementValue[1]
+        if elementValue[0] not in self.currentRule["metadata"]:
+          self.currentRule["metadata"][elementValue[0]] = elementValue[1]
+        else:
+          if isinstance( self.currentRule["metadata"][elementValue[0]], list):
+            self.currentRule["metadata"][elementValue[0]].append( elementValue[1] )
+          else:
+            self.currentRule["metadata"][elementValue[0]] = [ self.currentRule["metadata"][elementValue[0]], elementValue[1] ]
 
     elif elementType == ElementTypes.STRINGS_KEY_VALUE:
       string_dict = {'name': elementValue[0], 'value': elementValue[1]}
