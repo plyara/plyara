@@ -171,6 +171,8 @@ tokens = [
   'STRINGCOUNT',
   'GREATERTHAN',
   'LESSTHAN',
+  'GREATEREQUAL',
+  'LESSEQUAL',
   'PERIOD',
   'COLON',
   'STAR',
@@ -239,6 +241,8 @@ t_FORWARDSLASH = r'/'
 t_COMMA = r','
 t_GREATERTHAN = r'>'
 t_LESSTHAN = r'<'
+t_GREATEREQUAL = r'>='
+t_LESSEQUAL = r'<='
 t_PERIOD = r'\.'
 t_COLON = r':'
 t_STAR = r'\*'
@@ -308,22 +312,22 @@ def t_REXSTRING(t):
   return t
 
 def t_STRINGNAME(t):
-  r'\$[0-9a-zA-Z\-_]*'
+  r'\$[0-9a-zA-Z\-_*]*'
   t.value = t.value
   return t
 
 def t_STRINGNAME_ARRAY(t):
-  r'@[0-9a-zA-Z\-_]*'
+  r'@[0-9a-zA-Z\-_*]*'
   t.value = t.value
   return t
 
 def t_NUM(t):
-  r'\d+|0x\d+'
+  r'\d+(\.\d+)?|0x\d+'
   t.value = t.value
   return t
 
 def t_ID(t):
-  r'[a-zA-Z_]{1}[a-zA-Z_0-9]*'
+  r'[a-zA-Z_]{1}[a-zA-Z_0-9.]*'
   t.type = reserved.get(t.value, 'ID')  # Check for reserved words
   return t
 
@@ -498,6 +502,8 @@ def p_condition(p):
           | COMMA
           | GREATERTHAN
           | LESSTHAN
+          | GREATEREQUAL
+          | LESSEQUAL
           | PERIOD
           | COLON
           | STAR
