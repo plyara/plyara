@@ -174,7 +174,8 @@ tokens = [
   'EQUIVALENT',
   'DOTDOT',
   'HEXNUM',
-  'NUM'
+  'NUM',
+  'PERCENT'
 ]
 
 reserved = {
@@ -241,6 +242,7 @@ t_RBRACK = r'\]'
 t_HYPHEN = r'\-'
 t_AMPERSAND = r'&'
 t_DOTDOT = r'\.\.'
+t_PERCENT = r'\%'
 
 def t_COMMENT(t):
   r'(//.*)(?=\n)'
@@ -528,7 +530,8 @@ def p_condition(p):
           | STRINGNAME
           | STRINGNAME_ARRAY
           | STRINGCOUNT
-          | REXSTRING'''
+          | REXSTRING
+          | PERCENT'''
 
   parserInterpreter.printDebugMessage('...matched a term: ' + p[1])
   parserInterpreter.addElement(ElementTypes.TERM, p[1])
