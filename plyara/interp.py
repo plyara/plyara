@@ -18,6 +18,7 @@ class ElementTypes:
   TERM = 6
   SCOPE = 7
   TAG = 8
+  INCLUDE = 9
 
 class ParserInterpreter:
   '''Interpret the output of the parser and produce an alternative representation of Yara rules.'''
@@ -28,6 +29,7 @@ class ParserInterpreter:
 
   stringModifiersAccumulator = []
   importsAccumulator = []
+  includesAccumulator = []
   termAccumulator = []
   scopeAccumulator = []
   tagAccumulator = []
@@ -41,6 +43,7 @@ class ParserInterpreter:
 
       self.stringModifiersAccumulator = []
       self.importsAccumulator = []
+      self.includesAccumulator = []
       self.termAccumulator = []
       self.scopeAccumulator = []
       self.tagAccumulator = []
@@ -91,6 +94,9 @@ class ParserInterpreter:
     elif elementType == ElementTypes.IMPORT:
       self.importsAccumulator.append(elementValue)
 
+    elif elementType == ElementTypes.INCLUDE:
+      self.includesAccumulator.append(elementValue)
+
     elif elementType == ElementTypes.TERM:
       self.termAccumulator.append(elementValue)
 
@@ -105,6 +111,10 @@ class ParserInterpreter:
     if len(self.importsAccumulator) > 0:
       self.currentRule["imports"] = self.importsAccumulator
       self.importsAccumulator = []
+
+    if len(self.includesAccumulator) > 0:
+      self.currentRule["includes"] = self.includesAccumulator
+      self.includesAccumulator = []
 
     if len(self.termAccumulator) > 0:
       self.currentRule["condition_terms"] = self.termAccumulator
@@ -200,6 +210,7 @@ reserved = {
   'global': 'GLOBAL',
   'import': 'IMPORT',
   'in': 'IN',
+  'include' : 'INCLUDE',
   'int8': 'INT8',
   'int16': 'INT16',
   'int32': 'INT32',
@@ -367,18 +378,31 @@ def p_rule(p):
 
 def p_imports_and_scopes(p):
   '''imports_and_scopes : imports
+                        | includes
                         | scopes
                         | imports scopes
+                        | includes scopes
                         | '''
 
 def p_imports(p):
   '''imports : imports import
+             | includes
              | import'''
+
+def p_includes(p):
+  '''includes : includes include
+              | imports
+              | include'''
 
 def p_import(p):
   'import : IMPORT STRING'
   parserInterpreter.printDebugMessage('...matched import ' + p[2])
   parserInterpreter.addElement(ElementTypes.IMPORT, p[2])
+
+def p_include(p):
+  'include : INCLUDE STRING'
+  parserInterpreter.printDebugMessage('...matched include ' + p[2])
+  parserInterpreter.addElement(ElementTypes.INCLUDE, p[2])
 
 def p_scopes(p):
   '''scopes : scopes scope
