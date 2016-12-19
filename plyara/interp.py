@@ -19,6 +19,7 @@ class ElementTypes:
   SCOPE = 7
   TAG = 8
 
+
 class ParserInterpreter:
   '''Interpret the output of the parser and produce an alternative representation of Yara rules.'''
 
@@ -47,7 +48,6 @@ class ParserInterpreter:
 
       self.isPrintDebug = isPrintDebug
 
-
   def addElement(self, elementType, elementValue):
     '''Accepts elements from the parser and uses them to construct a representation of the Yara rule.'''
 
@@ -70,7 +70,7 @@ class ParserInterpreter:
     elif elementType == ElementTypes.STRINGS_KEY_VALUE:
       string_dict = {'name': elementValue[0], 'value': elementValue[1]}
 
-      if len(self.stringModifiersAccumulator)  > 0:
+      if len(self.stringModifiersAccumulator) > 0:
         string_dict["modifiers"] = self.stringModifiersAccumulator
         self.stringModifiersAccumulator = []
 
@@ -91,7 +91,7 @@ class ParserInterpreter:
     elif elementType == ElementTypes.SCOPE:
       self.scopeAccumulator.append(elementValue)
 
-    elif elementType ==ElementTypes.TAG:
+    elif elementType == ElementTypes.TAG:
       self.tagAccumulator.append(elementValue)
 
   def readAndResetAccumulators(self):
@@ -121,6 +121,7 @@ class ParserInterpreter:
 
 # Create an instance of this interpreter for use by the parsing functions.
 parserInterpreter = ParserInterpreter()
+
 
 def parseString(inputString, isPrintDebug=False):
   '''This method takes a string input expected to consist of Yara rules,
@@ -293,8 +294,22 @@ def t_STRING(t):
   t.value = t.value
   return t
 
+
 def t_BYTESTRING(t):
-  r'\{[\|\(\)\[\]\-\?a-fA-f0-9\s]+\}'
+  r'\{\s*(([a-fA-F0-9?]{2}|\[\d+-\d+\]|\(([a-fA-F0-9?]{2}\s*\|?\s*)+\)|\/\/[^\n]+)\s*)+\s*\}'
+  """
+    Regex above broken down broken down
+    remove all literal spaces below, just there to visualize and piece together.
+
+    \{\s*                                        // start
+      (?:                                        // open for combinations of...
+        (?:[a-fA-F0-9?]{2}                    |  // byte pair
+           \[\d+-\d+\]                        |  // jump
+           \((?:[a-fA-F0-9?]{2}\s*\|?\s*)+\)  |  // group
+           \/\/[^\n]+                            // comment
+      )\s*)+                                     // close combinations
+    \s*\}                                        // close bytestring
+  """
   t.value = t.value
   return t
 
@@ -541,4 +556,3 @@ def p_error(p):
     raise TypeError("unknown text at %r ; token of type %r" % (p.value, p.type))
 
 parser = yacc.yacc(debug=False)
-
