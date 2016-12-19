@@ -18,6 +18,7 @@ class ElementTypes:
   TERM = 6
   SCOPE = 7
   TAG = 8
+  INCLUDE = 9
 
 
 class ParserInterpreter:
@@ -29,6 +30,7 @@ class ParserInterpreter:
 
   stringModifiersAccumulator = []
   importsAccumulator = []
+  includesAccumulator = []
   termAccumulator = []
   scopeAccumulator = []
   tagAccumulator = []
@@ -42,6 +44,7 @@ class ParserInterpreter:
 
       self.stringModifiersAccumulator = []
       self.importsAccumulator = []
+      self.includesAccumulator = []
       self.termAccumulator = []
       self.scopeAccumulator = []
       self.tagAccumulator = []
@@ -65,7 +68,13 @@ class ParserInterpreter:
       if "metadata" not in self.currentRule:
         self.currentRule["metadata"] = {elementValue[0]: elementValue[1]}
       else:
-        self.currentRule["metadata"][elementValue[0]] = elementValue[1]
+        if elementValue[0] not in self.currentRule["metadata"]:
+          self.currentRule["metadata"][elementValue[0]] = elementValue[1]
+        else:
+          if isinstance( self.currentRule["metadata"][elementValue[0]], list):
+            self.currentRule["metadata"][elementValue[0]].append( elementValue[1] )
+          else:
+            self.currentRule["metadata"][elementValue[0]] = [ self.currentRule["metadata"][elementValue[0]], elementValue[1] ]
 
     elif elementType == ElementTypes.STRINGS_KEY_VALUE:
       string_dict = {'name': elementValue[0], 'value': elementValue[1]}
@@ -85,6 +94,9 @@ class ParserInterpreter:
     elif elementType == ElementTypes.IMPORT:
       self.importsAccumulator.append(elementValue)
 
+    elif elementType == ElementTypes.INCLUDE:
+      self.includesAccumulator.append(elementValue)
+
     elif elementType == ElementTypes.TERM:
       self.termAccumulator.append(elementValue)
 
@@ -99,6 +111,10 @@ class ParserInterpreter:
     if len(self.importsAccumulator) > 0:
       self.currentRule["imports"] = self.importsAccumulator
       self.importsAccumulator = []
+
+    if len(self.includesAccumulator) > 0:
+      self.currentRule["includes"] = self.includesAccumulator
+      self.includesAccumulator = []
 
     if len(self.termAccumulator) > 0:
       self.currentRule["condition_terms"] = self.termAccumulator
@@ -166,6 +182,8 @@ tokens = [
   'STRINGCOUNT',
   'GREATERTHAN',
   'LESSTHAN',
+  'GREATEREQUAL',
+  'LESSEQUAL',
   'PERIOD',
   'COLON',
   'STAR',
@@ -194,6 +212,7 @@ reserved = {
   'global': 'GLOBAL',
   'import': 'IMPORT',
   'in': 'IN',
+  'include' : 'INCLUDE',
   'int8': 'INT8',
   'int16': 'INT16',
   'int32': 'INT32',
@@ -235,6 +254,8 @@ t_FORWARDSLASH = r'/'
 t_COMMA = r','
 t_GREATERTHAN = r'>'
 t_LESSTHAN = r'<'
+t_GREATEREQUAL = r'>='
+t_LESSEQUAL = r'<='
 t_PERIOD = r'\.'
 t_COLON = r':'
 t_STAR = r'\*'
@@ -319,22 +340,22 @@ def t_REXSTRING(t):
   return t
 
 def t_STRINGNAME(t):
-  r'\$[0-9a-zA-Z\-_]*'
+  r'\$[0-9a-zA-Z\-_*]*'
   t.value = t.value
   return t
 
 def t_STRINGNAME_ARRAY(t):
-  r'@[0-9a-zA-Z\-_]*'
+  r'@[0-9a-zA-Z\-_*]*'
   t.value = t.value
   return t
 
 def t_NUM(t):
-  r'\d+|0x\d+'
+  r'\d+(\.\d+)?|0x\d+'
   t.value = t.value
   return t
 
 def t_ID(t):
-  r'[a-zA-Z_]{1}[a-zA-Z_0-9]*'
+  r'[a-zA-Z_]{1}[a-zA-Z_0-9.]*'
   t.type = reserved.get(t.value, 'ID')  # Check for reserved words
   return t
 
@@ -374,18 +395,31 @@ def p_rule(p):
 
 def p_imports_and_scopes(p):
   '''imports_and_scopes : imports
+                        | includes
                         | scopes
                         | imports scopes
+                        | includes scopes
                         | '''
 
 def p_imports(p):
   '''imports : imports import
+             | includes
              | import'''
+
+def p_includes(p):
+  '''includes : includes include
+              | imports
+              | include'''
 
 def p_import(p):
   'import : IMPORT STRING'
   parserInterpreter.printDebugMessage('...matched import ' + p[2])
   parserInterpreter.addElement(ElementTypes.IMPORT, p[2])
+
+def p_include(p):
+  'include : INCLUDE STRING'
+  parserInterpreter.printDebugMessage('...matched include ' + p[2])
+  parserInterpreter.addElement(ElementTypes.INCLUDE, p[2])
 
 def p_scopes(p):
   '''scopes : scopes scope
@@ -509,6 +543,8 @@ def p_condition(p):
           | COMMA
           | GREATERTHAN
           | LESSTHAN
+          | GREATEREQUAL
+          | LESSEQUAL
           | PERIOD
           | COLON
           | STAR
