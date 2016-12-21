@@ -1,6 +1,6 @@
 #! /usr/bin/env python2.7
 
-from distutils.core import setup
+from setuptools import setup
 
 setup(
     name             =   "Plyara",
