@@ -335,6 +335,9 @@ def t_BYTESTRING(t):
   return t
 
 def t_REXSTRING(t):
+  # TODO: fix commented variant below. Current active doesn't allow inline
+  #       comments after a regex line which is legit
+  #r'\/(?!\/).+((?<!\/)\/[ismx]*)(?=\s|\)|$)'
   r'\/.+(\/[ismx]*)(?=\s|\)|$)'
   t.value = t.value
   return t
@@ -584,7 +587,7 @@ def p_condition(p):
           | REXSTRING
           | PERCENT'''
 
-  parserInterpreter.printDebugMessage('...matched a term: ' + p[1])
+  parserInterpreter.printDebugMessage('...matched a condition term: ' + p[1])
   parserInterpreter.addElement(ElementTypes.TERM, p[1])
 
 # Error rule for syntax errors
