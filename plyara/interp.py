@@ -310,8 +310,7 @@ def t_SECTIONCONDITION(t):
   return t
 
 def t_STRING(t):
-  #r'".+?"(?<![^\\]\\")'
-  r'".*?"(?<![^\\]\\")(?<![^\\][\\]{3}")(?<![^\\][\\]{5}")'
+  r"(?P<openingQuote>[\"'])(?:(?=(?P<escaped>\\?))(?P=escaped).)*?(?P=openingQuote)"
   t.value = t.value
   return t
 
