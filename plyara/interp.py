@@ -1,5 +1,4 @@
 import sys
-
 import ply.lex as lex
 import ply.yacc as yacc
 
@@ -193,6 +192,7 @@ tokens = [
   'EQUIVALENT',
   'DOTDOT',
   'HEXNUM',
+  'FILESIZE_SIZE',
   'NUM',
   'PERCENT'
 ]
@@ -316,19 +316,19 @@ def t_STRING(t):
 
 
 def t_BYTESTRING(t):
-  r'\{\s*(?:(?:[a-fA-F0-9?]{2}|\[\d*-?\d*\]|\((?:[a-fA-F0-9?]{2}\s*\|?\s*|\s*\[\d*-?\d*\]\s*)+\)|\/\/[^\n]*)\s*)+\s*\}'
+  r'\{\s*(?:(?:[a-fA-F0-9?]{2}|\[\d*-?\d*\]|\((?:\s*[a-fA-F0-9?]{2}\s*\|?\s*|\s*\[\d*-?\d*\]\s*)+\)|\/\/[^\n]*)\s*)+\s*\}'
   """
     Regex above broken down broken down
     remove all literal spaces below, just there to visualize and piece together.
 
-    \{\s*                                                           // start
-      (?:                                                           // open for combinations of...
-        (?:[a-fA-F0-9?]{2}                                       |  // byte pair
-           \[\d*-?\d*\]                                          |  // jump
-           \((?:[a-fA-F0-9?]{2}\s*\|?\s*|\s*\[\d*-?\d*\]\s*)+\)  |  // group
-           \/\/[^\n]*                                               // comment
-      )\s*)+                                                        // close combinations
-    \s*\}                                                           // close bytestring
+    \{\s*                                                              // start
+      (?:                                                              // open for combinations of...
+        (?:[a-fA-F0-9?]{2}                                          |  // byte pair
+           \[\d*-?\d*\]                                             |  // jump
+           \((?:\s*[a-fA-F0-9?]{2}\s*\|?\s*|\s*\[\d*-?\d*\]\s*)+\)  |  // group
+           \/\/[^\n]*                                                  // comment
+      )\s*)+                                                           // close combinations
+    \s*\}                                                              // close bytestring
   """
   t.value = t.value
   return t
@@ -348,6 +348,11 @@ def t_STRINGNAME(t):
 
 def t_STRINGNAME_ARRAY(t):
   r'@[0-9a-zA-Z\-_*]*'
+  t.value = t.value
+  return t
+
+def t_FILESIZE_SIZE(t):
+  r"\d+[KM]B"
   t.value = t.value
   return t
 
@@ -526,7 +531,8 @@ def p_expression(p):
                 | term'''
 
 def p_condition(p):
-  '''term : ID
+  '''term : FILESIZE_SIZE
+          | ID
           | STRING
           | NUM
           | HEXNUM
