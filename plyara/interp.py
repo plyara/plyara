@@ -194,7 +194,9 @@ tokens = [
   'HEXNUM',
   'FILESIZE_SIZE',
   'NUM',
-  'PERCENT'
+  'PERCENT',
+  'COMMENT',
+  'MCOMMENT'
 ]
 
 reserved = {
@@ -333,13 +335,26 @@ def t_BYTESTRING(t):
   t.value = t.value
   return t
 
+
 def t_REXSTRING(t):
-  # TODO: fix commented variant below. Current active doesn't allow inline
-  #       comments after a regex line which is legit
-  #r'\/(?!\/).+((?<!\/)\/[ismx]*)(?=\s|\)|$)'
-  r'\/.+(\/[ismx]*)(?=\s|\)|$)'
+  r'(\/.+(?:\/[ismx]*)(?=\s+(?:nocase|ascii|wide|fullword)?\s*\/))|(\/.+(?:\/[ismx]*)(?=\s|\)|$))'
+  """
+    Two parts to this regex, because I'm not sure how to simplify. Test against following cases...
+    /abc123 \d/i
+    /abc123 \d+/i // comment
+    /abc123 \d\/ afterspace/im // comment
+    /abc123 \d\/ afterspace/im nocase // comment
+
+    (\/.+(?:\/[ismx]*)(?=\s+(?:nocase|ascii|wide|fullword)?\s*\/))  | first half matches `/abc123/im // comment` format
+    (\/.+(?:\/[ismx]*)(?=\s|\)|$))                                    second half matches `/abc123/im` format
+
+    It should only consume the regex pattern and not text modifiers / comment, as those will be parsed separately
+  """
+
   t.value = t.value
+  # parserInterpreter.printDebugMessage("REXSTRING: %s %s" % (t.type, t.value))
   return t
+
 
 def t_STRINGNAME(t):
   r'\$[0-9a-zA-Z\-_*]*'
@@ -504,7 +519,9 @@ def p_strings_kv(p):
                 | STRINGNAME EQUALS STRING string_modifiers
                 | STRINGNAME EQUALS BYTESTRING
                 | STRINGNAME EQUALS REXSTRING
-                | STRINGNAME EQUALS REXSTRING string_modifiers'''
+                | STRINGNAME EQUALS REXSTRING comments
+                | STRINGNAME EQUALS REXSTRING string_modifiers
+                | STRINGNAME EQUALS REXSTRING string_modifiers comments'''
 
   key = str(p[1])
   value = str(p[3])
@@ -523,6 +540,10 @@ def p_string_modifier(p):
   parserInterpreter.printDebugMessage('...matched a string modifier: ' + p[1])
   parserInterpreter.addElement(ElementTypes.STRINGS_MODIFIER, p[1])
 
+def p_comments(p):
+  '''comments : COMMENT
+              | MCOMMENT'''
+  parserInterpreter.printDebugMessage("...matched a comment: " + p[1])
 
 # Condition elements.
 
