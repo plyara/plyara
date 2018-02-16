@@ -1,5 +1,4 @@
 import sys
-
 import ply.lex as lex
 import ply.yacc as yacc
 
@@ -193,8 +192,11 @@ tokens = [
   'EQUIVALENT',
   'DOTDOT',
   'HEXNUM',
+  'FILESIZE_SIZE',
   'NUM',
-  'PERCENT'
+  'PERCENT',
+  'COMMENT',
+  'MCOMMENT'
 ]
 
 reserved = {
@@ -316,30 +318,43 @@ def t_STRING(t):
 
 
 def t_BYTESTRING(t):
-  r'\{\s*(?:(?:[a-fA-F0-9?]{2}|\[\d*-?\d*\]|\((?:[a-fA-F0-9?]{2}\s*\|?\s*|\s*\[\d*-?\d*\]\s*)+\)|\/\/[^\n]*)\s*)+\s*\}'
+  r'\{\s*(?:(?:[a-fA-F0-9?]{2}|\[\d*-?\d*\]|\((?:\s*[a-fA-F0-9?]{2}\s*\|?\s*|\s*\[\d*-?\d*\]\s*)+\)|\/\/[^\n]*)\s*)+\s*\}'
   """
     Regex above broken down broken down
     remove all literal spaces below, just there to visualize and piece together.
 
-    \{\s*                                                           // start
-      (?:                                                           // open for combinations of...
-        (?:[a-fA-F0-9?]{2}                                       |  // byte pair
-           \[\d*-?\d*\]                                          |  // jump
-           \((?:[a-fA-F0-9?]{2}\s*\|?\s*|\s*\[\d*-?\d*\]\s*)+\)  |  // group
-           \/\/[^\n]*                                               // comment
-      )\s*)+                                                        // close combinations
-    \s*\}                                                           // close bytestring
+    \{\s*                                                              // start
+      (?:                                                              // open for combinations of...
+        (?:[a-fA-F0-9?]{2}                                          |  // byte pair
+           \[\d*-?\d*\]                                             |  // jump
+           \((?:\s*[a-fA-F0-9?]{2}\s*\|?\s*|\s*\[\d*-?\d*\]\s*)+\)  |  // group
+           \/\/[^\n]*                                                  // comment
+      )\s*)+                                                           // close combinations
+    \s*\}                                                              // close bytestring
   """
   t.value = t.value
   return t
 
+
 def t_REXSTRING(t):
-  # TODO: fix commented variant below. Current active doesn't allow inline
-  #       comments after a regex line which is legit
-  #r'\/(?!\/).+((?<!\/)\/[ismx]*)(?=\s|\)|$)'
-  r'\/.+(\/[ismx]*)(?=\s|\)|$)'
+  r'(\/.+(?:\/[ismx]*)(?=\s+(?:nocase|ascii|wide|fullword)?\s*\/))|(\/.+(?:\/[ismx]*)(?=\s|\)|$))'
+  """
+    Two parts to this regex, because I'm not sure how to simplify. Test against following cases...
+    /abc123 \d/i
+    /abc123 \d+/i // comment
+    /abc123 \d\/ afterspace/im // comment
+    /abc123 \d\/ afterspace/im nocase // comment
+
+    (\/.+(?:\/[ismx]*)(?=\s+(?:nocase|ascii|wide|fullword)?\s*\/))  | first half matches `/abc123/im // comment` format
+    (\/.+(?:\/[ismx]*)(?=\s|\)|$))                                    second half matches `/abc123/im` format
+
+    It should only consume the regex pattern and not text modifiers / comment, as those will be parsed separately
+  """
+
   t.value = t.value
+  # parserInterpreter.printDebugMessage("REXSTRING: %s %s" % (t.type, t.value))
   return t
+
 
 def t_STRINGNAME(t):
   r'\$[0-9a-zA-Z\-_*]*'
@@ -348,6 +363,11 @@ def t_STRINGNAME(t):
 
 def t_STRINGNAME_ARRAY(t):
   r'@[0-9a-zA-Z\-_*]*'
+  t.value = t.value
+  return t
+
+def t_FILESIZE_SIZE(t):
+  r"\d+[KM]B"
   t.value = t.value
   return t
 
@@ -499,7 +519,9 @@ def p_strings_kv(p):
                 | STRINGNAME EQUALS STRING string_modifiers
                 | STRINGNAME EQUALS BYTESTRING
                 | STRINGNAME EQUALS REXSTRING
-                | STRINGNAME EQUALS REXSTRING string_modifiers'''
+                | STRINGNAME EQUALS REXSTRING comments
+                | STRINGNAME EQUALS REXSTRING string_modifiers
+                | STRINGNAME EQUALS REXSTRING string_modifiers comments'''
 
   key = str(p[1])
   value = str(p[3])
@@ -518,6 +540,10 @@ def p_string_modifier(p):
   parserInterpreter.printDebugMessage('...matched a string modifier: ' + p[1])
   parserInterpreter.addElement(ElementTypes.STRINGS_MODIFIER, p[1])
 
+def p_comments(p):
+  '''comments : COMMENT
+              | MCOMMENT'''
+  parserInterpreter.printDebugMessage("...matched a comment: " + p[1])
 
 # Condition elements.
 
@@ -526,7 +552,8 @@ def p_expression(p):
                 | term'''
 
 def p_condition(p):
-  '''term : ID
+  '''term : FILESIZE_SIZE
+          | ID
           | STRING
           | NUM
           | HEXNUM
