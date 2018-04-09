@@ -83,7 +83,6 @@ class TestYaraRules(unittest.TestCase):
     for rule in result:
       rule_name = rule["rule_name"]
 
-      print rule
       if rule_name == 'four':
         self.assertTrue('scopes' not in rule)
         self.assertTrue('imports' not in rule)
