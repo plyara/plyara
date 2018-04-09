@@ -105,6 +105,46 @@ class TestYaraRules(unittest.TestCase):
         self.assertTrue('"lib1"' in rule['imports'] and '"lib2"' in rule['imports'])
         self.assertTrue('global' in rule['scopes'] and 'private' in rule['scopes'])
 
+  def test_rule_name_imports_by_instance(self):
+
+    input1 = r'''
+    rule one {meta: i = "j" strings: $a = "b" condition: true }
+
+    '''
+    input2 = r'''
+    import "lib1"
+    rule two {meta: i = "j" strings: $a = "b" condition: true }
+
+    import "lib2"
+    private global rule three {meta: i = "j" strings: $a = "b" condition: true }
+    '''
+
+    plyara1 = Plyara()
+    result1 = plyara1.parse_string(input1)
+
+    plyara2 = Plyara()
+    result2 = plyara2.parse_string(input2)
+
+    self.assertEqual(len(result1), 1)
+    self.assertEqual(len(result2), 2)
+
+    for rule in result1:
+      rule_name = rule["rule_name"]
+
+      if rule_name == 'one':
+        self.assertTrue('scopes' not in rule)
+        self.assertTrue('imports' not in rule)
+
+    for rule in result2:
+      rule_name = rule["rule_name"]
+
+      if rule_name == 'two':
+        self.assertTrue('"lib1"' in rule['imports'] and '"lib2"' in rule['imports'])
+        self.assertTrue('scopes' not in rule)
+      if rule_name == 'three':
+        self.assertTrue('"lib1"' in rule['imports'] and '"lib2"' in rule['imports'])
+        self.assertTrue('global' in rule['scopes'] and 'private' in rule['scopes'])
+
   def test_tags(self):
 
     inputTags = r'''
