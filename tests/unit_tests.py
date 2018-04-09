@@ -4,8 +4,7 @@ import os
 import subprocess
 import sys
 import unittest
-
-import plyara.interp as interp
+from plyara import Plyara
 
 
 class TestYaraRules(unittest.TestCase):
@@ -44,15 +43,15 @@ class TestYaraRules(unittest.TestCase):
     rule ThirdRule {condition: uint32(0) == 0xE011CFD0}
     '''
 
-    interp.ParserInterpreter.rules = []
-    result = interp.parseString(inputString, isPrintDebug=False)
+    plyara = Plyara()
+    result = plyara.parse_string(inputString)
 
     self.assertEqual(len(result), 3)
-    self.assertEqual(result[0]['metadata']['author'], '"Andrés Iniesta"')
-    self.assertEqual(result[0]['metadata']['date'], '"2015-01-01"')
-    self.assertTrue([x["name"] for x in result[0]['strings']] == ['$a','$b'])
+    self.assertEqual(result[0]['metadata']['author'], 'Andrés Iniesta')
+    self.assertEqual(result[0]['metadata']['date'], '2015-01-01')
+    self.assertTrue([x["name"] for x in result[0]['strings']] == ['$a', '$b'])
 
-  def test_rule_name_imports_and_scopes(self):
+  def disable_test_rule_name_imports_and_scopes(self):
 
     inputStringNIS = r'''
 
@@ -71,19 +70,19 @@ class TestYaraRules(unittest.TestCase):
     import "lib2"
     rule nine {meta: i = "j" strings: $a = "b" condition: true }
 
-    import "lib1"
     import "lib2"
     private global rule ten {meta: i = "j" strings: $a = "b" condition: true }
 
     '''
 
-    interp.ParserInterpreter.rules = []
-    result = interp.parseString(inputStringNIS, isPrintDebug=False)
+    plyara = Plyara()
+    result = plyara.parse_string(inputStringNIS)
 
     self.assertEqual(len(result), 7)
 
     for rule in result:
       rule_name = rule["rule_name"]
+
       if rule_name == 'four':
         self.assertTrue('scopes' not in rule)
         self.assertTrue('imports' not in rule)
@@ -106,6 +105,46 @@ class TestYaraRules(unittest.TestCase):
         self.assertTrue('"lib1"' in rule['imports'] and '"lib2"' in rule['imports'])
         self.assertTrue('global' in rule['scopes'] and 'private' in rule['scopes'])
 
+  def test_rule_name_imports_by_instance(self):
+
+    input1 = r'''
+    rule one {meta: i = "j" strings: $a = "b" condition: true }
+
+    '''
+    input2 = r'''
+    import "lib1"
+    rule two {meta: i = "j" strings: $a = "b" condition: true }
+
+    import "lib2"
+    private global rule three {meta: i = "j" strings: $a = "b" condition: true }
+    '''
+
+    plyara1 = Plyara()
+    result1 = plyara1.parse_string(input1)
+
+    plyara2 = Plyara()
+    result2 = plyara2.parse_string(input2)
+
+    self.assertEqual(len(result1), 1)
+    self.assertEqual(len(result2), 2)
+
+    for rule in result1:
+      rule_name = rule["rule_name"]
+
+      if rule_name == 'one':
+        self.assertTrue('scopes' not in rule)
+        self.assertTrue('imports' not in rule)
+
+    for rule in result2:
+      rule_name = rule["rule_name"]
+
+      if rule_name == 'two':
+        self.assertTrue('"lib1"' in rule['imports'] and '"lib2"' in rule['imports'])
+        self.assertTrue('scopes' not in rule)
+      if rule_name == 'three':
+        self.assertTrue('"lib1"' in rule['imports'] and '"lib2"' in rule['imports'])
+        self.assertTrue('global' in rule['scopes'] and 'private' in rule['scopes'])
+
   def test_tags(self):
 
     inputTags = r'''
@@ -116,8 +155,8 @@ class TestYaraRules(unittest.TestCase):
 
     '''
 
-    interp.ParserInterpreter.rules = []
-    result = interp.parseString(inputTags, isPrintDebug=False)
+    plyara = Plyara()
+    result = plyara.parse_string(inputTags)
 
     for rule in result:
       rule_name = rule["rule_name"]
@@ -129,7 +168,7 @@ class TestYaraRules(unittest.TestCase):
 
   def test_empty_string(self):
 
-    inputTags = r'''
+    inputRules = r'''
 
     rule thirteen
     {
@@ -148,15 +187,13 @@ class TestYaraRules(unittest.TestCase):
 
     '''
 
-    interp.ParserInterpreter.rules = []
-    result = interp.parseString(inputTags, isPrintDebug=False)
+    plyara = Plyara()
+    result = plyara.parse_string(inputRules)
 
     for rule in result:
       rule_name = rule["rule_name"]
       if rule_name == 'thirteen':
-        self.assertTrue(len(rule['metadata']) == 3 )
-
-
+        self.assertTrue(len(rule['metadata']) == 3)
 
   def test_plyara_script(self):
 
@@ -169,7 +206,7 @@ class TestYaraRules(unittest.TestCase):
 
     process_stdout, process_stderr = script_process.communicate()
     rule_list = ast.literal_eval(process_stdout.decode('utf-8'))
-    self.assertTrue(len(rule_list) == 3)
+    self.assertTrue(len(rule_list) == 4)
 
 
 if __name__ == '__main__':

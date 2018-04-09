@@ -24,3 +24,8 @@ rule SecondRule : aTag {
 }
 
 rule ThirdRule {condition: false}
+
+rule ForthRule {
+    condition:
+        uint8(0) ^ unit8(1) == 0x12
+}
