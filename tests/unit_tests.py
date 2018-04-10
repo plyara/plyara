@@ -145,6 +145,90 @@ class TestYaraRules(unittest.TestCase):
         self.assertTrue('"lib1"' in rule['imports'] and '"lib2"' in rule['imports'])
         self.assertTrue('global' in rule['scopes'] and 'private' in rule['scopes'])
 
+  def test_rule_name(self):
+
+    inputRule = r'''
+
+    rule testName
+    {
+    meta:
+    my_identifier_1 = ""
+    my_identifier_2 = 24
+    my_identifier_3 = true
+
+    strings:
+        $my_text_string = "text here"
+        $my_hex_string = { E2 34 A1 C8 23 FB }
+
+    condition:
+        $my_text_string or $my_hex_string
+    }
+
+    '''
+
+    plyara = Plyara()
+    result = plyara.parse_string(inputRule)
+
+    self.assertTrue(len(result) == 1)
+    self.assertTrue(result[0]['rule_name'] == "testName")
+
+  def test_store_raw(self):
+
+    inputRule = r'''
+
+    rule testName
+    {
+    meta:
+    my_identifier_1 = ""
+    my_identifier_2 = 24
+    my_identifier_3 = true
+
+    strings:
+        $my_text_string = "text here"
+        $my_hex_string = { E2 34 A1 C8 23 FB }
+
+    condition:
+        $my_text_string or $my_hex_string
+    }
+
+    rule testName2 {
+    strings:
+      $test1 = "some string"
+
+    condition:
+      $test1 or true
+    }
+
+    rule testName3 {
+
+    condition:
+      true
+    }
+
+    rule testName4 : tag1 tag2 {meta: i = "j" strings: $a = "b" condition: true }
+
+    '''
+
+    plyara = Plyara(store_raw_sections=True)
+    result = plyara.parse_string(inputRule)
+
+    self.assertTrue(len(result) == 4)
+    self.assertTrue(result[0].get("raw_meta", False))
+    self.assertTrue(result[0].get("raw_strings", False))
+    self.assertTrue(result[0].get("raw_condition", False))
+
+    self.assertFalse(result[1].get("raw_meta", False))
+    self.assertTrue(result[1].get("raw_strings", False))
+    self.assertTrue(result[1].get("raw_condition", False))
+
+    self.assertFalse(result[2].get("raw_meta", False))
+    self.assertFalse(result[2].get("raw_strings", False))
+    self.assertTrue(result[2].get("raw_condition", False))
+
+    self.assertTrue(result[3].get("raw_meta", False))
+    self.assertTrue(result[3].get("raw_strings", False))
+    self.assertTrue(result[3].get("raw_condition", False))
+
   def test_tags(self):
 
     inputTags = r'''
