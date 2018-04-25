@@ -652,7 +652,7 @@ class Plyara(Parser):
 
     # Error rule for syntax errors
     def p_error(self, p):
-        raise TypeError('Unknown text at {} ; token of type {}'.format(p.value, p.type))
+        raise TypeError('Unknown text at {} on line {} ; token of type {}'.format(p.value, p.lineno, p.type))
 
 
 def main():
