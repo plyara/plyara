@@ -27,8 +27,13 @@ class ElementTypes(enum.Enum):
 class Parser:
     """Interpret the output of the parser and produce an alternative representation of Yara rules."""
 
-    def __init__(self, console_logging=False):
-        """Initialize the parser object."""
+    def __init__(self, console_logging=False, store_raw_sections=True):
+        """Initialize the parser object.
+
+            Args:
+                console_logging: enable a stream handler if no handlers exist (default False)
+                store_raw_sections: enable attribute storage of raw section input
+        """
         self.rules = list()
 
         self.current_rule = dict()
@@ -43,16 +48,28 @@ class Parser:
         if console_logging:
             self._set_logging()
 
+        # adds functionality to track attributes containing raw section data
+        # in case needed (ie modifying metadata and re-constructing a complete rule
+        # while maintaining original comments and padding)
+        self.store_raw_sections = store_raw_sections
+        self._meta_start = None
+        self._meta_end = None
+        self._strings_start = None
+        self._strings_end = None
+        self._condition_start = None
+        self._condition_end = None
+
         lex.lex(module=self, debug=False)
         yacc.yacc(module=self, debug=False, outputdir='/tmp')
 
     @staticmethod
     def _set_logging():
-        """Set the console logger."""
-        logger.setLevel(logging.DEBUG)
-        ch = logging.StreamHandler()
-        ch.setLevel(logging.DEBUG)
-        logger.addHandler(ch)
+        """Set the console logger only if handler(s) aren't already set"""
+        if not len(logger.handlers):
+            logger.setLevel(logging.DEBUG)
+            ch = logging.StreamHandler()
+            ch.setLevel(logging.DEBUG)
+            logger.addHandler(ch)
 
     def _add_element(self, element_type, element_value):
         """Accept elements from the parser and uses them to construct a representation of the Yara rule."""
@@ -61,6 +78,16 @@ class Parser:
             self.current_rule['rule_name'] = rule_name
             self.current_rule['start_line'] = start_line
             self.current_rule['stop_line'] = stop_line
+
+            if self.store_raw_sections:
+                if self._meta_start:
+                    self.current_rule['raw_meta'] = self.raw_input[self._meta_start:self._meta_end]
+
+                if self._strings_start:
+                    self.current_rule['raw_strings'] = self.raw_input[self._strings_start:self._strings_end]
+
+                if self._condition_start:
+                    self.current_rule['raw_condition'] = self.raw_input[self._condition_start:self._condition_end]
 
             self._flush_accumulators()
 
@@ -129,8 +156,16 @@ class Parser:
             self.current_rule['tags'] = self.tags
             self.tags = list()
 
+        self._meta_start = None
+        self._meta_end = None
+        self._strings_start = None
+        self._strings_end = None
+        self._condition_start = None
+        self._condition_end = None
+
     def parse_string(self, input_string):
         """Take a string input expected to consist of Yara rules, and return list of dictionaries representing them."""
+        self.raw_input = input_string
         yacc.parse(input_string)
 
         for rule in self.rules:
@@ -240,7 +275,6 @@ class Plyara(Parser):
     t_NEQUALS = r'!='
     t_EQUALS = r'='
     t_LBRACE = r'{'
-    t_RBRACE = r'}'
     t_PLUS = r'\+'
     t_PIPE = r'\|'
     t_BACKSLASH = r'\\'
@@ -262,6 +296,12 @@ class Plyara(Parser):
     t_HYPHEN = r'\-'
     t_AMPERSAND = r'&'
     t_DOTDOT = r'\.\.'
+
+    def t_RBRACE(self, t):
+        r'}'
+        t.value = t.value
+        self._condition_end = t.lexpos - 1
+        return t
 
     def t_NEWLINE(self, t):
         # r'\n+'
@@ -292,16 +332,25 @@ class Plyara(Parser):
     def t_SECTIONMETA(self, t):
         r'meta:'
         t.value = t.value
+        self._meta_start = t.lexpos
         return t
 
     def t_SECTIONSTRINGS(self, t):
         r'strings:'
         t.value = t.value
+        self._strings_start = t.lexpos
+        if self._meta_end is None:
+            self._meta_end = t.lexpos - 1
         return t
 
     def t_SECTIONCONDITION(self, t):
         r'condition:'
         t.value = t.value
+        self._condition_start = t.lexpos
+        if self._meta_end is None:
+            self._meta_end = t.lexpos - 1
+        if self._strings_end is None:
+            self._strings_end = t.lexpos - 1
         return t
 
     def t_STRING(self, t):
@@ -619,6 +668,7 @@ def main():
     plyara = Plyara(console_logging=args.log)
     rules = plyara.parse_string(input_string)
     print(json.dumps(rules, sort_keys=True, indent=4))
+
 
 if __name__ == '__main__':
     main()
