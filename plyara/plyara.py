@@ -359,7 +359,7 @@ class Plyara(Parser):
         return t
 
     def t_BYTESTRING(self, t):
-        r'\{\s*(?:(?:[a-fA-F0-9?]{2}|\[\d*-?\d*\]|\((?:\s*[a-fA-F0-9?]{2}\s*\|?\s*|\s*\[\d*-?\d*\]\s*)+\)|\/\/[^\n]*)\s*)+\s*\}'
+        r'\{\s*(?:(?:[a-fA-F0-9?]{2}|\[\d*\s*-?\s*\d*\]|\((?:\s*[a-fA-F0-9?]{2}\s*\|?\s*|\s*\[\d*-?\d*\]\s*)+\)|\/\/[^\n]*)\s*)+\s*\}'
         """
         Regex above broken down broken down
         remove all literal spaces below, just there to visualize and piece together.
@@ -367,7 +367,7 @@ class Plyara(Parser):
         \{\s*                                                              // start
           (?:                                                              // open for combinations of...
             (?:[a-fA-F0-9?]{2}                                          |  // byte pair
-               \[\d*-?\d*\]                                             |  // jump
+               \[\d*\s*-?\s*\d*\]                                       |  // jump
                \((?:\s*[a-fA-F0-9?]{2}\s*\|?\s*|\s*\[\d*-?\d*\]\s*)+\)  |  // group
                \/\/[^\n]*                                                  // comment
           )\s*)+                                                           // close combinations
