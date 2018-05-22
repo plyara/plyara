@@ -1,6 +1,22 @@
 plyara
 ======
 
+.. image:: https://travis-ci.org/plyara/plyara-fork.svg?branch=master
+   :target: https://travis-ci.org/plyara/plyara-fork
+   :alt: Build Status
+.. image:: https://readthedocs.org/projects/plyara/badge/?version=latest
+   :target: http://plyara.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
+.. image:: https://api.codacy.com/project/badge/Grade/1c234b3d1ff349fa9dea7b4048dbc115
+   :target: https://www.codacy.com/app/plyara/plyara-fork
+   :alt: Code Health
+.. image:: https://api.codacy.com/project/badge/Coverage/1c234b3d1ff349fa9dea7b4048dbc115
+   :target: https://app.codacy.com/app/plyara/plyara-fork
+   :alt: Test Coverage
+.. image:: http://img.shields.io/pypi/v/plyara.svg
+   :target: https://pypi.python.org/pypi/plyara
+   :alt: PyPi Version
+
 Parse YARA_ rules into a dictionary representation.
 
 Plyara is a script and library that lexes and parses a file consisting of one more YARA rules
