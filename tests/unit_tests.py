@@ -85,15 +85,15 @@ class TestYaraRules(unittest.TestCase):
 
       if rule_name == 'four':
         self.assertTrue('scopes' not in rule)
-        self.assertTrue('imports' not in rule)
+        self.assertTrue('imports' in rule)
       if rule_name == 'five':
-        self.assertTrue('imports' not in rule)
+        self.assertTrue('imports' in rule)
         self.assertTrue('global' in rule['scopes'])
       if rule_name == 'six':
-        self.assertTrue('imports' not in rule)
+        self.assertTrue('imports' in rule)
         self.assertTrue('private' in rule['scopes'])
       if rule_name == 'seven':
-        self.assertTrue('imports' not in rule)
+        self.assertTrue('imports' in rule)
         self.assertTrue('private' in rule['scopes'] and 'global' in rule['scopes'])
       if rule_name == 'eight':
         self.assertTrue('"lib1"' in rule['imports'])
