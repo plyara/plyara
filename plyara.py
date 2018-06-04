@@ -2,6 +2,7 @@ import argparse
 import enum
 import json
 import logging
+import codecs
 
 import ply.lex as lex
 import ply.yacc as yacc
@@ -92,7 +93,7 @@ class Parser:
             self._flush_accumulators()
 
             self.rules.append(self.current_rule)
-            logger.debug('Adding Rule: {}'.format(self.current_rule['rule_name']))
+            logger.debug(u'Adding Rule: {}'.format(self.current_rule['rule_name']))
             self.current_rule = dict()
 
         elif element_type == ElementTypes.METADATA_KEY_VALUE:
@@ -418,7 +419,7 @@ class Plyara(Parser):
 
     # Error handling rule
     def t_error(self, t):
-        raise TypeError('Illegal character {} at line {}'.format(t.value[0], str(t.lexer.lineno)))
+        raise TypeError(u'Illegal character {} at line {}'.format(t.value[0], t.lexer.lineno))
         t.lexer.skip(1)
 
     # Parsing rules
@@ -432,9 +433,9 @@ class Plyara(Parser):
     def p_rule(self, p):
         '''rule : imports_and_scopes RULE ID tag_section LBRACE rule_body RBRACE'''
 
-        logger.debug('Matched rule: {}'.format(str(p[3])))
-        logger.debug('Rule start: {}, Rule stop: {}'.format(p.lineno(2), p.lineno(7)))
-        element_value = (str(p[3]), int(p.lineno(2)), int(p.lineno(7)), )
+        logger.debug(u'Matched rule: {}'.format(p[3]))
+        logger.debug(u'Rule start: {}, Rule stop: {}'.format(p.lineno(2), p.lineno(7)))
+        element_value = (p[3], int(p.lineno(2)), int(p.lineno(7)), )
         self._add_element(ElementTypes.RULE_NAME, element_value)
 
     def p_imports_and_scopes(self, p):
@@ -457,12 +458,12 @@ class Plyara(Parser):
 
     def p_import(self, p):
         'import : IMPORT STRING'
-        logger.debug('Matched import: {}'.format(p[2]))
+        logger.debug(u'Matched import: {}'.format(p[2]))
         self._add_element(ElementTypes.IMPORT, p[2])
 
     def p_include(self, p):
         'include : INCLUDE STRING'
-        logger.debug('Matched include: {}'.format(p[2]))
+        logger.debug(u'Matched include: {}'.format(p[2]))
         self._add_element(ElementTypes.INCLUDE, p[2])
 
     def p_scopes(self, p):
@@ -479,18 +480,18 @@ class Plyara(Parser):
 
     def p_tag(self, p):
         'tag : ID'
-        logger.debug('Matched tag: {}'.format(str(p[1])))
+        logger.debug(u'Matched tag: {}'.format(p[1]))
         self._add_element(ElementTypes.TAG, p[1])
 
     def p_scope(self, p):
         '''scope : PRIVATE
                  | GLOBAL'''
-        logger.debug('Matched scope identifier: {}'.format(str(p[1])))
+        logger.debug(u'Matched scope identifier: {}'.format(p[1]))
         self._add_element(ElementTypes.SCOPE, p[1])
 
     def p_rule_body(self, p):
         'rule_body : sections'
-        logger.debug('Matched rule body')
+        logger.debug(u'Matched rule body')
 
     def p_rule_sections(self, p):
         '''sections : sections section
@@ -503,7 +504,7 @@ class Plyara(Parser):
 
     def p_meta_section(self, p):
         'meta_section : SECTIONMETA meta_kvs'
-        logger.debug('Matched meta section')
+        logger.debug(u'Matched meta section')
 
     def p_strings_section(self, p):
         'strings_section : SECTIONSTRINGS strings_kvs'
@@ -515,7 +516,7 @@ class Plyara(Parser):
     def p_meta_kvs(self, p):
         '''meta_kvs : meta_kvs meta_kv
                     | meta_kv'''
-        logger.debug('Matched meta kvs')
+        logger.debug(u'Matched meta kvs')
 
     def p_meta_kv(self, p):
         '''meta_kv : ID EQUALS STRING
@@ -523,16 +524,16 @@ class Plyara(Parser):
                    | ID EQUALS TRUE
                    | ID EQUALS FALSE
                    | ID EQUALS NUM'''
-        key = str(p[1])
-        value = str(p[3]).strip('"')
-        logger.debug('Matched meta kv: {} equals {}'.format(key, value))
+        key = p[1]
+        value = p[3].strip('"')
+        logger.debug(u'Matched meta kv: {} equals {}'.format(key, value))
         self._add_element(ElementTypes.METADATA_KEY_VALUE, (key, value, ))
 
     # Strings elements.
     def p_strings_kvs(self, p):
         '''strings_kvs : strings_kvs strings_kv
                        | strings_kv'''
-        logger.debug('Matched strings kvs')
+        logger.debug(u'Matched strings kvs')
 
     def p_strings_kv(self, p):
         '''strings_kv : STRINGNAME EQUALS STRING
@@ -543,9 +544,9 @@ class Plyara(Parser):
                       | STRINGNAME EQUALS REXSTRING string_modifiers
                       | STRINGNAME EQUALS REXSTRING string_modifiers comments'''
 
-        key = str(p[1])
-        value = str(p[3])
-        logger.debug('Matched strings kv: {} equals {}'.format(key, value))
+        key = p[1]
+        value = p[3]
+        logger.debug(u'Matched strings kv: {} equals {}'.format(key, value))
         self._add_element(ElementTypes.STRINGS_KEY_VALUE, (key, value, ))
 
     def p_string_modifers(self, p):
@@ -557,13 +558,13 @@ class Plyara(Parser):
                            | ASCII
                            | WIDE
                            | FULLWORD'''
-        logger.debug('Matched a string modifier: {}'.format(p[1]))
+        logger.debug(u'Matched a string modifier: {}'.format(p[1]))
         self._add_element(ElementTypes.STRINGS_MODIFIER, p[1])
 
     def p_comments(self, p):
         '''comments : COMMENT
                     | MCOMMENT'''
-        logger.debug("Matched a comment: {}".format(p[1]))
+        logger.debug(u'Matched a comment: {}'.format(p[1]))
 
     # Condition elements.
     def p_expression(self, p):
@@ -635,12 +636,12 @@ class Plyara(Parser):
                 | STRINGCOUNT
                 | REXSTRING'''
 
-        logger.debug('Matched a condition term: {}'.format(p[1]))
+        logger.debug(u'Matched a condition term: {}'.format(p[1]))
         self._add_element(ElementTypes.TERM, p[1])
 
     # Error rule for syntax errors
     def p_error(self, p):
-        raise TypeError('Unknown text at {} on line {} ; token of type {}'.format(p.value, p.lineno, p.type))
+        raise TypeError(u'Unknown text at {} on line {} ; token of type {}'.format(p.value, p.lineno, p.type))
 
 
 def main():
@@ -650,7 +651,7 @@ def main():
     parser.add_argument('--log', help='Enable debug logging to the console.', action='store_true')
     args, _ = parser.parse_known_args()
 
-    with open(args.file, 'r') as fh:
+    with codecs.open(args.file, 'r', encoding='utf-8') as fh:
         input_string = fh.read()
 
     plyara = Plyara(console_logging=args.log)

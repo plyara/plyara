@@ -44,13 +44,13 @@ setup(
 
     keywords='malware analysis yara',
 
-    packages=find_packages(exclude=['examples', 'tests']),
+    py_modules=['plyara'],
 
     install_requires=install_requires,
 
     entry_points={
         'console_scripts': [
-            'plyara=plyara.plyara:main',
+            'plyara=plyara:main',
         ],
     },
 )

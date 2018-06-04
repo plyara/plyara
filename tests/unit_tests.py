@@ -335,7 +335,7 @@ class TestYaraRules(unittest.TestCase):
 
     def test_plyara_script(self):
         cwd = os.getcwd()
-        script_path = os.path.join(cwd, 'plyara', self._PLYARA_SCRIPT_NAME)
+        script_path = os.path.join(cwd, self._PLYARA_SCRIPT_NAME)
         test_file_path = os.path.join(cwd, 'tests', 'test_file.txt')
 
         script_process = subprocess.Popen([sys.executable, script_path, test_file_path],
