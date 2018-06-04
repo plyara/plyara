@@ -42,7 +42,7 @@ Use the included ``plyara`` script from the command line::
     $ plyara -h
     usage: plyara.py [-h] [--log] FILE
 
-    Parse Yara rules into a dictionary representation.
+    Parse YARA rules into a dictionary representation.
 
     positional arguments:
       FILE        File containing YARA rules to parse.

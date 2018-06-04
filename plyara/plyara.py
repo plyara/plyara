@@ -25,7 +25,7 @@ class ElementTypes(enum.Enum):
 
 
 class Parser:
-    """Interpret the output of the parser and produce an alternative representation of Yara rules."""
+    """Interpret the output of the parser and produce an alternative representation of YARA rules."""
 
     def __init__(self, console_logging=False, store_raw_sections=True):
         """Initialize the parser object.
@@ -72,7 +72,7 @@ class Parser:
             logger.addHandler(ch)
 
     def _add_element(self, element_type, element_value):
-        """Accept elements from the parser and uses them to construct a representation of the Yara rule."""
+        """Accept elements from the parser and uses them to construct a representation of the YARA rule."""
         if element_type == ElementTypes.RULE_NAME:
             rule_name, start_line, stop_line = element_value
             self.current_rule['rule_name'] = rule_name
@@ -164,7 +164,7 @@ class Parser:
         self._condition_end = None
 
     def parse_string(self, input_string):
-        """Take a string input expected to consist of Yara rules, and return list of dictionaries representing them."""
+        """Take a string input expected to consist of YARA rules, and return list of dictionaries representing them."""
         self.raw_input = input_string
         yacc.parse(input_string)
 
@@ -645,7 +645,7 @@ class Plyara(Parser):
 
 def main():
     """Run main function."""
-    parser = argparse.ArgumentParser(description='Parse Yara rules into a dictionary representation.')
+    parser = argparse.ArgumentParser(description='Parse YARA rules into a dictionary representation.')
     parser.add_argument('file', metavar='FILE', help='File containing YARA rules to parse.')
     parser.add_argument('--log', help='Enable debug logging to the console.', action='store_true')
     args, _ = parser.parse_known_args()

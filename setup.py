@@ -19,7 +19,7 @@ setup(
 
     version='1.1.1',
 
-    description='Parse Yara Rules',
+    description='Parse YARA Rules',
     long_description=long_description,
 
     url='https://github.com/8u1a/plyara',
