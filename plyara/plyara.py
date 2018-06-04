@@ -359,38 +359,26 @@ class Plyara(Parser):
         return t
 
     def t_BYTESTRING(self, t):
-        r'\{\s*(?:(?:[a-fA-F0-9?]{2}|\[\d*\s*-?\s*\d*\]|\((?:\s*[a-fA-F0-9?]{2}\s*\|?\s*|\s*\[\d*-?\d*\]\s*)+\)|\/\/[^\n]*)\s*)+\s*\}'
-        """
-        Regex above broken down broken down
-        remove all literal spaces below, just there to visualize and piece together.
-
-        \{\s*                                                              // start
-          (?:                                                              // open for combinations of...
-            (?:[a-fA-F0-9?]{2}                                          |  // byte pair
-               \[\d*\s*-?\s*\d*\]                                       |  // jump
-               \((?:\s*[a-fA-F0-9?]{2}\s*\|?\s*|\s*\[\d*-?\d*\]\s*)+\)  |  // group
-               \/\/[^\n]*                                                  // comment
-          )\s*)+                                                           // close combinations
-        \s*\}                                                              // close bytestring
-        """
+        r'''
+        \{\s*                                                              # start
+          (?:                                                              # open for combinations of...
+            (?:[a-fA-F0-9?]{2}                                          |  # byte pair
+               \[\d*\s*-?\s*\d*\]                                       |  # jump
+               \((?:\s*[a-fA-F0-9?]{2}\s*\|?\s*|\s*\[\d*-?\d*\]\s*)+\)  |  # group
+               \/\/[^\n]*                                                  # comment
+          )\s*)+                                                           # close combinations
+        \s*\}                                                              # close bytestring
+        '''
         t.value = t.value
         return t
 
     def t_REXSTRING(self, t):
-        r'(\/.+(?:\/[ismx]*)(?=\s+(?:nocase|ascii|wide|fullword)?\s*\/))|(\/.+(?:\/[ismx]*)(?=\s|\)|$))'
-        """
-        Two parts to this regex, because I'm not sure how to simplify. Test against following cases...
-        /abc123 \d/i
-        /abc123 \d+/i // comment
-        /abc123 \d\/ afterspace/im // comment
-        /abc123 \d\/ afterspace/im nocase // comment
+        r'''
+        # Two parts to this regex, because I'm not sure how to simplify.
 
-        (\/.+(?:\/[ismx]*)(?=\s+(?:nocase|ascii|wide|fullword)?\s*\/))  | first half matches `/abc123/im // comment` format
-        (\/.+(?:\/[ismx]*)(?=\s|\)|$))                                    second half matches `/abc123/im` format
-
-        It should only consume the regex pattern and not text modifiers / comment, as those will be parsed separately
-        """
-
+        (\/.+(?:\/[ismx]*)(?=\s+(?:nocase|ascii|wide|fullword)?\s*\/))  |  # first half matches `/abc123/im // comment` format
+        (\/.+(?:\/[ismx]*)(?=\s|\)|$))                                     # second half matches `/abc123/im` format
+        '''
         t.value = t.value
         return t
 
