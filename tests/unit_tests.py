@@ -241,16 +241,16 @@ class TestYaraRules(unittest.TestCase):
         rule thirteen
         {
         meta:
-        my_identifier_1 = ""
-        my_identifier_2 = 24
-        my_identifier_3 = true
+            my_identifier_1 = ""
+            my_identifier_2 = 24
+            my_identifier_3 = true
 
         strings:
-                $my_text_string = "text here"
-                $my_hex_string = { E2 34 A1 C8 23 FB }
+            $my_text_string = "text here"
+            $my_hex_string = { E2 34 A1 C8 23 FB }
 
         condition:
-                $my_text_string or $my_hex_string
+            $my_text_string or $my_hex_string
         }
         '''
 
@@ -261,6 +261,77 @@ class TestYaraRules(unittest.TestCase):
             rule_name = rule["rule_name"]
             if rule_name == 'thirteen':
                 self.assertTrue(len(rule['metadata']) == 3)
+
+    def test_bytestring(self):
+        inputRules = r'''
+        rule testName
+        {
+        strings:
+            $a1 = { E2 34 A1 C8 23 FB }
+            $a2 = { E2 34 A1 C8 2? FB }
+            $a3 = { E2 34 A1 C8 ?? FB }
+            $a4 = { E2 34 A1 [6] FB }
+            $a5 = { E2 34 A1 [4-6] FB }
+            $a6 = { E2 34 A1 [4 - 6] FB }
+            $a7 = { E2 34 A1 [-] FB }
+            $a8 = { E2 34 A1 [10-] FB }
+            $a9 = { E2 23 ( 62 B4 | 56 ) 45 }
+
+        condition:
+            any of them
+        }
+        '''
+
+        plyara = Plyara()
+        result = plyara.parse_string(inputRules)
+
+        self.assertEquals(len(result), 1)
+        for rule in result:
+            rule_name = rule["rule_name"]
+            if rule_name == 'testName':
+                self.assertEquals(len(rule['strings']), 9)
+                for hex_string in rule['strings']:
+                    # Basic sanity check.
+                    self.assertTrue(hex_string['value'].startswith('{ E2'))
+
+    def test_rexstring(self):
+        inputRules = r'''
+        rule testName
+        {
+        strings:
+            $a1 = /abc123 \d/i
+            $a2 = /abc123 \d+/i // comment
+            $a3 = /abc123 \d\/ afterspace/im // comment
+            $a4 = /abc123 \d\/ afterspace/im nocase // comment
+
+            /* It should only consume the regex pattern and not text modifiers
+               or comment, as those will be parsed separately. */
+
+        condition:
+            any of them
+        }
+        '''
+
+        plyara = Plyara()
+        result = plyara.parse_string(inputRules)
+
+        self.assertEquals(len(result), 1)
+        for rule in result:
+            rule_name = rule["rule_name"]
+            if rule_name == 'testName':
+                self.assertEquals(len(rule['strings']), 4)
+                for rex_string in rule['strings']:
+                    if rex_string['name'] == '$a1':
+                        self.assertEquals(rex_string['value'], '/abc123 \\d/i')
+                    elif rex_string['name'] == '$a2':
+                        self.assertEquals(rex_string['value'], '/abc123 \\d+/i')
+                    elif rex_string['name'] == '$a3':
+                        self.assertEquals(rex_string['value'], '/abc123 \\d\\/ afterspace/im')
+                    elif rex_string['name'] == '$a4':
+                        self.assertEquals(rex_string['value'], '/abc123 \\d\\/ afterspace/im')
+                        self.assertEquals(rex_string['modifiers'], ['nocase'])
+                    else:
+                        self.assertFalse("Unknown rule name...")
 
     def test_plyara_script(self):
         cwd = os.getcwd()
