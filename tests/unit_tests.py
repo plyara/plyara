@@ -13,13 +13,13 @@ class TestYaraRules(unittest.TestCase):
     _PLYARA_SCRIPT_NAME = "plyara.py"
 
     def test_multiple_rules(self):
-        inputString = r'''
+        inputString = u'''
         rule FirstRule {
             meta:
                 author = "Andrés Iniesta"
                 date = "2015-01-01"
             strings:
-                $a = "hark, a \"string\" here" fullword ascii
+                $a = "hark, a \\"string\\" here" fullword ascii
                 $b = { 00 22 44 66 88 aa cc ee }
             condition:
                 all of them
@@ -46,7 +46,7 @@ class TestYaraRules(unittest.TestCase):
         result = plyara.parse_string(inputString)
 
         self.assertEqual(len(result), 3)
-        self.assertEqual(result[0]['metadata']['author'], 'Andrés Iniesta')
+        self.assertEqual(result[0]['metadata']['author'], u'Andrés Iniesta')
         self.assertEqual(result[0]['metadata']['date'], '2015-01-01')
         self.assertTrue([x["name"] for x in result[0]['strings']] == ['$a', '$b'])
 
