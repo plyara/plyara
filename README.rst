@@ -1,17 +1,17 @@
 plyara
 ======
 
-.. image:: https://travis-ci.org/plyara/plyara-fork.svg?branch=master
-   :target: https://travis-ci.org/plyara/plyara-fork
+.. image:: https://travis-ci.org/plyara/plyara.svg?branch=master
+   :target: https://travis-ci.org/plyara/plyara
    :alt: Build Status
 .. image:: https://readthedocs.org/projects/plyara/badge/?version=latest
    :target: http://plyara.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 .. image:: https://api.codacy.com/project/badge/Grade/1c234b3d1ff349fa9dea7b4048dbc115
-   :target: https://www.codacy.com/app/plyara/plyara-fork
+   :target: https://www.codacy.com/app/plyara/plyara
    :alt: Code Health
 .. image:: https://api.codacy.com/project/badge/Coverage/1c234b3d1ff349fa9dea7b4048dbc115
-   :target: https://app.codacy.com/app/plyara/plyara-fork
+   :target: https://app.codacy.com/app/plyara/plyara
    :alt: Test Coverage
 .. image:: http://img.shields.io/pypi/v/plyara.svg
    :target: https://pypi.python.org/pypi/plyara
