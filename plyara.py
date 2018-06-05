@@ -998,7 +998,9 @@ class Plyara(Parser):
             self.parser.errok()
             self._rule_comments.append(p)
         else:
-            raise TypeError(u'Unknown text at {} on line {} ; token of type {}'.format(p.value, p.lineno, p.type))
+            raise TypeError(u'Unknown text {} for token of type {} on line {}'.format(p.value, p.type, p.lineno))
+
+
 
 
 def main():
