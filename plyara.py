@@ -343,19 +343,32 @@ class Parser(object):
         strings = rule.get('strings', [])
         conditions = rule['condition_terms']
 
-        sorted_string_values = sorted([s['value'] for s in strings])
-
-        string_mapping = {'anonymous': [],
-                          'named': {}}
+        string_values = []
+        condition_mapping = []
+        string_mapping = {'anonymous': [], 'named': {}}
 
         for entry in strings:
+            name = entry['name']
+            modifiers = entry.get('modifiers', [])
 
-            if entry['name'] == '$':
-                string_mapping['anonymous'].append(entry['value'])
+            # Handle string modifiers
+            if modifiers:
+                value = entry['value'] + u'<MODIFIED>' + u' & '.join(sorted(modifiers))
             else:
-                string_mapping['named'][entry['name']] = entry['value']
+                value = entry['value']
 
-        condition_mapping = []
+            if name == '$':
+                # Track anonymous strings
+                string_mapping['anonymous'].append(value)
+            else:
+                # Track named strings
+                string_mapping['named'][name] = value
+
+            # Track all string values
+            string_values.append(value)
+
+        # Sort all string values
+        sorted_string_values = sorted(string_values)
 
         for condition in conditions:
             # All string references (sort for consistency)
