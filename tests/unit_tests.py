@@ -9,6 +9,32 @@ from plyara import Plyara
 
 UNHANDLED_RULE_MSG = "Unhandled Test Rule: {}"
 
+class TestStaticMethods(unittest.TestCase):
+
+    def test_logic_hash_generator(self):
+        with open('tests/data/logic_collision_ruleset.yar', 'r') as f:
+            inputString = f.read()
+
+        result = Plyara().parse_string(inputString)
+
+        rule_mapping = {}
+
+        for entry in result:
+            rulename = entry['rule_name']
+            setname, _ = rulename.split('_')
+            rulehash = Plyara.generate_logic_hash(entry)
+
+            if setname not in rule_mapping:
+                rule_mapping[setname] = [rulehash]
+            else:
+                rule_mapping[setname].append(rulehash)
+
+        for setname, hashvalues in rule_mapping.items():
+
+            if not len(set(hashvalues)) == 1:
+                raise AssertionError("Collision detection failure for {}".format(setname))
+
+
 class TestRuleParser(unittest.TestCase):
 
     def setUp(self):
