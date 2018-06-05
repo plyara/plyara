@@ -3,6 +3,7 @@ import enum
 import json
 import logging
 import codecs
+import tempfile
 
 import ply.lex as lex
 import ply.yacc as yacc
@@ -61,7 +62,7 @@ class Parser:
         self._condition_end = None
 
         lex.lex(module=self, debug=False)
-        yacc.yacc(module=self, debug=False, outputdir='/tmp')
+        yacc.yacc(module=self, debug=False, outputdir=tempfile.gettempdir())
 
     @staticmethod
     def _set_logging():
