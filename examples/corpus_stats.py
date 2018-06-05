@@ -1,9 +1,10 @@
 import operator
 import os
 import sys
+import codecs
 
 sys.path.insert(0, os.getcwd())
-import plyara.interp as interp
+import plyara
 
 
 if __name__ == '__main__':
@@ -11,7 +12,7 @@ if __name__ == '__main__':
   file_to_analyze = sys.argv[1]
 
   print("...parsing file...")
-  rulesDict = interp.parseString(open(file_to_analyze).read())
+  rulesDict = plyara.Plyara().parse_string(codecs.open(file_to_analyze, encoding='utf-8').read())
   print("...analyzing dictionary...")
 
   authors = {}
