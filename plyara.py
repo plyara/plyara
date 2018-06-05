@@ -309,11 +309,9 @@ class Plyara(Parser):
         r'(\n|\r\n)+'
         t.lexer.lineno += len(t.value)
         t.value = t.value
-        pass
 
     def t_COMMENT(self, t):
         r'(//.*)(?=\n)'
-        pass
 
     # http://comments.gmane.org/gmane.comp.python.ply/134
     def t_MCOMMENT(self, t):
@@ -323,7 +321,6 @@ class Plyara(Parser):
             t.lexer.lineno += t.value.count('\r\n')
         else:
             t.lexer.lineno += t.value.count('\n')
-        pass
 
     def t_HEXNUM(self, t):
         r'0x[A-Fa-f0-9]+'
