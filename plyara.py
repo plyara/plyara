@@ -4,6 +4,8 @@ import json
 import logging
 import codecs
 import tempfile
+import hashlib
+import re
 
 import ply.lex as lex
 import ply.yacc as yacc
@@ -24,10 +26,35 @@ class ElementTypes(enum.Enum):
     SCOPE = 7
     TAG = 8
     INCLUDE = 9
+    COMMENT = 10
+    MCOMMENT = 11
 
 
-class Parser:
+class Parser(object):
     """Interpret the output of the parser and produce an alternative representation of YARA rules."""
+
+    COMPARISON_OPERATORS = ('==', '!=', '>', '<', '>=', '<=')
+
+    IMPORT_OPTIONS = ('pe',
+                      'elf',
+                      'cuckoo',
+                      'magic',
+                      'hash',
+                      'math',
+                      'dotnet',
+                      'androguard')
+
+    KEYWORDS = ('all', 'and', 'any', 'ascii', 'at', 'condition',
+                'contains', 'entrypoint', 'false', 'filesize',
+                'fullword', 'for', 'global', 'in', 'import',
+                'include', 'int8', 'int16', 'int32', 'int8be',
+                'int16be', 'int32be', 'matches', 'meta', 'nocase',
+                'not', 'or', 'of', 'private', 'rule', 'strings',
+                'them', 'true', 'uint8', 'uint16', 'uint32', 'uint8be',
+                'uint16be', 'uint32be', 'wide')
+
+    FUNCTION_KEYWORDS = ('uint8', 'uint16', 'uint32', 'uint8be', 'uint16be', 'uint32be')
+
 
     def __init__(self, console_logging=False, store_raw_sections=True):
         """Initialize the parser object.
@@ -46,6 +73,7 @@ class Parser:
         self.terms = list()
         self.scopes = list()
         self.tags = list()
+        self.comments = list()
 
         if console_logging:
             self._set_logging()
@@ -60,9 +88,10 @@ class Parser:
         self._strings_end = None
         self._condition_start = None
         self._condition_end = None
+        self._rule_comments = list()
 
-        lex.lex(module=self, debug=False)
-        yacc.yacc(module=self, debug=False, outputdir=tempfile.gettempdir())
+        self.lexer = lex.lex(module=self, debug=False)
+        self.parser = yacc.yacc(module=self, debug=False, outputdir=tempfile.gettempdir())
 
     @staticmethod
     def _set_logging():
@@ -144,6 +173,12 @@ class Parser:
         elif element_type == ElementTypes.TAG:
             self.tags.append(element_value)
 
+        elif element_type == ElementTypes.COMMENT:
+            self.comments.append(element_value)
+
+        elif element_type == ElementTypes.MCOMMENT:
+            self.comments.append(element_value)
+
     def _flush_accumulators(self):
         """Add accumulated elements to the current rule and resets the accumulators."""
         if any(self.terms):
@@ -157,6 +192,10 @@ class Parser:
         if any(self.tags):
             self.current_rule['tags'] = self.tags
             self.tags = list()
+
+        if any(self.comments):
+            self.current_rule['comments'] = self.comments
+            self.comments = list()
 
         self._meta_start = None
         self._meta_end = None
@@ -178,6 +217,309 @@ class Parser:
 
         return self.rules
 
+    @staticmethod
+    def is_valid_rule_name(entry):
+        """Checks to see if entry is a valid rule name."""
+        # Check if entry is blank
+        if not entry:
+            return False
+
+        # Check length
+        if len(entry) > 128:
+            return False
+
+        # Ensure doesn't start with a digit
+        if entry[0].isdigit():
+            return False
+
+        # Accept only alphanumeric and underscores
+        if not re.match(r'\w+$', entry):
+            return False
+
+        # Verify not in keywords
+        if entry in Parser.KEYWORDS:
+            return False
+
+        return True
+
+    @staticmethod
+    def is_valid_rule_tag(entry):
+        """Checks to see if entry is a valid rule tag."""
+        # Same lexical conventions as name
+        return Parser.is_valid_rule_name(entry)
+
+    @staticmethod
+    def detect_imports(rule):
+        """Takes a parsed yararule and provide a list of required imports based on condition."""
+        detected_imports = []
+        condition_terms = rule['condition_terms']
+
+        for imp in Parser.IMPORT_OPTIONS:
+            imp_string = u"\"{}\"".format(imp)
+            imp_module = u"{}.".format(imp)
+
+            if imp in condition_terms and imp_string not in detected_imports:
+                detected_imports.append(imp_string)
+
+            elif imp_string not in detected_imports:
+                for term in condition_terms:
+                    if term.startswith(imp_module):
+                        detected_imports.append(imp_string)
+                        break
+
+        return detected_imports
+
+    @staticmethod
+    def detect_dependencies(rule):
+        """Takes a parsed yararule and provide a list of external rule dependencies."""
+        dependencies = []
+        condition_terms = rule['condition_terms']
+
+        # Container for any iteration string references
+        string_iteration_variables = []
+
+        # Number of terms for index iteration and reference
+        term_count = len(condition_terms)
+
+        # Check for rule dependencies within condition
+        for index in range(0, term_count):
+            # Grab term by index
+            term = condition_terms[index]
+
+            if Parser.is_valid_rule_name(term) and (term not in Parser.IMPORT_OPTIONS):
+                # Grab reference to previous term for logic checks
+                if index > 0:
+                    previous_term = condition_terms[index - 1]
+                else:
+                    previous_term = None
+
+                # Grab reference to next term for logic checks
+                if index < (term_count - 1):
+                    next_term = condition_terms[index + 1]
+                else:
+                    next_term = None
+
+                # Import and androguard functions will have a lot going on while
+                # a simple rule reference should be preceded or followed by a connecting
+                # keyword or be by itself
+                if (previous_term or next_term) and (next_term not in ('and', 'or')) and (previous_term not in ('and', 'or')):
+                    continue
+
+                # Check if reference is a variable for string iteration
+                if term in string_iteration_variables:
+                    continue
+
+                # Check if reference is a variable for string iteration
+                if previous_term in ('any', 'all') and next_term == 'in':
+                    string_iteration_variables.append(term)
+                    continue
+
+                # Check if term is a filesize reference
+                if (len(term) > 2) and (term[-2:] in ('MB', 'KB')):
+                    try:
+                        int(term[:-2])
+                    except ValueError:
+                        pass
+                    else:
+                        continue
+
+                # Check for external string variable dependency
+                if ((next_term in ('matches', 'contains')) or (previous_term in ('matches', 'contains'))):
+                    continue
+
+                # Check for external integer variable dependency
+                if ((next_term in Parser.COMPARISON_OPERATORS) or (previous_term in Parser.COMPARISON_OPERATORS)):
+                    continue
+
+                # Check for external boolean dependency may not be possible without stripping out valid rule references
+
+                dependencies.append(term)
+
+        return dependencies
+
+    @staticmethod
+    def generate_logic_hash(rule):
+        """Calculate hash value of rule strings and condition."""
+        strings = rule.get('strings', [])
+        conditions = rule['condition_terms']
+
+        string_values = []
+        condition_mapping = []
+        string_mapping = {'anonymous': [], 'named': {}}
+
+        for entry in strings:
+            name = entry['name']
+            modifiers = entry.get('modifiers', [])
+
+            # Handle string modifiers
+            if modifiers:
+                value = entry['value'] + u'<MODIFIED>' + u' & '.join(sorted(modifiers))
+            else:
+                value = entry['value']
+
+            if name == '$':
+                # Track anonymous strings
+                string_mapping['anonymous'].append(value)
+            else:
+                # Track named strings
+                string_mapping['named'][name] = value
+
+            # Track all string values
+            string_values.append(value)
+
+        # Sort all string values
+        sorted_string_values = sorted(string_values)
+
+        for condition in conditions:
+            # All string references (sort for consistency)
+            if condition == 'them' or condition == '$*':
+                condition_mapping.append(u'<STRINGVALUE>' + u' | '.join(sorted_string_values))
+
+            elif condition.startswith('$') and condition != '$':
+                # Exact Match
+                if condition in string_mapping['named']:
+                    condition_mapping.append(u'<STRINGVALUE>' + string_mapping['named'][condition])
+                # Wildcard Match
+                elif '*' in condition:
+                    wildcard_strings = []
+                    condition = condition.replace('$', '\$').replace('*', '.*')
+                    pattern = re.compile(condition)
+
+                    for name, value in string_mapping['named'].items():
+                        if pattern.match(name):
+                            wildcard_strings.append(value)
+
+                    wildcard_strings.sort()
+                    condition_mapping.append(u'<STRINGVALUE>' + u' | '.join(wildcard_strings))
+                else:
+                    logger.error(u'[!] Unhandled String Condition {}'.format(condition))
+
+            # Count Match
+            elif condition.startswith('#') and condition != '#':
+                condition = condition.replace('#', '$')
+
+                if condition in string_mapping['named']:
+                    condition_mapping.append('<COUNTOFSTRING>' + string_mapping['named'][condition])
+                else:
+                    logger.error(u'[!] Unhandled String Count Condition {}'.format(condition))
+
+            else:
+                condition_mapping.append(condition)
+
+        logic_hash = hashlib.sha1(u''.join(condition_mapping).encode()).hexdigest()
+        return logic_hash
+
+    @staticmethod
+    def rebuild_yara_rule(rule):
+        """Take a parsed yararule and rebuild it into a usable one."""
+
+        rule_format = u"{imports}{scopes}rule {rulename}{tags} {{\n{meta}{strings}{condition}\n}}\n"
+
+        rule_name = rule['rule_name']
+
+        # Rule Imports
+        if rule['imports']:
+            unpacked_imports = [u'import {}\n'.format(entry) for entry in rule['imports']]
+            rule_imports = u'{}\n'.format(u''.join(unpacked_imports))
+        else:
+            rule_imports = u''
+
+        # Rule Scopes
+        if rule['scopes']:
+            rule_scopes = u'{} '.format(u' '.join(rule['scopes']))
+        else:
+            rule_scopes = u''
+
+        # Rule Tags
+        if rule['tags']:
+            rule_tags = u' : {}'.format(u' '.join(rule['tags']))
+        else:
+            rule_tags = u''
+
+        # Rule Metadata
+        if rule['metadata']:
+            unpacked_meta = [u'\n\t\t{key} = {value}'.format(key=k, value=v)
+                             for k, v in rule['metadata'].items()]
+            rule_meta = u'\n\tmeta:{}\n'.format(u''.join(unpacked_meta))
+        else:
+            rule_meta = u''
+
+        # Rule Strings
+        if rule['strings']:
+
+            string_container = []
+
+            for rule_string in rule['strings']:
+
+                if 'modifiers' in rule_string:
+                    string_modifiers = u' '.join(rule_string['modifiers'])
+
+                    fstring = u'\n\t\t{} = {} {}'.format(rule_string['name'],
+                                                         rule_string['value'],
+                                                         string_modifiers)
+                else:
+                    fstring = u'\n\t\t{} = {}'.format(rule_string['name'],
+                                                      rule_string['value'])
+
+                string_container.append(fstring)
+
+            rule_strings = u'\n\tstrings:{}\n'.format(u''.join(string_container))
+        else:
+            rule_strings = u''
+
+        if rule['condition_terms']:
+            # Format condition with appropriate whitespace between keywords
+            cond = []
+
+            for term in rule['condition_terms']:
+
+                if not cond:
+
+                    if term in Parser.FUNCTION_KEYWORDS:
+                        cond.append(term)
+
+                    elif term in Parser.KEYWORDS:
+                        cond.append(term)
+                        cond.append(u' ')
+
+                    else:
+                        cond.append(term)
+
+                else:
+
+                    if cond[-1] == ' ' and term in Parser.FUNCTION_KEYWORDS:
+                        cond.append(term)
+
+                    elif cond and cond[-1] != ' ' and term in Parser.FUNCTION_KEYWORDS:
+                        cond.append(u' ')
+                        cond.append(term)
+
+                    elif cond[-1] == ' ' and term in Parser.KEYWORDS:
+                        cond.append(term)
+                        cond.append(u' ')
+
+                    elif cond and cond[-1] != ' ' and term in Parser.KEYWORDS:
+                        cond.append(u' ')
+                        cond.append(term)
+                        cond.append(u' ')
+
+                    else:
+                        cond.append(term)
+
+            fcondition = u''.join(cond)
+            rule_condition = u'\n\tcondition:\n\t\t{}'.format(fcondition)
+        else:
+            rule_condition = u''
+
+        formatted_rule = rule_format.format(imports=rule_imports,
+                                            rulename=rule_name,
+                                            tags=rule_tags,
+                                            meta=rule_meta,
+                                            scopes=rule_scopes,
+                                            strings=rule_strings,
+                                            condition=rule_condition)
+
+        return formatted_rule
 
 class Plyara(Parser):
     """Class to define the lexer and the parser rules."""
@@ -212,6 +554,7 @@ class Plyara(Parser):
         'RIGHTBITSHIFT',
         'LEFTBITSHIFT',
         'MODULO',
+        'TILDE',
         'XOR',
         'PERIOD',
         'COLON',
@@ -289,6 +632,7 @@ class Plyara(Parser):
     t_RIGHTBITSHIFT = r'>>'
     t_LEFTBITSHIFT = r'<<'
     t_MODULO = r'%'
+    t_TILDE = r'~'
     t_XOR = r'\^'
     t_PERIOD = r'\.'
     t_COLON = r':'
@@ -313,6 +657,7 @@ class Plyara(Parser):
 
     def t_COMMENT(self, t):
         r'(//.*)(?=\n)'
+        return t
 
     # http://comments.gmane.org/gmane.comp.python.ply/134
     def t_MCOMMENT(self, t):
@@ -322,6 +667,7 @@ class Plyara(Parser):
             t.lexer.lineno += t.value.count('\r\n')
         else:
             t.lexer.lineno += t.value.count('\n')
+        return t
 
     def t_HEXNUM(self, t):
         r'0x[A-Fa-f0-9]+'
@@ -329,13 +675,13 @@ class Plyara(Parser):
         return t
 
     def t_SECTIONMETA(self, t):
-        r'meta:'
+        r'meta\s*:'
         t.value = t.value
         self._meta_start = t.lexpos
         return t
 
     def t_SECTIONSTRINGS(self, t):
-        r'strings:'
+        r'strings\s*:'
         t.value = t.value
         self._strings_start = t.lexpos
         if self._meta_end is None:
@@ -343,7 +689,7 @@ class Plyara(Parser):
         return t
 
     def t_SECTIONCONDITION(self, t):
-        r'condition:'
+        r'condition\s*:'
         t.value = t.value
         self._condition_start = t.lexpos
         if self._meta_end is None:
@@ -433,6 +779,13 @@ class Plyara(Parser):
 
         logger.debug(u'Matched rule: {}'.format(p[3]))
         logger.debug(u'Rule start: {}, Rule stop: {}'.format(p.lineno(2), p.lineno(7)))
+
+        while self._rule_comments:
+            comment = self._rule_comments.pop()
+
+            if p.lexpos(5) < comment.lexpos < p.lexpos(7):
+                self._add_element(getattr(ElementTypes, comment.type), comment.value)
+
         element_value = (p[3], int(p.lineno(2)), int(p.lineno(7)), )
         self._add_element(ElementTypes.RULE_NAME, element_value)
 
@@ -595,6 +948,7 @@ class Plyara(Parser):
                 | RIGHTBITSHIFT
                 | LEFTBITSHIFT
                 | MODULO
+                | TILDE
                 | XOR
                 | PERIOD
                 | COLON
@@ -639,7 +993,14 @@ class Plyara(Parser):
 
     # Error rule for syntax errors
     def p_error(self, p):
-        raise TypeError(u'Unknown text at {} on line {} ; token of type {}'.format(p.value, p.lineno, p.type))
+        if p.type in ('COMMENT', 'MCOMMENT'):
+            # Just a comment - tell parser that it is okay
+            self.parser.errok()
+            self._rule_comments.append(p)
+        else:
+            raise TypeError(u'Unknown text {} for token of type {} on line {}'.format(p.value, p.type, p.lineno))
+
+
 
 
 def main():
