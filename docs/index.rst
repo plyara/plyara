@@ -13,7 +13,7 @@
 Module Documentation
 --------------------
 
-.. automodule:: plyara.plyara
+.. automodule:: plyara
     :members:
     :undoc-members:
     :show-inheritance:
