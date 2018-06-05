@@ -315,9 +315,9 @@ class Parser(object):
                     continue
 
                 # Check if term is a filesize reference
-                if term in ('MB', 'KB'):
+                if (len(term) > 2) and (term[-2:] in ('MB', 'KB')):
                     try:
-                        int(previous_term)
+                        int(term[:-2])
                     except ValueError:
                         pass
                     else:
