@@ -341,9 +341,59 @@ class Parser(object):
     def generate_logic_hash(rule):
         """Calculate hash value of rule strings and condition."""
         strings = rule.get('strings', [])
-        sorted_strings = sorted([s['value'] for s in strings])
-        sorted_strings.extend(rule['condition_terms'])
-        logic_hash = hashlib.sha1(''.join(sorted_strings).encode()).hexdigest()
+        conditions = rule['condition_terms']
+
+        sorted_string_values = sorted([s['value'] for s in strings])
+
+        string_mapping = {'anonymous': [],
+                          'named': {}}
+
+        for entry in strings:
+
+            if entry['name'] == '$':
+                string_mapping['anonymous'].append(entry['value'])
+            else:
+                string_mapping['named'][entry['name']] = entry['value']
+
+        condition_mapping = []
+
+        for condition in conditions:
+            # All string references (sort for consistency)
+            if condition == 'them' or condition == '$*':
+                condition_mapping.append(u'<STRINGVALUES>' + u' | '.join(sorted_string_values))
+
+            elif condition.startswith('$') and condition != '$':
+                # Exact Match
+                if condition in string_mapping['named']:
+                    condition_mapping.append(u'<STRING>' + string_mapping['named'][condition])
+                # Wildcard Match
+                elif '*' in condition:
+                    wildcard_strings = []
+                    condition = condition.replace('$', '\$').replace('*', '.*')
+                    pattern = re.compile(condition)
+
+                    for name, value in string_mapping['named'].items():
+                        if pattern.match(name):
+                            wildcard_strings.append(value)
+
+                    wildcard_strings.sort()
+                    condition_mapping.append(u'<STRINGVALUES>' + u' | '.join(wildcard_strings))
+                else:
+                    logger.error(u'[!] Unhandled String Condition {}'.format(condition))
+
+            # Count Match
+            elif condition.startswith('#') and condition != '#':
+                condition = condition.replace('#', '$')
+
+                if condition in string_mapping['named']:
+                    condition_mapping.append('<COUNTOFSTRING>' + string_mapping['named'][condition])
+                else:
+                    logger.error(u'[!] Unhandled String Count Condition {}'.format(condition))
+
+            else:
+                condition_mapping.append(condition)
+
+        logic_hash = hashlib.sha1(u''.join(condition_mapping).encode()).hexdigest()
         return logic_hash
 
     @staticmethod
