@@ -35,8 +35,14 @@ class Parser(object):
 
     COMPARISON_OPERATORS = ('==', '!=', '>', '<', '>=', '<=')
 
-    IMPORT_OPTIONS = ('pe', 'elf', 'cuckoo', 'magic',
-                      'hash', 'math', 'androguard')
+    IMPORT_OPTIONS = ('pe',
+                      'elf',
+                      'cuckoo',
+                      'magic',
+                      'hash',
+                      'math',
+                      'dotnet',
+                      'androguard')
 
     KEYWORDS = ('all', 'and', 'any', 'ascii', 'at', 'condition',
                 'contains', 'entrypoint', 'false', 'filesize',
@@ -485,6 +491,7 @@ class Plyara(Parser):
         'RIGHTBITSHIFT',
         'LEFTBITSHIFT',
         'MODULO',
+        'TILDE',
         'XOR',
         'PERIOD',
         'COLON',
@@ -562,6 +569,7 @@ class Plyara(Parser):
     t_RIGHTBITSHIFT = r'>>'
     t_LEFTBITSHIFT = r'<<'
     t_MODULO = r'%'
+    t_TILDE = r'~'
     t_XOR = r'\^'
     t_PERIOD = r'\.'
     t_COLON = r':'
@@ -877,6 +885,7 @@ class Plyara(Parser):
                 | RIGHTBITSHIFT
                 | LEFTBITSHIFT
                 | MODULO
+                | TILDE
                 | XOR
                 | PERIOD
                 | COLON
