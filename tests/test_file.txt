@@ -1,4 +1,5 @@
 rule FirstRule {
+  // test comment
   meta:
     author = "Andrés Iniesta"
     date = "2015-01-01"
@@ -16,6 +17,10 @@ rule SecondRule : aTag {
     author = "Ivan Rakitić"
     date = "2015-02-01"
   strings:
+    /* test
+       multiline
+       comment
+    */
     $x = "hi"
     $y = /state: (on|off)/ wide
     $z = "bye"
