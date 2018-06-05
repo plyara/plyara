@@ -27,6 +27,8 @@ checkers.
 
 Plyara leverages the Python module Ply_ for lexing YARA rules.
 
+This is a community-maintained fork (with permission) of the `original plyara`_ by 8u1a_.
+
 Installation
 ------------
 
@@ -73,3 +75,5 @@ For complete documentation, visit plyara.readthedocs.io_.
 .. _Ply: http://www.dabeaz.com/ply/
 .. _YARA: http://plusvic.github.io/yara/
 .. _plyara.readthedocs.io: https://plyara.readthedocs.io/en/latest/
+.. _original plyara: https://github.com/8u1a/plyara
+.. _8u1a: https://github.com/8u1a
