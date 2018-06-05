@@ -27,7 +27,8 @@ checkers.
 
 Plyara leverages the Python module Ply_ for lexing YARA rules.
 
-This is a community-maintained fork (with permission) of the `original plyara`_ by 8u1a_.
+This is a community-maintained fork of the `original plyara`_ by 8u1a_. The "plyara" trademark
+is used with permission.
 
 Installation
 ------------
