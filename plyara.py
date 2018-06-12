@@ -1000,7 +1000,7 @@ class Plyara(Parser):
         else:
             raise TypeError(u'Unknown text {} for token of type {} on line {}'.format(p.value, p.type, p.lineno))
 
-            
+
 def main():
     """Run main function."""
     parser = argparse.ArgumentParser(description='Parse YARA rules into a dictionary representation.')
