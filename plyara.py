@@ -68,7 +68,7 @@ class Parser(object):
         self.current_rule = dict()
 
         self.string_modifiers = list()
-        self.imports = list()
+        self.imports = set()
         self.includes = list()
         self.terms = list()
         self.scopes = list()
@@ -159,7 +159,7 @@ class Parser(object):
             self.string_modifiers.append(element_value)
 
         elif element_type == ElementTypes.IMPORT:
-            self.imports.append(element_value)
+            self.imports.add(element_value)
 
         elif element_type == ElementTypes.INCLUDE:
             self.includes.append(element_value)
@@ -1000,9 +1000,7 @@ class Plyara(Parser):
         else:
             raise TypeError(u'Unknown text {} for token of type {} on line {}'.format(p.value, p.type, p.lineno))
 
-
-
-
+            
 def main():
     """Run main function."""
     parser = argparse.ArgumentParser(description='Parse YARA rules into a dictionary representation.')
