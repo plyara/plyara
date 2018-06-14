@@ -22,6 +22,7 @@ setup(
     url='https://github.com/plyara/plyara',
     author='8u1a',
     license='Apache License 2.0',
+    test_suite='tests.unit_tests',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
