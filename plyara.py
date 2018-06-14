@@ -419,7 +419,7 @@ class Parser(object):
 
         # Rule Imports
         if rule['imports']:
-            unpacked_imports = [u'import {}\n'.format(entry) for entry in rule['imports']]
+            unpacked_imports = [u'import "{}"\n'.format(entry) for entry in rule['imports']]
             rule_imports = u'{}\n'.format(u''.join(unpacked_imports))
         else:
             rule_imports = u''
@@ -809,13 +809,15 @@ class Plyara(Parser):
 
     def p_import(self, p):
         'import : IMPORT STRING'
-        logger.debug(u'Matched import: {}'.format(p[2]))
-        self._add_element(ElementTypes.IMPORT, p[2])
+        import_value = p[2].replace('"', '')
+        logger.debug(u'Matched import: {}'.format(import_value))
+        self._add_element(ElementTypes.IMPORT, import_value)
 
     def p_include(self, p):
         'include : INCLUDE STRING'
-        logger.debug(u'Matched include: {}'.format(p[2]))
-        self._add_element(ElementTypes.INCLUDE, p[2])
+        include_value = p[2].replace('"', '')
+        logger.debug(u'Matched include: {}'.format(include_value))
+        self._add_element(ElementTypes.INCLUDE, include_value)
 
     def p_scopes(self, p):
         '''scopes : scopes scope
