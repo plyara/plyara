@@ -47,7 +47,7 @@ class TestRuleParser(unittest.TestCase):
         result = self.parser.parse_string(inputString)
 
         for rule in result:
-            self.assertTrue('"pe"' in rule['imports'])
+            self.assertTrue('pe' in rule['imports'])
 
     def test_import_elf(self):
         with open('tests/data/import_ruleset_elf.yar', 'r') as f:
@@ -56,7 +56,7 @@ class TestRuleParser(unittest.TestCase):
         result = self.parser.parse_string(inputString)
 
         for rule in result:
-            self.assertTrue('"elf"' in rule['imports'])
+            self.assertTrue('elf' in rule['imports'])
 
     def test_import_cuckoo(self):
         with open('tests/data/import_ruleset_cuckoo.yar', 'r') as f:
@@ -65,7 +65,7 @@ class TestRuleParser(unittest.TestCase):
         result = self.parser.parse_string(inputString)
 
         for rule in result:
-            self.assertTrue('"cuckoo"' in rule['imports'])
+            self.assertTrue('cuckoo' in rule['imports'])
 
     def test_import_magic(self):
         with open('tests/data/import_ruleset_magic.yar', 'r') as f:
@@ -74,7 +74,7 @@ class TestRuleParser(unittest.TestCase):
         result = self.parser.parse_string(inputString)
 
         for rule in result:
-            self.assertTrue('"magic"' in rule['imports'])
+            self.assertTrue('magic' in rule['imports'])
 
     def test_import_hash(self):
         with open('tests/data/import_ruleset_hash.yar', 'r') as f:
@@ -83,7 +83,7 @@ class TestRuleParser(unittest.TestCase):
         result = self.parser.parse_string(inputString)
 
         for rule in result:
-            self.assertTrue('"hash"' in rule['imports'])
+            self.assertTrue('hash' in rule['imports'])
 
     def test_import_math(self):
         with open('tests/data/import_ruleset_math.yar', 'r') as f:
@@ -92,7 +92,7 @@ class TestRuleParser(unittest.TestCase):
         result = self.parser.parse_string(inputString)
 
         for rule in result:
-            self.assertTrue('"math"' in rule['imports'])
+            self.assertTrue('math' in rule['imports'])
 
     def test_import_dotnet(self):
         with open('tests/data/import_ruleset_dotnet.yar', 'r') as f:
@@ -101,7 +101,7 @@ class TestRuleParser(unittest.TestCase):
         result = self.parser.parse_string(inputString)
 
         for rule in result:
-            self.assertTrue('"dotnet"' in rule['imports'])
+            self.assertTrue('dotnet' in rule['imports'])
 
     def test_import_androguard(self):
         with open('tests/data/import_ruleset_androguard.yar', 'r') as f:
@@ -110,7 +110,7 @@ class TestRuleParser(unittest.TestCase):
         result = self.parser.parse_string(inputString)
 
         for rule in result:
-            self.assertTrue('"androguard"' in rule['imports'])
+            self.assertTrue('androguard' in rule['imports'])
 
     def test_scopes(self):
         with open('tests/data/scope_ruleset.yar', 'r') as f:
@@ -340,13 +340,13 @@ class TestYaraRules(unittest.TestCase):
                 self.assertTrue('imports' in rule)
                 self.assertTrue('private' in rule['scopes'] and 'global' in rule['scopes'])
             if rule_name == 'eight':
-                self.assertTrue('"lib1"' in rule['imports'])
+                self.assertTrue('lib1' in rule['imports'])
                 self.assertTrue('scopes' not in rule)
             if rule_name == 'nine':
-                self.assertTrue('"lib1"' in rule['imports'] and '"lib2"' in rule['imports'])
+                self.assertTrue('lib1' in rule['imports'] and 'lib2' in rule['imports'])
                 self.assertTrue('scopes' not in rule)
             if rule_name == 'ten':
-                self.assertTrue('"lib1"' in rule['imports'] and '"lib2"' in rule['imports'])
+                self.assertTrue('lib1' in rule['imports'] and 'lib2' in rule['imports'])
                 self.assertTrue('global' in rule['scopes'] and 'private' in rule['scopes'])
 
     def test_rule_name_imports_by_instance(self):
@@ -382,10 +382,10 @@ class TestYaraRules(unittest.TestCase):
             rule_name = rule["rule_name"]
 
             if rule_name == 'two':
-                self.assertTrue('"lib1"' in rule['imports'] and '"lib2"' in rule['imports'])
+                self.assertTrue('lib1' in rule['imports'] and 'lib2' in rule['imports'])
                 self.assertTrue('scopes' not in rule)
             if rule_name == 'three':
-                self.assertTrue('"lib1"' in rule['imports'] and '"lib2"' in rule['imports'])
+                self.assertTrue('lib1' in rule['imports'] and 'lib2' in rule['imports'])
                 self.assertTrue('global' in rule['scopes'] and 'private' in rule['scopes'])
 
     def test_rule_name(self):
@@ -533,11 +533,11 @@ class TestYaraRules(unittest.TestCase):
         plyara = Plyara()
         result = plyara.parse_string(inputRules)
 
-        self.assertEquals(len(result), 1)
+        self.assertEqual(len(result), 1)
         for rule in result:
             rule_name = rule["rule_name"]
             if rule_name == 'testName':
-                self.assertEquals(len(rule['strings']), 9)
+                self.assertEqual(len(rule['strings']), 9)
                 for hex_string in rule['strings']:
                     # Basic sanity check.
                     self.assertTrue(hex_string['value'].startswith('{ E2'))
@@ -563,21 +563,21 @@ class TestYaraRules(unittest.TestCase):
         plyara = Plyara()
         result = plyara.parse_string(inputRules)
 
-        self.assertEquals(len(result), 1)
+        self.assertEqual(len(result), 1)
         for rule in result:
             rule_name = rule["rule_name"]
             if rule_name == 'testName':
-                self.assertEquals(len(rule['strings']), 4)
+                self.assertEqual(len(rule['strings']), 4)
                 for rex_string in rule['strings']:
                     if rex_string['name'] == '$a1':
-                        self.assertEquals(rex_string['value'], '/abc123 \\d/i')
+                        self.assertEqual(rex_string['value'], '/abc123 \\d/i')
                     elif rex_string['name'] == '$a2':
-                        self.assertEquals(rex_string['value'], '/abc123 \\d+/i')
+                        self.assertEqual(rex_string['value'], '/abc123 \\d+/i')
                     elif rex_string['name'] == '$a3':
-                        self.assertEquals(rex_string['value'], '/abc123 \\d\\/ afterspace/im')
+                        self.assertEqual(rex_string['value'], '/abc123 \\d\\/ afterspace/im')
                     elif rex_string['name'] == '$a4':
-                        self.assertEquals(rex_string['value'], '/abc123 \\d\\/ afterspace/im')
-                        self.assertEquals(rex_string['modifiers'], ['nocase'])
+                        self.assertEqual(rex_string['value'], '/abc123 \\d\\/ afterspace/im')
+                        self.assertEqual(rex_string['modifiers'], ['nocase'])
                     else:
                         self.assertFalse("Unknown rule name...")
 
