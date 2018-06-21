@@ -593,6 +593,46 @@ class TestYaraRules(unittest.TestCase):
         rule_list = ast.literal_eval(process_stdout.decode('utf-8'))
         self.assertTrue(len(rule_list) == 4)
 
+    def test_raw_condition_contains_all_condition_text(self):
+        inputRules = r'''
+        rule testName {condition: any of them}
+        '''
+
+        plyara = Plyara()
+        result = plyara.parse_string(inputRules)
+
+        self.assertEquals(result[0]['raw_condition'], 'condition: any of them')
+
+    def test_raw_strings_contains_all_string_text(self):
+        inputRules = r'''
+        rule testName {strings: $a = "1" condition: true}
+        '''
+
+        plyara = Plyara()
+        result = plyara.parse_string(inputRules)
+
+        self.assertEquals(result[0]['raw_strings'], 'strings: $a = "1" ')
+
+    def test_raw_meta_contains_all_meta_text(self):
+        inputRules = r'''
+        rule testName {meta: author = "Test" condition: true}
+        '''
+
+        plyara = Plyara()
+        result = plyara.parse_string(inputRules)
+
+        self.assertEquals(result[0]['raw_meta'], 'meta: author = "Test" ')
+
+        # strings after meta
+        inputRules = r'''
+        rule testName {meta: author = "Test" strings: $a = "1"}
+        '''
+
+        plyara = Plyara()
+        result = plyara.parse_string(inputRules)
+
+        self.assertEquals(result[0]['raw_meta'], 'meta: author = "Test" ')
+
 
 if __name__ == '__main__':
     unittest.main()

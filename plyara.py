@@ -646,7 +646,7 @@ class Plyara(Parser):
     def t_RBRACE(self, t):
         r'}'
         t.value = t.value
-        self._condition_end = t.lexpos - 1
+        self._condition_end = t.lexpos
         return t
 
     def t_NEWLINE(self, t):
@@ -685,7 +685,7 @@ class Plyara(Parser):
         t.value = t.value
         self._strings_start = t.lexpos
         if self._meta_end is None:
-            self._meta_end = t.lexpos - 1
+            self._meta_end = t.lexpos
         return t
 
     def t_SECTIONCONDITION(self, t):
@@ -693,9 +693,9 @@ class Plyara(Parser):
         t.value = t.value
         self._condition_start = t.lexpos
         if self._meta_end is None:
-            self._meta_end = t.lexpos - 1
+            self._meta_end = t.lexpos
         if self._strings_end is None:
-            self._strings_end = t.lexpos - 1
+            self._strings_end = t.lexpos
         return t
 
     def t_STRING(self, t):
