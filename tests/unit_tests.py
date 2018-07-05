@@ -34,6 +34,20 @@ class TestStaticMethods(unittest.TestCase):
             if not len(set(hashvalues)) == 1:
                 raise AssertionError("Collision detection failure for {}".format(setname))
 
+    def test_is_valid_rule_name(self):
+        self.assertTrue(Plyara.is_valid_rule_name('test'))
+        self.assertTrue(Plyara.is_valid_rule_name('test123'))
+        self.assertTrue(Plyara.is_valid_rule_name('test_test'))
+        self.assertTrue(Plyara.is_valid_rule_name('_test_'))
+        self.assertTrue(Plyara.is_valid_rule_name('include_test'))
+        self.assertFalse(Plyara.is_valid_rule_name('123test'))
+        self.assertFalse(Plyara.is_valid_rule_name('123 test'))
+        self.assertFalse(Plyara.is_valid_rule_name('test 123'))
+        self.assertFalse(Plyara.is_valid_rule_name('test test'))
+        self.assertFalse(Plyara.is_valid_rule_name('test-test'))
+        self.assertFalse(Plyara.is_valid_rule_name('include'))
+        self.assertFalse(Plyara.is_valid_rule_name('test!*@&*!&'))
+        self.assertFalse(Plyara.is_valid_rule_name(''))
 
 class TestRuleParser(unittest.TestCase):
 
