@@ -8,12 +8,6 @@
 Module Documentation
 --------------------
 
-.. autoclass:: plyara.ElementTypes
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :member-order: bysource
-
 .. autoclass:: plyara.Parser
     :members:
     :undoc-members:
