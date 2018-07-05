@@ -3,6 +3,7 @@ import ast
 import os
 import subprocess
 import sys
+import codecs
 import unittest
 
 from plyara import Plyara
@@ -48,6 +49,20 @@ class TestStaticMethods(unittest.TestCase):
         self.assertFalse(Plyara.is_valid_rule_name('include'))
         self.assertFalse(Plyara.is_valid_rule_name('test!*@&*!&'))
         self.assertFalse(Plyara.is_valid_rule_name(''))
+
+    def test_rebuild_yara_rule(self):
+        with codecs.open('tests/data/rebuild_ruleset.yar', 'r', encoding='utf-8') as f:
+            inputString = f.read()
+
+        result = Plyara().parse_string(inputString)
+
+        rebuilt_rules = ""
+        for rule in result:
+            rebuilt_rules += Plyara.rebuild_yara_rule(rule)
+
+        print '/' + rebuilt_rules + '/'
+        print '/' + inputString + '/'
+        self.assertEquals(inputString, rebuilt_rules)
 
 class TestRuleParser(unittest.TestCase):
 

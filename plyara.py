@@ -418,26 +418,26 @@ class Parser(object):
         rule_name = rule['rule_name']
 
         # Rule Imports
-        if rule['imports']:
+        if rule.get('imports'):
             unpacked_imports = [u'import "{}"\n'.format(entry) for entry in rule['imports']]
             rule_imports = u'{}\n'.format(u''.join(unpacked_imports))
         else:
             rule_imports = u''
 
         # Rule Scopes
-        if rule['scopes']:
+        if rule.get('scopes'):
             rule_scopes = u'{} '.format(u' '.join(rule['scopes']))
         else:
             rule_scopes = u''
 
         # Rule Tags
-        if rule['tags']:
+        if rule.get('tags'):
             rule_tags = u' : {}'.format(u' '.join(rule['tags']))
         else:
             rule_tags = u''
 
         # Rule Metadata
-        if rule['metadata']:
+        if rule.get('metadata'):
             unpacked_meta = [u'\n\t\t{key} = {value}'.format(key=k, value=v)
                              for k, v in rule['metadata'].items()]
             rule_meta = u'\n\tmeta:{}\n'.format(u''.join(unpacked_meta))
@@ -445,7 +445,7 @@ class Parser(object):
             rule_meta = u''
 
         # Rule Strings
-        if rule['strings']:
+        if rule.get('strings'):
 
             string_container = []
 
@@ -467,7 +467,7 @@ class Parser(object):
         else:
             rule_strings = u''
 
-        if rule['condition_terms']:
+        if rule.get('condition_terms'):
             # Format condition with appropriate whitespace between keywords
             cond = []
 
@@ -506,7 +506,7 @@ class Parser(object):
                     else:
                         cond.append(term)
 
-            fcondition = u''.join(cond)
+            fcondition = u''.join(cond).rstrip(' ')
             rule_condition = u'\n\tcondition:\n\t\t{}'.format(fcondition)
         else:
             rule_condition = u''
