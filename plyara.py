@@ -741,7 +741,6 @@ class Plyara(Parser):
         r'\s*[a-fA-F0-9?]{2}\s*'
 
     def t_BYTESTRING_group(self, t):
-        #r'\((\s*[a-fA-F0-9?]{2}\s*\|?\s*)+\)'
         r'\((\s*[a-fA-F0-9?]{2}\s*\|?\s*|\s*\[\d*-?\d*\]\s*)+\)'
 
     def t_BYTESTRING_comment(self, t):
