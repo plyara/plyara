@@ -643,6 +643,11 @@ class Plyara(Parser):
     t_AMPERSAND = r'&'
     t_DOTDOT = r'\.\.'
 
+    states = (
+        ('STRING','exclusive'),
+        ('BYTESTRING','exclusive'),
+    )
+
     def t_RBRACE(self, t):
         r'}'
         t.value = t.value
@@ -650,8 +655,7 @@ class Plyara(Parser):
         return t
 
     def t_NEWLINE(self, t):
-        # r'\n+'
-        r'(\n|\r\n)+'
+        r'(\n|\r|\r\n)+'
         t.lexer.lineno += len(t.value)
         t.value = t.value
 
@@ -678,6 +682,7 @@ class Plyara(Parser):
         r'meta\s*:'
         t.value = t.value
         self._meta_start = t.lexpos
+        t.lexer.section = 'meta'
         return t
 
     def t_SECTIONSTRINGS(self, t):
@@ -686,6 +691,7 @@ class Plyara(Parser):
         self._strings_start = t.lexpos
         if self._meta_end is None:
             self._meta_end = t.lexpos
+        t.lexer.section = 'strings'
         return t
 
     def t_SECTIONCONDITION(self, t):
@@ -696,26 +702,74 @@ class Plyara(Parser):
             self._meta_end = t.lexpos
         if self._strings_end is None:
             self._strings_end = t.lexpos
+        t.lexer.section = 'condition'
         return t
 
-    def t_STRING(self, t):
-        r"(?P<openingQuote>[\"'])(?:(?=(?P<escaped>\\?))(?P=escaped).)*?(?P=openingQuote)"
-        t.value = t.value
+    def t_begin_STRING(self, t):
+        r'"'
+        t.lexer.escape = 0
+        t.lexer.string_start = t.lexer.lexpos - 1
+        t.lexer.begin('STRING')
+
+    def t_STRING_value(self, t):
+        r'.'
+        if t.lexer.escape == 0 and t.value == '"':
+            t.type = "STRING"
+            t.value = t.lexer.lexdata[t.lexer.string_start : t.lexer.lexpos]
+            t.lexer.begin('INITIAL')
+            return t
+
+        if t.value == '\\' or t.lexer.escape == 1:
+            t.lexer.escape ^= 1
+
+    t_STRING_ignore = ' \t\n'
+
+    def t_STRING_error(self, t):
+        raise TypeError("Illegal string character " + t.value[0] + " at line " + str(t.lexer.lineno))
+
+    def t_begin_BYTESTRING(self, t):
+        r'\{'
+
+        if hasattr(t.lexer, 'section') and t.lexer.section == 'strings':
+            t.lexer.bytestring_start = t.lexer.lexpos - 1
+            t.lexer.begin('BYTESTRING')
+        else:
+            t.type = "LBRACE"
+            return t
+
+    def t_BYTESTRING_pair(self, t):
+        r'\s*[a-fA-F0-9?]{2}\s*'
+
+    def t_BYTESTRING_group(self, t):
+        #r'\((\s*[a-fA-F0-9?]{2}\s*\|?\s*)+\)'
+        r'\((\s*[a-fA-F0-9?]{2}\s*\|?\s*|\s*\[\d*-?\d*\]\s*)+\)'
+
+    def t_BYTESTRING_comment(self, t):
+        r'\/\/[^\r\n]*'
+
+    def t_BYTESTRING_mcomment(self, t):
+        r'/\*(.|\n|\r\n)*?\*/'
+
+    def t_BYTESTRING_jump(self, t):
+        r'\[\s*(\d*)\s*-?\s*(\d*)\s*\]'
+        lower_bound = t.lexer.lexmatch.group(8)
+        upper_bound = t.lexer.lexmatch.group(9)
+
+        if lower_bound and upper_bound:
+            if not 0 <= int(lower_bound) <= int(upper_bound):
+                raise ValueError("Illegal bytestring jump bounds " + t.value + " at line " + str(t.lexer.lineno))
+
+    def t_BYTESTRING_end(self, t):
+        r'\}'
+        t.type = "BYTESTRING"
+        t.value = t.lexer.lexdata[t.lexer.bytestring_start : t.lexer.lexpos]
+        t.lexer.begin('INITIAL')
         return t
 
-    def t_BYTESTRING(self, t):
-        r'''
-        \{\s*                                                              # start
-          (?:                                                              # open for combinations of...
-            (?:[a-fA-F0-9?]{2}                                          |  # byte pair
-               \[\d*\s*-?\s*\d*\]                                       |  # jump
-               \((?:\s*[a-fA-F0-9?]{2}\s*\|?\s*|\s*\[\d*-?\d*\]\s*)+\)  |  # group
-               \/\/[^\n]*                                                  # comment
-          )\s*)+                                                           # close combinations
-        \s*\}                                                              # close bytestring
-        '''
-        t.value = t.value
-        return t
+    t_BYTESTRING_ignore = ' '
+
+    def t_BYTESTRING_error(self, t):
+        raise TypeError("Illegal bytestring character " + t.value[0] + " at line " + str(t.lexer.lineno))
 
     def t_REXSTRING(self, t):
         r'''
@@ -764,7 +818,6 @@ class Plyara(Parser):
     # Error handling rule
     def t_error(self, t):
         raise TypeError(u'Illegal character {} at line {}'.format(t.value[0], t.lexer.lineno))
-        t.lexer.skip(1)
 
     # Parsing rules
 

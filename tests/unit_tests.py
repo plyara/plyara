@@ -523,7 +523,10 @@ class TestYaraRules(unittest.TestCase):
             $a6 = { E2 34 A1 [4 - 6] FB }
             $a7 = { E2 34 A1 [-] FB }
             $a8 = { E2 34 A1 [10-] FB }
-            $a9 = { E2 23 ( 62 B4 | 56 ) 45 }
+            $a9 = { E2 23 ( 62 B4 | 56 ) 45 FB }
+            $a10 = { E2 23 62 B4 56 // comment
+                     45 FB }
+            $a11 = { E2 23 62 B4 56 /* comment */ 45 FB }
 
         condition:
             any of them
@@ -537,10 +540,32 @@ class TestYaraRules(unittest.TestCase):
         for rule in result:
             rule_name = rule["rule_name"]
             if rule_name == 'testName':
-                self.assertEqual(len(rule['strings']), 9)
+                self.assertEqual(len(rule['strings']), 11)
                 for hex_string in rule['strings']:
                     # Basic sanity check.
                     self.assertTrue(hex_string['value'].startswith('{ E2'))
+                    self.assertTrue(hex_string['value'].endswith('FB }'))
+                self.assertEqual(rule['strings'][0]['value'], '{ E2 34 A1 C8 23 FB }')
+                self.assertEqual(rule['strings'][4]['value'], '{ E2 34 A1 [4-6] FB }')
+                self.assertEqual(rule['strings'][8]['value'], '{ E2 23 ( 62 B4 | 56 ) 45 FB }')
+                self.assertEqual(rule['strings'][9]['value'], '{ E2 23 62 B4 56 // comment\n                     45 FB }')
+                self.assertEqual(rule['strings'][10]['value'], '{ E2 23 62 B4 56 /* comment */ 45 FB }')
+
+    def test_bytestring_bad_jump(self):
+        inputRules = r'''
+        rule testName
+        {
+        strings:
+            $a6 = { E2 34 A1 [6 - 4] FB }
+
+        condition:
+            any of them
+        }
+        '''
+
+        plyara = Plyara()
+        with self.assertRaises(ValueError):
+            result = plyara.parse_string(inputRules)
 
     def test_rexstring(self):
         inputRules = r'''
@@ -579,7 +604,53 @@ class TestYaraRules(unittest.TestCase):
                         self.assertEqual(rex_string['value'], '/abc123 \\d\\/ afterspace/im')
                         self.assertEqual(rex_string['modifiers'], ['nocase'])
                     else:
-                        self.assertFalse("Unknown rule name...")
+                        self.assertFalse("Unknown string name...")
+
+    def test_string(self):
+        inputRules = r'''
+        rule testName
+        {
+        strings:
+            $a1 = "test string"
+            $a2 = "test string" // comment
+            $a3 = "test string" /* comment */
+            $a4 = "teststring" //comment
+            $a5 = "test // string" // comm ent
+            $a6 = "test /* string */ string"
+            $a7 = "teststring" //comment
+            $a8 = "'test"
+            $a9 = "'test' string"
+            $a10 = "\"test string\""
+            $a11 = "test \"string\""
+            $a12 = "test \"string\" test \\"
+            $a13 = "test string" // "comment"
+            $a14 = "test string" nocase wide // comment
+
+        condition:
+            any of them
+        }
+        '''
+
+        plyara = Plyara()
+        result = plyara.parse_string(inputRules)
+
+        self.assertEqual(len(result), 1)
+        for rule in result:
+            self.assertEqual(len(rule['strings']), 14)
+            self.assertEqual(rule['strings'][0]['value'], '"test string"')
+            self.assertEqual(rule['strings'][1]['value'], '"test string"')
+            self.assertEqual(rule['strings'][2]['value'], '"test string"')
+            self.assertEqual(rule['strings'][3]['value'], '"teststring"')
+            self.assertEqual(rule['strings'][4]['value'], '"test // string"')
+            self.assertEqual(rule['strings'][5]['value'], '"test /* string */ string"')
+            self.assertEqual(rule['strings'][6]['value'], '"teststring"')
+            self.assertEqual(rule['strings'][7]['value'], '"\'test"')
+            self.assertEqual(rule['strings'][8]['value'], '"\'test\' string"')
+            self.assertEqual(rule['strings'][9]['value'], '"\\"test string\\""')
+            self.assertEqual(rule['strings'][10]['value'], '"test \\"string\\""')
+            self.assertEqual(rule['strings'][11]['value'], '"test \\"string\\" test \\\\"')
+            self.assertEqual(rule['strings'][12]['value'], '"test string"')
+            self.assertEqual(rule['strings'][13]['value'], '"test string"')
 
     def test_plyara_script(self):
         cwd = os.getcwd()
