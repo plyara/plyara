@@ -60,8 +60,6 @@ class TestStaticMethods(unittest.TestCase):
         for rule in result:
             rebuilt_rules += Plyara.rebuild_yara_rule(rule)
 
-        print '/' + rebuilt_rules + '/'
-        print '/' + inputString + '/'
         self.assertEquals(inputString, rebuilt_rules)
 
 class TestRuleParser(unittest.TestCase):
