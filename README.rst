@@ -129,8 +129,20 @@ Or, use the plyara Python library in your own applications::
       'strings': [{'name': '$a', 'value': '"1"'}]}]
     >>>
 
+Contributing
+------------
+
+* If you find a bug, or would like to see a new feature, Pull Requests and
+  Issues_ are always welcome.
+* By submitting changes, you agree to release those changes under the terms
+  of the LICENSE_.
+* Writing passing unit tests for your changes, while not required, is highly
+  encouraged and appreciated.
+
 .. _Ply: http://www.dabeaz.com/ply/
 .. _YARA: http://plusvic.github.io/yara/
 .. _plyara.readthedocs.io: https://plyara.readthedocs.io/en/latest/
 .. _original plyara: https://github.com/8u1a/plyara
 .. _8u1a: https://github.com/8u1a
+.. _Issues: https://github.com/plyara/plyara/issues
+.. _LICENSE: https://github.com/plyara/plyara/blob/master/LICENSE
