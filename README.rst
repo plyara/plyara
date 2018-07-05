@@ -54,6 +54,64 @@ Use the included ``plyara`` script from the command line::
       -h, --help  show this help message and exit
       --log       Enable debug logging to the console.
 
+The command-line tool will print valid JSON output when parsing rules::
+
+    $ cat example.yar
+    rule silent_banker : banker
+    {
+        meta:
+            description = "This is just an example"
+            thread_level = 3
+            in_the_wild = true
+        strings:
+            $a = {6A 40 68 00 30 00 00 6A 14 8D 91}
+            $b = {8D 4D B0 2B C1 83 C0 27 99 6A 4E 59 F7 F9}
+            $c = "UVODFRYSIHLNWPEJXQZAKCBGMT"
+        condition:
+            $a or $b or $c
+    }
+
+    $ plyara example.yar
+    [
+        {
+            "condition_terms": [
+                "$a",
+                "or",
+                "$b",
+                "or",
+                "$c"
+            ],
+            "metadata": {
+                "description": "This is just an example",
+                "in_the_wild": "true",
+                "thread_level": "3"
+            },
+            "raw_condition": "condition:\n        $a or $b or $c\n",
+            "raw_meta": "meta:\n        description = \"This is just an example\"\n        thread_level = 3\n        in_the_wild = true\n    ",
+            "raw_strings": "strings:\n        $a = {6A 40 68 00 30 00 00 6A 14 8D 91}\n        $b = {8D 4D B0 2B C1 83 C0 27 99 6A 4E 59 F7 F9}\n        $c = \"UVODFRYSIHLNWPEJXQZAKCBGMT\"\n    ",
+            "rule_name": "silent_banker",
+            "start_line": 1,
+            "stop_line": 13,
+            "strings": [
+                {
+                    "name": "$a",
+                    "value": "{6A 40 68 00 30 00 00 6A 14 8D 91}"
+                },
+                {
+                    "name": "$b",
+                    "value": "{8D 4D B0 2B C1 83 C0 27 99 6A 4E 59 F7 F9}"
+                },
+                {
+                    "name": "$c",
+                    "value": "\"UVODFRYSIHLNWPEJXQZAKCBGMT\""
+                }
+            ],
+            "tags": [
+                "banker"
+            ]
+        }
+    ]
+
 Or, use the plyara Python library in your own applications::
 
     >>> import plyara
@@ -70,8 +128,6 @@ Or, use the plyara Python library in your own applications::
       'stop_line': 2,
       'strings': [{'name': '$a', 'value': '"1"'}]}]
     >>>
-
-For complete documentation, visit plyara.readthedocs.io_.
 
 .. _Ply: http://www.dabeaz.com/ply/
 .. _YARA: http://plusvic.github.io/yara/
