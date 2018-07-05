@@ -255,6 +255,12 @@ class TestRuleParser(unittest.TestCase):
             else:
                 raise AssertionError(UNHANDLED_RULE_MSG.format(rulename))
 
+    def test_include(self):
+        with open('tests/data/include_ruleset.yar', 'r') as f:
+            inputString = f.read()
+
+        result = self.parser.parse_string(inputString)
+        self.assertEqual(result[0]['includes'], ['string_ruleset.yar'])
 
 class TestYaraRules(unittest.TestCase):
 
