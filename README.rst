@@ -40,7 +40,26 @@ Install with pip::
 Usage
 -----
 
-Use the included ``plyara`` script from the command line::
+Use the plyara Python library in your own applications:
+
+.. code-block:: python
+
+    >>> import plyara
+    >>> parser = plyara.Plyara()
+    >>> mylist = parser.parse_string('rule MyRule { strings: $a="1" \n condition: false }')
+    >>>
+    >>> import pprint
+    >>> pprint.pprint(mylist)
+    [{'condition_terms': ['false'],
+      'raw_condition': 'condition: false',
+      'raw_strings': 'strings: $a="1" \n',
+      'rule_name': 'MyRule',
+      'start_line': 1,
+      'stop_line': 2,
+      'strings': [{'name': '$a', 'value': '"1"'}]}]
+    >>>
+
+Or, use the included ``plyara`` script from the command line::
 
     $ plyara -h
     usage: plyara.py [-h] [--log] FILE
@@ -111,23 +130,6 @@ The command-line tool will print valid JSON output when parsing rules::
             ]
         }
     ]
-
-Or, use the plyara Python library in your own applications::
-
-    >>> import plyara
-    >>> parser = plyara.Plyara()
-    >>> mylist = parser.parse_string('rule MyRule { strings: $a="1" \n condition: false }')
-    >>>
-    >>> import pprint
-    >>> pprint.pprint(mylist)
-    [{'condition_terms': ['false'],
-      'raw_condition': 'condition: false',
-      'raw_strings': 'strings: $a="1" \n',
-      'rule_name': 'MyRule',
-      'start_line': 1,
-      'stop_line': 2,
-      'strings': [{'name': '$a', 'value': '"1"'}]}]
-    >>>
 
 Contributing
 ------------
