@@ -25,7 +25,7 @@ bulk operations or transformations of large sets of YARA rules, such as extracti
 updating attributes, and analyzing a corpus. Other applications include linters and dependency
 checkers.
 
-Plyara leverages the Python module Ply_ for lexing YARA rules.
+Plyara leverages the Python module PLY_ for lexing YARA rules.
 
 This is a community-maintained fork of the `original plyara`_ by 8u1a_. The "plyara" trademark
 is used with permission.
@@ -169,7 +169,7 @@ Contributing
 * Writing passing unit tests for your changes, while not required, is highly
   encouraged and appreciated.
 
-.. _Ply: http://www.dabeaz.com/ply/
+.. _PLY: http://www.dabeaz.com/ply/
 .. _YARA: http://plusvic.github.io/yara/
 .. _plyara.readthedocs.io: https://plyara.readthedocs.io/en/latest/
 .. _original plyara: https://github.com/8u1a/plyara
