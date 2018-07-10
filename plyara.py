@@ -765,7 +765,7 @@ class Plyara(Parser):
         t.lexer.begin('INITIAL')
         return t
 
-    t_BYTESTRING_ignore = ' '
+    t_BYTESTRING_ignore = ' \r\n\t'
 
     def t_BYTESTRING_error(self, t):
         raise TypeError("Illegal bytestring character " + t.value[0] + " at line " + str(t.lexer.lineno))

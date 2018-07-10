@@ -560,6 +560,9 @@ class TestYaraRules(unittest.TestCase):
             $a10 = { E2 23 62 B4 56 // comment
                      45 FB }
             $a11 = { E2 23 62 B4 56 /* comment */ 45 FB }
+            $a12 = {
+                E2 23 62 B4 56 45 FB // comment
+            }
 
         condition:
             any of them
@@ -573,16 +576,17 @@ class TestYaraRules(unittest.TestCase):
         for rule in result:
             rule_name = rule["rule_name"]
             if rule_name == 'testName':
-                self.assertEqual(len(rule['strings']), 11)
+                self.assertEqual(len(rule['strings']), 12)
                 for hex_string in rule['strings']:
                     # Basic sanity check.
-                    self.assertTrue(hex_string['value'].startswith('{ E2'))
-                    self.assertTrue(hex_string['value'].endswith('FB }'))
+                    self.assertIn('E2', hex_string['value'])
+                    self.assertIn('FB', hex_string['value'])
                 self.assertEqual(rule['strings'][0]['value'], '{ E2 34 A1 C8 23 FB }')
                 self.assertEqual(rule['strings'][4]['value'], '{ E2 34 A1 [4-6] FB }')
                 self.assertEqual(rule['strings'][8]['value'], '{ E2 23 ( 62 B4 | 56 ) 45 FB }')
                 self.assertEqual(rule['strings'][9]['value'], '{ E2 23 62 B4 56 // comment\n                     45 FB }')
                 self.assertEqual(rule['strings'][10]['value'], '{ E2 23 62 B4 56 /* comment */ 45 FB }')
+                self.assertEqual(rule['strings'][11]['value'], '{\n                E2 23 62 B4 56 45 FB // comment\n            }')
 
     def test_bytestring_bad_jump(self):
         inputRules = r'''
