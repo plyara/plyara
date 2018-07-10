@@ -737,6 +737,14 @@ class TestYaraRules(unittest.TestCase):
 
         self.assertEquals(result[0]['raw_meta'], 'meta: author = "Test" ')
 
+    def test_parse_file_without_rules_returns_empty_list(self):
+        inputRules = ''
+
+        plyara = Plyara()
+        result = plyara.parse_string(inputRules)
+
+        self.assertEquals(result, [])
+
 
 if __name__ == '__main__':
     unittest.main()

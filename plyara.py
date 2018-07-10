@@ -1047,7 +1047,10 @@ class Plyara(Parser):
 
     # Error rule for syntax errors
     def p_error(self, p):
-        if p.type in ('COMMENT', 'MCOMMENT'):
+        if not p:
+            # This happens when we try to parse an empty string or file, or one with no actual rules.
+            pass
+        elif p.type in ('COMMENT', 'MCOMMENT'):
             # Just a comment - tell parser that it is okay
             self.parser.errok()
             self._rule_comments.append(p)
