@@ -301,8 +301,8 @@ class Parser(object):
 
                 # Import and androguard functions will have a lot going on while
                 # a simple rule reference should be preceded or followed by a connecting
-                # keyword or be by itself
-                if (previous_term or next_term) and (next_term not in ('and', 'or')) and (previous_term not in ('and', 'or')):
+                # keyword, be by itself, or be surrounded with parens.
+                if (previous_term or next_term) and (next_term not in ('and', 'or', ')')) and (previous_term not in ('and', 'or', '(')):
                     continue
 
                 # Check if reference is a variable for string iteration
