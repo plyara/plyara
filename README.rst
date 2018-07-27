@@ -169,6 +169,13 @@ Contributing
 * Writing passing unit tests for your changes, while not required, is highly
   encouraged and appreciated.
 
+Discussion
+------------
+
+You may join our IRC channel on irc.freenode.net #plyara
+Additionally, project developers can join our slack http://plyara.slack.com
+If you need an invite, please ask in the IRC channel.
+
 .. _PLY: http://www.dabeaz.com/ply/
 .. _YARA: http://plusvic.github.io/yara/
 .. _plyara.readthedocs.io: https://plyara.readthedocs.io/en/latest/
