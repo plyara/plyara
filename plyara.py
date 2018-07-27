@@ -273,15 +273,12 @@ class Parser(object):
     def detect_dependencies(rule):
         """Takes a parsed yararule and provide a list of external rule dependencies."""
         dependencies = []
-        condition_terms = rule['condition_terms']
-
-        # Container for any iteration string references
         string_iteration_variables = []
+        condition_terms = rule['condition_terms']
 
         # Number of terms for index iteration and reference
         term_count = len(condition_terms)
 
-        # Check for rule dependencies within condition
         for index in range(0, term_count):
             # Grab term by index
             term = condition_terms[index]
@@ -299,29 +296,25 @@ class Parser(object):
                 else:
                     next_term = None
 
-                # Import and androguard functions will have a lot going on while
-                # a simple rule reference should be preceded or followed by a connecting
-                # keyword, be by itself, or be surrounded with parens.
-                if (previous_term or next_term) and (next_term not in ('and', 'or', ')')) and (previous_term not in ('and', 'or', '(')):
-                    continue
+                # Extend term indexes beyond wrapping parentheses for logic checks
+                if previous_term == '(' and next_term == ')':
+                    if (index - 2) >= 0:
+                        previous_term = condition_terms[index - 2]
+                    else:
+                        previous_term = None
+
+                    if (index + 2) < term_count:
+                        next_term = condition_terms[index + 2]
+                    else:
+                        next_term = None
 
                 # Check if reference is a variable for string iteration
                 if term in string_iteration_variables:
                     continue
 
-                # Check if reference is a variable for string iteration
                 if previous_term in ('any', 'all') and next_term == 'in':
                     string_iteration_variables.append(term)
                     continue
-
-                # Check if term is a filesize reference
-                if (len(term) > 2) and (term[-2:] in ('MB', 'KB')):
-                    try:
-                        int(term[:-2])
-                    except ValueError:
-                        pass
-                    else:
-                        continue
 
                 # Check for external string variable dependency
                 if ((next_term in ('matches', 'contains')) or (previous_term in ('matches', 'contains'))):
@@ -333,7 +326,11 @@ class Parser(object):
 
                 # Check for external boolean dependency may not be possible without stripping out valid rule references
 
-                dependencies.append(term)
+                # Checks for likely rule reference
+                if previous_term is None and next_term is None:
+                    dependencies.append(term)
+                elif previous_term in ('and', 'or') or next_term in ('and', 'or'):
+                    dependencies.append(term)
 
         return dependencies
 
