@@ -172,9 +172,8 @@ Contributing
 Discussion
 ------------
 
-You may join our IRC channel on irc.freenode.net #plyara
-Additionally, project developers can join our slack http://plyara.slack.com
-If you need an invite, please ask in the IRC channel.
+* You may join our IRC channel on irc.freenode.net #plyara
+* Additionally, project developers can join our slack http://plyara.slack.com (If you need an invite, please ask in the IRC channel.)
 
 .. _PLY: http://www.dabeaz.com/ply/
 .. _YARA: http://plusvic.github.io/yara/
