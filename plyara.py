@@ -255,16 +255,15 @@ class Parser(object):
         condition_terms = rule['condition_terms']
 
         for imp in Parser.IMPORT_OPTIONS:
-            imp_string = u"\"{}\"".format(imp)
             imp_module = u"{}.".format(imp)
 
-            if imp in condition_terms and imp_string not in detected_imports:
-                detected_imports.append(imp_string)
+            if imp in condition_terms and imp not in detected_imports:
+                detected_imports.append(imp)
 
-            elif imp_string not in detected_imports:
+            elif imp not in detected_imports:
                 for term in condition_terms:
                     if term.startswith(imp_module):
-                        detected_imports.append(imp_string)
+                        detected_imports.append(imp)
                         break
 
         return detected_imports
