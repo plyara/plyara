@@ -80,6 +80,13 @@ class TestStaticMethods(unittest.TestCase):
         self.assertEquals(Plyara.detect_dependencies(result[9]), ['is__osx'])
         self.assertEquals(Plyara.detect_dependencies(result[10]), ['is__elf', 'is__osx'])
 
+    def test_detect_imports(self):
+        for imp in ('androguard', 'cuckoo', 'dotnet', 'elf', 'hash', 'magic', 'math', 'pe'):
+            with open('tests/data/import_ruleset_{}.yar'.format(imp), 'r') as f:
+                inputString = f.read()
+            results = Plyara().parse_string(inputString)
+            for rule in results:
+                self.assertEqual(Plyara.detect_imports(rule), [imp])
 
 class TestRuleParser(unittest.TestCase):
 
