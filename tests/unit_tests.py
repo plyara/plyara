@@ -68,17 +68,17 @@ class TestStaticMethods(unittest.TestCase):
 
         result = Plyara().parse_string(inputString)
 
-        self.assertEquals(Plyara.detect_dependencies(result[0]), [])
-        self.assertEquals(Plyara.detect_dependencies(result[1]), [])
-        self.assertEquals(Plyara.detect_dependencies(result[2]), [])
-        self.assertEquals(Plyara.detect_dependencies(result[3]), ['is__osx', 'priv01', 'priv02', 'priv03', 'priv04'])
-        self.assertEquals(Plyara.detect_dependencies(result[4]), ['is__elf', 'priv01', 'priv02', 'priv03', 'priv04'])
-        self.assertEquals(Plyara.detect_dependencies(result[5]), ['is__elf', 'is__osx', 'priv01', 'priv02'])
-        self.assertEquals(Plyara.detect_dependencies(result[6]), ['is__elf', 'is__osx', 'priv01'])
-        self.assertEquals(Plyara.detect_dependencies(result[7]), ['is__elf'])
-        self.assertEquals(Plyara.detect_dependencies(result[8]), ['is__osx', 'is__elf'])
-        self.assertEquals(Plyara.detect_dependencies(result[9]), ['is__osx'])
-        self.assertEquals(Plyara.detect_dependencies(result[10]), ['is__elf', 'is__osx'])
+        self.assertEqual(Plyara.detect_dependencies(result[0]), [])
+        self.assertEqual(Plyara.detect_dependencies(result[1]), [])
+        self.assertEqual(Plyara.detect_dependencies(result[2]), [])
+        self.assertEqual(Plyara.detect_dependencies(result[3]), ['is__osx', 'priv01', 'priv02', 'priv03', 'priv04'])
+        self.assertEqual(Plyara.detect_dependencies(result[4]), ['is__elf', 'priv01', 'priv02', 'priv03', 'priv04'])
+        self.assertEqual(Plyara.detect_dependencies(result[5]), ['is__elf', 'is__osx', 'priv01', 'priv02'])
+        self.assertEqual(Plyara.detect_dependencies(result[6]), ['is__elf', 'is__osx', 'priv01'])
+        self.assertEqual(Plyara.detect_dependencies(result[7]), ['is__elf'])
+        self.assertEqual(Plyara.detect_dependencies(result[8]), ['is__osx', 'is__elf'])
+        self.assertEqual(Plyara.detect_dependencies(result[9]), ['is__osx'])
+        self.assertEqual(Plyara.detect_dependencies(result[10]), ['is__elf', 'is__osx'])
 
     def test_detect_imports(self):
         for imp in ('androguard', 'cuckoo', 'dotnet', 'elf', 'hash', 'magic', 'math', 'pe'):
