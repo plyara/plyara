@@ -434,16 +434,15 @@ class Parser(object):
 
         # Rule Metadata
         if rule.get('metadata'):
+            unpacked_meta = []
             # Check for and handle correctly quoting string metadata
-            for key, value in rule['metadata'].items():
+            for k, v in rule['metadata'].items():
                 try:
-                    if value in ('true', 'false') or int(value):
+                    if v in ('true', 'false') or int(v):
                         pass
                 except:
-                    rule['metadata'][key] = '"{}"'.format(value)
-
-            unpacked_meta = [u'\n\t\t{key} = {value}'.format(key=k, value=v)
-                             for k, v in rule['metadata'].items()]
+                    v = '"{}"'.format(v)
+                unpacked_meta.append(u'\n\t\t{key} = {value}'.format(key=k, value=v))
             rule_meta = u'\n\tmeta:{}\n'.format(u''.join(unpacked_meta))
         else:
             rule_meta = u''
