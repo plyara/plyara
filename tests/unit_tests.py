@@ -62,6 +62,24 @@ class TestStaticMethods(unittest.TestCase):
 
         self.assertEquals(inputString, rebuilt_rules)
 
+    def test_rebuild_yara_rule_metadata(self):
+        test_rule = """
+        rule check_meta {
+            meta:
+                string_value = "TEST STRING"
+                bool_value = true
+                digit_value = 5
+            condition:
+                true
+        }
+        """
+        parsed = Plyara().parse_string(test_rule)
+        for rule in parsed:
+           unparsed = Plyara.rebuild_yara_rule(rule)
+           self.assertTrue('string_value = "TEST STRING"' in unparsed)
+           self.assertTrue('bool_value = true' in unparsed)
+           self.assertTrue('digit_value = 5' in unparsed)
+
     def test_detect_dependencies(self):
         with open('tests/data/detect_dependencies_ruleset.yar', 'r') as f:
             inputString = f.read()
