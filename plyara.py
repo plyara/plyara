@@ -440,7 +440,7 @@ class Parser(object):
                 try:
                     if v in ('true', 'false') or int(v):
                         pass
-                except:
+                except ValueError:
                     v = '"{}"'.format(v)
                 unpacked_meta.append(u'\n\t\t{key} = {value}'.format(key=k, value=v))
             rule_meta = u'\n\tmeta:{}\n'.format(u''.join(unpacked_meta))
