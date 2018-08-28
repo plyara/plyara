@@ -16,7 +16,7 @@ if sys.version_info < (3, ):
 
 setup(
     name='plyara',
-    version='1.2.4',
+    version='1.2.5',
     description='Parse YARA rules.',
     long_description=long_description,
     url='https://github.com/plyara/plyara',
