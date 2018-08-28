@@ -67,8 +67,11 @@ class TestStaticMethods(unittest.TestCase):
         rule check_meta {
             meta:
                 string_value = "TEST STRING"
+                string_value = "DIFFERENT TEST STRING"
                 bool_value = true
+                bool_value = false
                 digit_value = 5
+                digit_value = 10
             condition:
                 true
         }
@@ -77,8 +80,11 @@ class TestStaticMethods(unittest.TestCase):
         for rule in parsed:
            unparsed = Plyara.rebuild_yara_rule(rule)
            self.assertTrue('string_value = "TEST STRING"' in unparsed)
+           self.assertTrue('string_value = "DIFFERENT TEST STRING"' in unparsed)
            self.assertTrue('bool_value = true' in unparsed)
+           self.assertTrue('bool_value = false' in unparsed)
            self.assertTrue('digit_value = 5' in unparsed)
+           self.assertTrue('digit_value = 10' in unparsed)
 
     def test_detect_dependencies(self):
         with open('tests/data/detect_dependencies_ruleset.yar', 'r') as f:
