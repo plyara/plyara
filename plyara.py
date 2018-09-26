@@ -782,7 +782,7 @@ class Plyara(Parser):
 
     # Rexstring Handling
     def t_begin_REXSTRING(self, t):
-        r'/'        
+        r'/'
         if hasattr(t.lexer, 'section') and t.lexer.section == 'strings':
             t.lexer.rexstring_start = t.lexer.lexpos - 1
             t.lexer.begin('REXSTRING')
