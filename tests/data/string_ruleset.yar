@@ -84,8 +84,8 @@ rule HexMultipleAlternatives
 rule RegExp
 {
     strings:
-        $re1 = /md5: [0-9a-fA-F]{32}/
-        $re2 = /state: (on|off)/
+        $re1 = /md5: [0-9a-fA-F]{32}/nocase // no case for hash
+        $re2 = /state: (on|off)/i//no case for state
 
     condition:
         $re1 and $re2

@@ -60,7 +60,7 @@ class TestStaticMethods(unittest.TestCase):
         for rule in result:
             rebuilt_rules += Plyara.rebuild_yara_rule(rule)
 
-        self.assertEquals(inputString, rebuilt_rules)
+        self.assertEqual(inputString, rebuilt_rules)
 
     def test_rebuild_yara_rule_metadata(self):
         test_rule = """
@@ -327,11 +327,11 @@ class TestRuleParser(unittest.TestCase):
                 self.assertTrue([(s['name'], s['value'])
                                 for s in entry['strings']] ==
                                 [('$re1', '/md5: [0-9a-fA-F]{32}/'),
-                                 ('$re2', '/state: (on|off)/')])
+                                 ('$re2', '/state: (on|off)/i')])
 
             else:
                 raise AssertionError(UNHANDLED_RULE_MSG.format(rulename))
-
+            
     def test_include(self):
         with open('tests/data/include_ruleset.yar', 'r') as f:
             inputString = f.read()
@@ -663,6 +663,8 @@ class TestYaraRules(unittest.TestCase):
             $a2 = /abc123 \d+/i // comment
             $a3 = /abc123 \d\/ afterspace/im // comment
             $a4 = /abc123 \d\/ afterspace/im nocase // comment
+            $a5 = /abc123 \d\/ afterspace/nocase // comment
+            $a6 = /abc123 \d\/ afterspace/nocase// comment
 
             /* It should only consume the regex pattern and not text modifiers
                or comment, as those will be parsed separately. */
@@ -679,7 +681,7 @@ class TestYaraRules(unittest.TestCase):
         for rule in result:
             rule_name = rule["rule_name"]
             if rule_name == 'testName':
-                self.assertEqual(len(rule['strings']), 4)
+                self.assertEqual(len(rule['strings']), 6)
                 for rex_string in rule['strings']:
                     if rex_string['name'] == '$a1':
                         self.assertEqual(rex_string['value'], '/abc123 \\d/i')
@@ -689,6 +691,9 @@ class TestYaraRules(unittest.TestCase):
                         self.assertEqual(rex_string['value'], '/abc123 \\d\\/ afterspace/im')
                     elif rex_string['name'] == '$a4':
                         self.assertEqual(rex_string['value'], '/abc123 \\d\\/ afterspace/im')
+                        self.assertEqual(rex_string['modifiers'], ['nocase'])
+                    elif rex_string['name'] in ['$a5', '$a6']:
+                        self.assertEqual(rex_string['value'], '/abc123 \\d\\/ afterspace/')
                         self.assertEqual(rex_string['modifiers'], ['nocase'])
                     else:
                         self.assertFalse("Unknown string name...")
@@ -759,7 +764,7 @@ class TestYaraRules(unittest.TestCase):
         plyara = Plyara()
         result = plyara.parse_string(inputRules)
 
-        self.assertEquals(result[0]['raw_condition'], 'condition: any of them')
+        self.assertEqual(result[0]['raw_condition'], 'condition: any of them')
 
     def test_raw_strings_contains_all_string_text(self):
         inputRules = r'''
@@ -769,7 +774,7 @@ class TestYaraRules(unittest.TestCase):
         plyara = Plyara()
         result = plyara.parse_string(inputRules)
 
-        self.assertEquals(result[0]['raw_strings'], 'strings: $a = "1" ')
+        self.assertEqual(result[0]['raw_strings'], 'strings: $a = "1" ')
 
     def test_raw_meta_contains_all_meta_text(self):
         inputRules = r'''
@@ -779,7 +784,7 @@ class TestYaraRules(unittest.TestCase):
         plyara = Plyara()
         result = plyara.parse_string(inputRules)
 
-        self.assertEquals(result[0]['raw_meta'], 'meta: author = "Test" ')
+        self.assertEqual(result[0]['raw_meta'], 'meta: author = "Test" ')
 
         # strings after meta
         inputRules = r'''
@@ -789,7 +794,7 @@ class TestYaraRules(unittest.TestCase):
         plyara = Plyara()
         result = plyara.parse_string(inputRules)
 
-        self.assertEquals(result[0]['raw_meta'], 'meta: author = "Test" ')
+        self.assertEqual(result[0]['raw_meta'], 'meta: author = "Test" ')
 
     def test_parse_file_without_rules_returns_empty_list(self):
         inputRules = ''
@@ -797,7 +802,7 @@ class TestYaraRules(unittest.TestCase):
         plyara = Plyara()
         result = plyara.parse_string(inputRules)
 
-        self.assertEquals(result, [])
+        self.assertEqual(result, [])
 
 
 if __name__ == '__main__':
