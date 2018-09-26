@@ -653,6 +653,7 @@ class Plyara(Parser):
     states = (
         ('STRING','exclusive'),
         ('BYTESTRING','exclusive'),
+        ('REXSTRING', 'exclusive'),
     )
 
     def t_RBRACE(self, t):
@@ -712,6 +713,7 @@ class Plyara(Parser):
         t.lexer.section = 'condition'
         return t
 
+    # Text String Handling
     def t_begin_STRING(self, t):
         r'"'
         t.lexer.escape = 0
@@ -734,6 +736,7 @@ class Plyara(Parser):
     def t_STRING_error(self, t):
         raise TypeError("Illegal string character " + t.value[0] + " at line " + str(t.lexer.lineno))
 
+    # Byte String Handling
     def t_begin_BYTESTRING(self, t):
         r'\{'
 
@@ -777,15 +780,34 @@ class Plyara(Parser):
     def t_BYTESTRING_error(self, t):
         raise TypeError("Illegal bytestring character " + t.value[0] + " at line " + str(t.lexer.lineno))
 
-    def t_REXSTRING(self, t):
-        r'''
-        # Two parts to this regex, because I'm not sure how to simplify.
+    # Rexstring Handling
+    def t_begin_REXSTRING(self, t):
+        r'/'        
+        if hasattr(t.lexer, 'section') and t.lexer.section == 'strings':
+            t.lexer.rexstring_start = t.lexer.lexpos - 1
+            t.lexer.begin('REXSTRING')
+            t.lexer.escape = 0
+        else:
+            t.type = "FORWARDSLASH"
+            return t
 
-        (\/.+(?:\/[ismx]*)(?=\s+(?:nocase|ascii|wide|fullword)?\s*\/))  |  # first half matches `/abc123/im // comment` format
-        (\/.+(?:\/[ismx]*)(?=\s|\)|$))                                     # second half matches `/abc123/im` format
-        '''
-        t.value = t.value
-        return t
+    def t_REXSTRING_end(self, t):
+        r'/(?:[ismx]*)'
+        if t.lexer.escape == 0:
+            t.type = "REXSTRING"
+            t.value = t.lexer.lexdata[t.lexer.rexstring_start : t.lexer.lexpos]
+            t.lexer.begin('INITIAL')
+            return t
+
+    def t_REXSTRING_value(self, t):
+        r'.'
+        if t.value == '\\' or t.lexer.escape == 1:
+            t.lexer.escape ^= 1
+
+    t_REXSTRING_ignore = ' \r\n\t'
+
+    def t_REXSTRING_error(self, t):
+        raise TypeError("Illegal rexstring character " + t.value[0] + " at line " + str(t.lexer.lineno))
 
     def t_STRINGNAME(self, t):
         r'\$[0-9a-zA-Z\-_*]*'
