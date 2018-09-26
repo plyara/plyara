@@ -663,6 +663,8 @@ class TestYaraRules(unittest.TestCase):
             $a2 = /abc123 \d+/i // comment
             $a3 = /abc123 \d\/ afterspace/im // comment
             $a4 = /abc123 \d\/ afterspace/im nocase // comment
+            $a5 = /abc123 \d\/ afterspace/nocase // comment
+            $a6 = /abc123 \d\/ afterspace/nocase// comment
 
             /* It should only consume the regex pattern and not text modifiers
                or comment, as those will be parsed separately. */
@@ -679,7 +681,7 @@ class TestYaraRules(unittest.TestCase):
         for rule in result:
             rule_name = rule["rule_name"]
             if rule_name == 'testName':
-                self.assertEqual(len(rule['strings']), 4)
+                self.assertEqual(len(rule['strings']), 6)
                 for rex_string in rule['strings']:
                     if rex_string['name'] == '$a1':
                         self.assertEqual(rex_string['value'], '/abc123 \\d/i')
@@ -689,6 +691,9 @@ class TestYaraRules(unittest.TestCase):
                         self.assertEqual(rex_string['value'], '/abc123 \\d\\/ afterspace/im')
                     elif rex_string['name'] == '$a4':
                         self.assertEqual(rex_string['value'], '/abc123 \\d\\/ afterspace/im')
+                        self.assertEqual(rex_string['modifiers'], ['nocase'])
+                    elif rex_string['name'] in ['$a5', '$a6']:
+                        self.assertEqual(rex_string['value'], '/abc123 \\d\\/ afterspace/')
                         self.assertEqual(rex_string['modifiers'], ['nocase'])
                     else:
                         self.assertFalse("Unknown string name...")
