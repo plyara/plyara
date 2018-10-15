@@ -326,8 +326,9 @@ class TestRuleParser(unittest.TestCase):
             elif rulename == "RegExp":
                 self.assertTrue([(s['name'], s['value'])
                                 for s in entry['strings']] ==
-                                [('$re1', '/md5: [0-9a-fA-F]{32}/'),
-                                 ('$re2', '/state: (on|off)/i')])
+                                [('$re1', r'/md5: [0-9a-fA-F]{32}/'),
+                                 ('$re2', r'/state: (on|off)/i'),
+                                 ('$re3', r'/\x00https?:\/\/[^\x00]{4,500}\x00\x00\x00/')])
 
             else:
                 raise AssertionError(UNHANDLED_RULE_MSG.format(rulename))

@@ -86,7 +86,8 @@ rule RegExp
     strings:
         $re1 = /md5: [0-9a-fA-F]{32}/nocase // no case for hash
         $re2 = /state: (on|off)/i//no case for state
+        $re3 = /\x00https?:\/\/[^\x00]{4,500}\x00\x00\x00/
 
     condition:
-        $re1 and $re2
+        $re1 and $re2 and $re3
 }
