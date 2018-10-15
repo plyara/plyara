@@ -798,6 +798,8 @@ class Plyara(Parser):
             t.value = t.lexer.lexdata[t.lexer.rexstring_start : t.lexer.lexpos]
             t.lexer.begin('INITIAL')
             return t
+        else:
+            t.lexer.escape ^= 1
 
     def t_REXSTRING_value(self, t):
         r'.'
