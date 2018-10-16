@@ -332,7 +332,14 @@ class TestRuleParser(unittest.TestCase):
 
             else:
                 raise AssertionError(UNHANDLED_RULE_MSG.format(rulename))
-            
+
+    def test_conditions(self):
+        with open('tests/data/condition_ruleset.yar', 'r') as f:
+            inputString = f.read()
+
+        # Just checking for parsing errors
+        self.parser.parse_string(inputString)
+
     def test_include(self):
         with open('tests/data/include_ruleset.yar', 'r') as f:
             inputString = f.read()
