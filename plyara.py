@@ -30,6 +30,42 @@ class ElementTypes(enum.Enum):
     MCOMMENT = 11
 
 
+class ParseError(BaseException):
+    """
+    Base parsing error exception type.
+    It stores also the line number and lex position as instance
+    attributes 'lineno' and 'lexpos' respectively.
+    """
+
+    def __init__(self, lineno, lexpos):
+        self.lineno = lineno
+        self.lexpos = lexpos
+
+
+class ParseTypeError(TypeError, ParseError):
+    """
+    Error emmited during parsing when a wrong token type is encountered.
+    It stores also the line number and lex position as instance
+    attributes 'lineno' and 'lexpos' respectively.
+    """
+
+    def __init__(self, message, lineno, lexpos):
+        TypeError.__init__(self, message)
+        ParseError.__init__(self, lineno, lexpos)
+
+
+class ParseValueError(ValueError, ParseError):
+    """
+    Error emmited during parsing when a wrong value is encountered.
+    It stores also the line number and lex position as instance
+    attributes 'lineno' and 'lexpos' respectively.
+    """
+
+    def __init__(self, message, lineno, lexpos):
+        ValueError.__init__(self, message)
+        ParseError.__init__(self, lineno, lexpos)
+
+
 class Parser(object):
     """Interpret the output of the parser and produce an alternative representation of YARA rules."""
 
@@ -734,7 +770,8 @@ class Plyara(Parser):
     t_STRING_ignore = ' \t\n'
 
     def t_STRING_error(self, t):
-        raise TypeError("Illegal string character " + t.value[0] + " at line " + str(t.lexer.lineno))
+        raise ParseTypeError("Illegal string character " + t.value[0] + " at line " + str(t.lexer.lineno),
+            t.lexer.lineno, t.lexer.lexpos)
 
     # Byte String Handling
     def t_begin_BYTESTRING(self, t):
@@ -766,7 +803,8 @@ class Plyara(Parser):
 
         if lower_bound and upper_bound:
             if not 0 <= int(lower_bound) <= int(upper_bound):
-                raise ValueError("Illegal bytestring jump bounds " + t.value + " at line " + str(t.lexer.lineno))
+                raise ParseValueError("Illegal bytestring jump bounds " + t.value + " at line " + str(t.lexer.lineno),
+                    t.lexer.lineno, t.lexer.lexpos)
 
     def t_BYTESTRING_end(self, t):
         r'\}'
@@ -778,7 +816,8 @@ class Plyara(Parser):
     t_BYTESTRING_ignore = ' \r\n\t'
 
     def t_BYTESTRING_error(self, t):
-        raise TypeError("Illegal bytestring character " + t.value[0] + " at line " + str(t.lexer.lineno))
+        raise ParseTypeError("Illegal bytestring character " + t.value[0] + " at line " + str(t.lexer.lineno),
+            t.lexer.lineno, t.lexer.lexpos)
 
     # Rexstring Handling
     def t_begin_REXSTRING(self, t):
@@ -809,7 +848,8 @@ class Plyara(Parser):
     t_REXSTRING_ignore = ' \r\n\t'
 
     def t_REXSTRING_error(self, t):
-        raise TypeError("Illegal rexstring character " + t.value[0] + " at line " + str(t.lexer.lineno))
+        raise ParseTypeError("Illegal rexstring character " + t.value[0] + " at line " + str(t.lexer.lineno),
+            t.lexer.lineno, t.lexer.lexpos)
 
     def t_STRINGNAME(self, t):
         r'\$[0-9a-zA-Z\-_*]*'
@@ -847,7 +887,8 @@ class Plyara(Parser):
 
     # Error handling rule
     def t_error(self, t):
-        raise TypeError(u'Illegal character {} at line {}'.format(t.value[0], t.lexer.lineno))
+        raise ParseTypeError(u'Illegal character {} at line {}'.format(t.value[0], t.lexer.lineno),
+            t.lexer.lineno, t.lexer.lexpos)
 
     # Parsing rules
 
@@ -1086,7 +1127,8 @@ class Plyara(Parser):
             self.parser.errok()
             self._rule_comments.append(p)
         else:
-            raise TypeError(u'Unknown text {} for token of type {} on line {}'.format(p.value, p.type, p.lineno))
+            raise ParseTypeError(u'Unknown text {} for token of type {} on line {}'
+                .format(p.value, p.type, p.lineno), p.lineno, p.lexpos)
 
 
 def main():
