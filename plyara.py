@@ -902,10 +902,7 @@ class Plyara(Parser):
         '''ruleset : rules
                    | imports
                    | includes
-                   | imports rules
-                   | includes rules
-                   | ruleset imports rules
-                   | ruleset includes rules'''
+                   | ruleset ruleset'''
 
     def p_rules(self, p):
         '''rules : rules rule
@@ -933,7 +930,7 @@ class Plyara(Parser):
     def p_includes(self, p):
         '''includes : includes include
                     | include'''
-
+ 
     def p_scopes(self, p):
         '''scopes : scopes scope
                   | scope
