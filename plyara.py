@@ -933,7 +933,7 @@ class Plyara(Parser):
     def p_includes(self, p):
         '''includes : includes include
                     | include'''
- 
+
     def p_scopes(self, p):
         '''scopes : scopes scope
                   | scope
