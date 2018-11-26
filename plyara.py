@@ -892,14 +892,24 @@ class Plyara(Parser):
 
     # Parsing rules
 
-    precedence = (('right', 'NUM'), ('right', 'ID'), ('right', 'HEXNUM'))
+    precedence = (
+        ('right', 'NUM'),
+        ('right', 'ID'),
+        ('right', 'HEXNUM')
+    )
+
+    def p_ruleset(self, p):
+        '''ruleset : rules
+                   | imports
+                   | includes
+                   | ruleset ruleset'''
 
     def p_rules(self, p):
         '''rules : rules rule
                  | rule'''
 
     def p_rule(self, p):
-        '''rule : imports_and_scopes RULE ID tag_section LBRACE rule_body RBRACE'''
+        '''rule : scopes RULE ID tag_section LBRACE rule_body RBRACE'''
 
         logger.debug(u'Matched rule: {}'.format(p[3]))
         logger.debug(u'Rule start: {}, Rule stop: {}'.format(p.lineno(2), p.lineno(7)))
@@ -913,39 +923,36 @@ class Plyara(Parser):
         element_value = (p[3], int(p.lineno(2)), int(p.lineno(7)), )
         self._add_element(ElementTypes.RULE_NAME, element_value)
 
-    def p_imports_and_scopes(self, p):
-        '''imports_and_scopes : imports
-                              | includes
-                              | scopes
-                              | imports scopes
-                              | includes scopes
-                              | '''
-
     def p_imports(self, p):
         '''imports : imports import
-                   | includes
                    | import'''
 
     def p_includes(self, p):
         '''includes : includes include
-                    | imports
                     | include'''
 
+    def p_scopes(self, p):
+        '''scopes : scopes scope
+                  | scope
+                  | '''
+
     def p_import(self, p):
-        'import : IMPORT STRING'
+        '''import : IMPORT STRING'''
         import_value = p[2].replace('"', '')
         logger.debug(u'Matched import: {}'.format(import_value))
         self._add_element(ElementTypes.IMPORT, import_value)
 
     def p_include(self, p):
-        'include : INCLUDE STRING'
+        '''include : INCLUDE STRING'''
         include_value = p[2].replace('"', '')
         logger.debug(u'Matched include: {}'.format(include_value))
         self._add_element(ElementTypes.INCLUDE, include_value)
 
-    def p_scopes(self, p):
-        '''scopes : scopes scope
-                  | scope'''
+    def p_scope(self, p):
+        '''scope : PRIVATE
+                 | GLOBAL'''
+        logger.debug(u'Matched scope identifier: {}'.format(p[1]))
+        self._add_element(ElementTypes.SCOPE, p[1])
 
     def p_tag_section(self, p):
         '''tag_section : COLON tags
@@ -956,18 +963,13 @@ class Plyara(Parser):
                 | tag'''
 
     def p_tag(self, p):
-        'tag : ID'
+        '''tag : ID'''
         logger.debug(u'Matched tag: {}'.format(p[1]))
         self._add_element(ElementTypes.TAG, p[1])
 
-    def p_scope(self, p):
-        '''scope : PRIVATE
-                 | GLOBAL'''
-        logger.debug(u'Matched scope identifier: {}'.format(p[1]))
-        self._add_element(ElementTypes.SCOPE, p[1])
 
     def p_rule_body(self, p):
-        'rule_body : sections'
+        '''rule_body : sections'''
         logger.debug(u'Matched rule body')
 
     def p_rule_sections(self, p):
@@ -980,11 +982,11 @@ class Plyara(Parser):
                    | condition_section'''
 
     def p_meta_section(self, p):
-        'meta_section : SECTIONMETA meta_kvs'
+        '''meta_section : SECTIONMETA meta_kvs'''
         logger.debug(u'Matched meta section')
 
     def p_strings_section(self, p):
-        'strings_section : SECTIONSTRINGS strings_kvs'
+        '''strings_section : SECTIONSTRINGS strings_kvs'''
 
     def p_condition_section(self, p):
         '''condition_section : SECTIONCONDITION expression'''

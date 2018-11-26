@@ -112,6 +112,7 @@ class TestStaticMethods(unittest.TestCase):
             for rule in results:
                 self.assertEqual(Plyara.detect_imports(rule), [imp])
 
+
 class TestRuleParser(unittest.TestCase):
 
     def setUp(self):
@@ -346,6 +347,11 @@ class TestRuleParser(unittest.TestCase):
 
         result = self.parser.parse_string(inputString)
         self.assertEqual(result[0]['includes'], ['string_ruleset.yar'])
+
+    def test_include_statements(self):
+        self.parser.parse_string('include "file1.yara"\ninclude "file2.yara"\ninclude "file3.yara"')
+        self.assertEqual(len(self.parser.includes), 3)
+
 
 class TestYaraRules(unittest.TestCase):
 
