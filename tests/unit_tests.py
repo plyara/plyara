@@ -652,6 +652,19 @@ class TestYaraRules(unittest.TestCase):
                 self.assertEqual(rule['strings'][10]['value'], '{ E2 23 62 B4 56 /* comment */ 45 FB }')
                 self.assertEqual(rule['strings'][11]['value'], '{\n                E2 23 62 B4 56 45 FB // comment\n            }')
 
+    def test_nested_bytestring(self):
+        inputRules = r'''
+        rule sample {
+            strings:
+                $ = { 4D 5A ( 90 ( 00 | 01 ) | 89 ) }
+            condition:
+                all of them
+        }
+        '''
+
+        plyara = Plyara()
+        result = plyara.parse_string(inputRules)
+
     def test_bytestring_bad_jump(self):
         inputRules = r'''
         rule testName
@@ -661,6 +674,20 @@ class TestYaraRules(unittest.TestCase):
 
         condition:
             any of them
+        }
+        '''
+
+        plyara = Plyara()
+        with self.assertRaises(ValueError):
+            result = plyara.parse_string(inputRules)
+
+    def test_bytestring_bad_group(self):
+        inputRules = r'''
+        rule sample {
+            strings:
+                $ = { 4D 5A ( 90 ( 00 | 01 ) | 89 ) ) }
+            condition:
+                all of them
         }
         '''
 
