@@ -574,6 +574,7 @@ class Plyara(Parser):
         'EQUALS',
         'STRINGNAME',
         'STRINGNAME_ARRAY',
+        'STRINGNAME_LENGTH',
         'LPAREN',
         'RPAREN',
         'LBRACK',
@@ -878,6 +879,11 @@ class Plyara(Parser):
         t.value = t.value
         return t
 
+    def t_STRINGNAME_LENGTH(self, t):
+        r'![0-9a-zA-Z\-_*]*'
+        t.value = t.value
+        return t
+
     def t_FILESIZE_SIZE(self, t):
         r"\d+[KM]B"
         t.value = t.value
@@ -1130,6 +1136,7 @@ class Plyara(Parser):
                 | UINT32BE
                 | STRINGNAME
                 | STRINGNAME_ARRAY
+                | STRINGNAME_LENGTH
                 | STRINGCOUNT
                 | REXSTRING'''
 
