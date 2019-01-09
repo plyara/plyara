@@ -20,6 +20,7 @@ install:
 script:
   - nosetests --with-coverage --cover-package=plyara --cover-xml
   - pylint plyara.py
+  - pylint --disable=C0103,C0111 setup.py
   - pycodestyle plyara.py
   - python setup.py checkdocs
 after_success:
