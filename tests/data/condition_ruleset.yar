@@ -10,5 +10,9 @@ rule image_filetype {
             $eval or 1 of ($key*)
         )
         and
+        (
+            @a[1] or !a[1]
+        )
+        and
         not filename matches /[0-9a-zA-Z]{30,}/ 
 }
