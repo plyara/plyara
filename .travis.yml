@@ -12,13 +12,15 @@ matrix:
 install:
   - "pip install nose"
   - "pip install pylint"
+  - "pip install pycodestyle"
   - "pip install coverage"
   - "pip install codacy-coverage"
   - "pip install collective.checkdocs Pygments"
   - "python setup.py install"
 script:
   - nosetests --with-coverage --cover-package=plyara --cover-xml
-  - pylint
+  - pylint plyara.py
+  - pycodestyle plyara.py
   - python setup.py checkdocs
 after_success:
   - python-codacy-coverage
