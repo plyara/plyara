@@ -19,9 +19,10 @@ install:
   - "python setup.py install"
 script:
   - nosetests --with-coverage --cover-package=plyara --cover-xml
-  - pylint plyara.py
-  - pylint --disable=C0103,C0111 setup.py
-  - pycodestyle plyara.py
+  - pylint --max-line-length=120 plyara.py
+  - pylint --max-line-length=120 --disable=C0103,C0111 setup.py
+  - pycodestyle --max-line-length=120 plyara.py
+  - pycodestyle --max-line-length=120 setup.py
   - python setup.py checkdocs
 after_success:
   - python-codacy-coverage
