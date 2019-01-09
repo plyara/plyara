@@ -11,12 +11,14 @@ matrix:
       sudo: true
 install:
   - "pip install nose"
+  - "pip install pylint"
   - "pip install coverage"
   - "pip install codacy-coverage"
   - "pip install collective.checkdocs Pygments"
   - "python setup.py install"
 script:
   - nosetests --with-coverage --cover-package=plyara --cover-xml
+  - pylint
   - python setup.py checkdocs
 after_success:
   - python-codacy-coverage
