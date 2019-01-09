@@ -91,7 +91,6 @@ class Parser(object):
 
     FUNCTION_KEYWORDS = ('uint8', 'uint16', 'uint32', 'uint8be', 'uint16be', 'uint32be')
 
-
     def __init__(self, console_logging=False, store_raw_sections=True):
         """Initialize the parser object.
 
@@ -414,7 +413,7 @@ class Parser(object):
                 # Wildcard Match
                 elif '*' in condition:
                     wildcard_strings = []
-                    condition = condition.replace('$', '\$').replace('*', '.*')
+                    condition = condition.replace('$', r'\$').replace('*', '.*')
                     pattern = re.compile(condition)
 
                     for name, value in string_mapping['named'].items():
@@ -564,6 +563,7 @@ class Parser(object):
 
         return formatted_rule
 
+
 class Plyara(Parser):
     """Class to define the lexer and the parser rules."""
 
@@ -688,8 +688,8 @@ class Plyara(Parser):
     t_DOTDOT = r'\.\.'
 
     states = (
-        ('STRING','exclusive'),
-        ('BYTESTRING','exclusive'),
+        ('STRING', 'exclusive'),
+        ('BYTESTRING', 'exclusive'),
         ('REXSTRING', 'exclusive'),
     )
 
@@ -761,7 +761,7 @@ class Plyara(Parser):
         r'.'
         if t.lexer.escape == 0 and t.value == '"':
             t.type = "STRING"
-            t.value = t.lexer.lexdata[t.lexer.string_start : t.lexer.lexpos]
+            t.value = t.lexer.lexdata[t.lexer.string_start:t.lexer.lexpos]
             t.lexer.begin('INITIAL')
             return t
 
@@ -822,7 +822,7 @@ class Plyara(Parser):
     def t_BYTESTRING_end(self, t):
         r'\}'
         t.type = "BYTESTRING"
-        t.value = t.lexer.lexdata[t.lexer.bytestring_start : t.lexer.lexpos]
+        t.value = t.lexer.lexdata[t.lexer.bytestring_start:t.lexer.lexpos]
 
         if t.lexer.bytestring_group != 0:
             raise ParseValueError("Unbalanced group in bytestring " + t.value + " at line " + str(t.lexer.lineno),
@@ -852,7 +852,7 @@ class Plyara(Parser):
         r'/(?:[ismx]*)'
         if t.lexer.escape == 0:
             t.type = "REXSTRING"
-            t.value = t.lexer.lexdata[t.lexer.rexstring_start : t.lexer.lexpos]
+            t.value = t.lexer.lexdata[t.lexer.rexstring_start:t.lexer.lexpos]
             t.lexer.begin('INITIAL')
             return t
         else:
@@ -910,8 +910,8 @@ class Plyara(Parser):
 
     # Error handling rule
     def t_error(self, t):
-        raise ParseTypeError(u'Illegal character {} at line {}'.format(t.value[0], t.lexer.lineno),
-            t.lexer.lineno, t.lexer.lexpos)
+        message = u'Illegal character {} at line {}'.format(t.value[0], t.lexer.lineno)
+        raise ParseTypeError(message, t.lexer.lineno, t.lexer.lexpos)
 
     # Parsing rules
 
@@ -989,7 +989,6 @@ class Plyara(Parser):
         '''tag : ID'''
         logger.debug(u'Matched tag: {}'.format(p[1]))
         self._add_element(ElementTypes.TAG, p[1])
-
 
     def p_rule_body(self, p):
         '''rule_body : sections'''
@@ -1153,8 +1152,8 @@ class Plyara(Parser):
             self.parser.errok()
             self._rule_comments.append(p)
         else:
-            raise ParseTypeError(u'Unknown text {} for token of type {} on line {}'
-                .format(p.value, p.type, p.lineno), p.lineno, p.lexpos)
+            message = u'Unknown text {} for token of type {} on line {}'.format(p.value, p.type, p.lineno)
+            raise ParseTypeError(message, p.lineno, p.lexpos)
 
 
 def main():
