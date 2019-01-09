@@ -13,6 +13,7 @@ install:
   - "pip install nose"
   - "pip install pylint"
   - "pip install pycodestyle"
+  - "pip install pydocstyle"
   - "pip install coverage"
   - "pip install codacy-coverage"
   - "pip install collective.checkdocs Pygments"
@@ -23,6 +24,8 @@ script:
   - pylint --max-line-length=120 --disable=C0103,C0111 setup.py
   - pycodestyle --max-line-length=120 plyara.py
   - pycodestyle --max-line-length=120 setup.py
+  - pydocstyle plyara.py
+  - pydocstyle --ignore=D100 setup.py
   - python setup.py checkdocs
 after_success:
   - python-codacy-coverage
