@@ -15,6 +15,7 @@ install:
   - "pip install codacy-coverage"
   - "pip install collective.checkdocs Pygments"
   - "python setup.py install"
+  - "echo $TRAVIS_BUILD_DIR"
 script:
   - nosetests --with-coverage --cover-package=plyara --cover-xml
   - python setup.py checkdocs
