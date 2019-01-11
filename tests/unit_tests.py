@@ -7,6 +7,7 @@ import codecs
 import unittest
 
 from plyara import Plyara
+from plyara import ParseTypeError
 
 UNHANDLED_RULE_MSG = "Unhandled Test Rule: {}"
 
@@ -844,6 +845,40 @@ class TestYaraRules(unittest.TestCase):
         result = plyara.parse_string(inputRules)
 
         self.assertEqual(result, [])
+
+    def test_lineno_incremented_by_newlines_in_bytestring(self):
+        inputRules = r'''
+        rule sample
+        {
+            strings:
+                $ = { 00 00 00 00 00 00
+                      00 00 00 00 00 00 } //line 6
+            conditio: //fault
+                all of them
+        }
+        '''
+
+        plyara = Plyara()
+
+        with self.assertRaises(ParseTypeError):
+            try:
+                result = plyara.parse_string(inputRules)
+            except ParseTypeError as e:
+                self.assertEqual(7, e.lineno)
+                raise e
+
+    def test_lineno_incremented_by_windows_newlines_in_bytestring(self):
+        with open('tests/data/windows_newline_ruleset.yar', 'r') as f:
+            inputRules = f.read()
+
+        plyara = Plyara()
+
+        with self.assertRaises(ParseTypeError):
+            try:
+                result = plyara.parse_string(inputRules)
+            except ParseTypeError as e:
+                self.assertEqual(6, e.lineno)
+                raise e
 
 
 if __name__ == '__main__':
