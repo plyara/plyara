@@ -829,6 +829,13 @@ class Plyara(Parser):
                                   t.lexer.lineno, t.lexer.lexpos)
 
         t.lexer.begin('INITIAL')
+
+        # Account for newlines in bytestring.
+        if '\r\n' in t.value:
+            t.lexer.lineno += t.value.count('\r\n')
+        else:
+            t.lexer.lineno += t.value.count('\n')
+
         return t
 
     t_BYTESTRING_ignore = ' \r\n\t'
