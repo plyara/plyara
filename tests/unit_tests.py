@@ -864,7 +864,7 @@ class TestYaraRules(unittest.TestCase):
             try:
                 result = plyara.parse_string(inputRules)
             except ParseTypeError as e:
-                self.assertIn('line 7', e.message)
+                self.assertEqual(7, e.lineno)
                 raise e
 
 
