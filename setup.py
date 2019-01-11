@@ -1,8 +1,7 @@
-from setuptools import setup
-import sys
-
 import codecs
 from os import path
+import sys
+from setuptools import setup
 
 here = path.abspath(path.dirname(__file__))
 
