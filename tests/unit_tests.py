@@ -5,7 +5,6 @@ import subprocess
 import sys
 import codecs
 import unittest
-import pathlib
 
 from plyara import Plyara
 from plyara import ParseTypeError
@@ -869,8 +868,7 @@ class TestYaraRules(unittest.TestCase):
                 raise e
 
     def test_lineno_incremented_by_windows_newlines_in_bytestring(self):
-        testfile = pathlib.Path().cwd().joinpath('tests').joinpath('data').joinpath('windows_newlines_ruleset.yar')
-        with open(testfile, 'r') as f:
+        with open('../tests/data/windows_newlines_ruleset.yar', 'r') as f:
             inputRules = f.read()
 
         plyara = Plyara()
