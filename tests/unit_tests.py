@@ -868,7 +868,7 @@ class TestYaraRules(unittest.TestCase):
                 raise e
 
     def test_lineno_incremented_by_windows_newlines_in_bytestring(self):
-        with open('/home/travis/build/plyara/plyara/tests/data/windows_newlines_ruleset.yar', 'r') as f:
+        with open('tests/data/windows_newline_ruleset.yar', 'r') as f:
             inputRules = f.read()
 
         plyara = Plyara()
