@@ -867,6 +867,18 @@ class TestYaraRules(unittest.TestCase):
                 self.assertEqual(7, e.lineno)
                 raise e
 
+    def test_lineno_incremented_by_windows_newlines_in_bytestring(self):
+        inputRules = 'rule sample {\r\nstrings: $ = { 00 \r\n00 }\r\nconditio: all of them }'
+
+        plyara = Plyara()
+
+        with self.assertRaises(ParseTypeError):
+            try:
+                result = plyara.parse_string(inputRules)
+            except ParseTypeError as e:
+                self.assertEqual(4, e.lineno)
+                raise e
+
 
 if __name__ == '__main__':
     unittest.main()
