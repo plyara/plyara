@@ -444,7 +444,8 @@ class Parser(object):
         logic_hash = hashlib.sha1(u''.join(condition_mapping).encode()).hexdigest()
         return logic_hash
 
-    def rebuild_yara_rule(self, rule):
+    @staticmethod
+    def rebuild_yara_rule(rule, return_python_types=False):
         """Take a parsed yararule and rebuild it into a usable one."""
 
         rule_format = u"{imports}{scopes}rule {rulename}{tags} {{\n{meta}{strings}{condition}\n}}\n"
@@ -479,7 +480,7 @@ class Parser(object):
                     values = [values]
 
                 for v in values:
-                    if self.return_python_types:
+                    if return_python_types:
                         if isinstance(v, bool):
                             v = str(v).lower()
                         elif isinstance(v, int):
