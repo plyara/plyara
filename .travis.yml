@@ -11,9 +11,7 @@ matrix:
       sudo: true
 install:
   - "pip install nose"
-  - "pip install pylint"
   - "pip install pycodestyle"
-  - "pip install pydocstyle"
   - "pip install pyflakes"
   - "pip install coverage"
   - "pip install codacy-coverage"
@@ -21,12 +19,8 @@ install:
   - "python setup.py install"
 script:
   - nosetests --with-coverage --cover-package=plyara --cover-xml
-  - pylint --max-line-length=120 plyara.py
-  - pylint --max-line-length=120 --disable=C0103,C0111 setup.py
   - pycodestyle --max-line-length=120 plyara.py
   - pycodestyle --max-line-length=120 setup.py
-  - pydocstyle plyara.py
-  - pydocstyle --ignore=D100 setup.py
   - pyflakes plyara.py
   - pyflakes setup.py
   - python setup.py checkdocs
