@@ -254,19 +254,21 @@ class TestRuleParser(unittest.TestCase):
 
             elif rulename == "IntegerTypeMetadata":
                 self.assertTrue('integer_value' in entry['metadata'] and
-                                entry['metadata']['integer_value'] == '100')
+                                isinstance(entry['metadata']['integer_value'], int) and
+                                entry['metadata']['integer_value'] is 100)
 
             elif rulename == "BooleanTypeMetadata":
                 self.assertTrue('boolean_value' in entry['metadata'] and
-                                entry['metadata']['boolean_value'] == 'true')
+                                isinstance(entry['metadata']['boolean_value'], bool) and
+                                entry['metadata']['boolean_value'] is True)
 
             elif rulename == "AllTypesMetadata":
                 self.assertTrue('string_value' in entry['metadata'] and
                                 'integer_value' in entry['metadata'] and
                                 'boolean_value' in entry['metadata'] and
                                 entry['metadata']['string_value'] == 'Different String Metadata' and
-                                entry['metadata']['integer_value'] == '33' and
-                                entry['metadata']['boolean_value'] == 'false')
+                                entry['metadata']['integer_value'] is 33 and
+                                entry['metadata']['boolean_value'] is False)
 
             else:
                 raise AssertionError(UNHANDLED_RULE_MSG.format(rulename))
