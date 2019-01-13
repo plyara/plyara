@@ -1,3 +1,25 @@
+#!/usr/bin/env python
+# Copyright 2014 Christian Buia
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""
+Parse YARA rules and operate over them more easily.
+
+Plyara is a script and library that lexes and parses a file consisting of one more YARA rules into a python
+dictionary representation. The goal of this tool is to make it easier to perform bulk operations or transformations of
+large sets of YARA rules, such as extracting indicators, updating attributes, and analyzing a corpus. Other applications
+include linters and dependency checkers.
+"""
 import argparse
 import enum
 import json
@@ -33,11 +55,13 @@ class ElementTypes(enum.Enum):
 class ParseError(BaseException):
     """
     Base parsing error exception type.
+
     It stores also the line number and lex position as instance
     attributes 'lineno' and 'lexpos' respectively.
     """
 
     def __init__(self, lineno, lexpos):
+        """Initialize exception object."""
         self.lineno = lineno
         self.lexpos = lexpos
 
@@ -45,11 +69,13 @@ class ParseError(BaseException):
 class ParseTypeError(TypeError, ParseError):
     """
     Error emmited during parsing when a wrong token type is encountered.
+
     It stores also the line number and lex position as instance
     attributes 'lineno' and 'lexpos' respectively.
     """
 
     def __init__(self, message, lineno, lexpos):
+        """Initialize exception object."""
         TypeError.__init__(self, message)
         ParseError.__init__(self, lineno, lexpos)
 
@@ -57,11 +83,13 @@ class ParseTypeError(TypeError, ParseError):
 class ParseValueError(ValueError, ParseError):
     """
     Error emmited during parsing when a wrong value is encountered.
+
     It stores also the line number and lex position as instance
     attributes 'lineno' and 'lexpos' respectively.
     """
 
     def __init__(self, message, lineno, lexpos):
+        """Initialize exception object."""
         ValueError.__init__(self, message)
         ParseError.__init__(self, lineno, lexpos)
 
@@ -94,9 +122,9 @@ class Parser(object):
     def __init__(self, console_logging=False, store_raw_sections=True):
         """Initialize the parser object.
 
-            Args:
-                console_logging: enable a stream handler if no handlers exist (default False)
-                store_raw_sections: enable attribute storage of raw section input
+        Args:
+            console_logging: enable a stream handler if no handlers exist (default False)
+            store_raw_sections: enable attribute storage of raw section input
         """
         self.rules = list()
 
@@ -130,7 +158,7 @@ class Parser(object):
 
     @staticmethod
     def _set_logging():
-        """Set the console logger only if handler(s) aren't already set"""
+        """Set the console logger only if handler(s) aren't already set."""
         if not len(logger.handlers):
             logger.setLevel(logging.DEBUG)
             ch = logging.StreamHandler()
@@ -254,7 +282,7 @@ class Parser(object):
 
     @staticmethod
     def is_valid_rule_name(entry):
-        """Checks to see if entry is a valid rule name."""
+        """Check to see if entry is a valid rule name."""
         # Check if entry is blank
         if not entry:
             return False
@@ -279,13 +307,13 @@ class Parser(object):
 
     @staticmethod
     def is_valid_rule_tag(entry):
-        """Checks to see if entry is a valid rule tag."""
+        """Check to see if entry is a valid rule tag."""
         # Same lexical conventions as name
         return Parser.is_valid_rule_name(entry)
 
     @staticmethod
     def detect_imports(rule):
-        """Takes a parsed yararule and provide a list of required imports based on condition."""
+        """Take a parsed yararule and provide a list of required imports based on condition."""
         detected_imports = []
         condition_terms = rule['condition_terms']
 
@@ -305,7 +333,7 @@ class Parser(object):
 
     @staticmethod
     def detect_dependencies(rule):
-        """Takes a parsed yararule and provide a list of external rule dependencies."""
+        """Take a parsed yararule and provide a list of external rule dependencies."""
         dependencies = []
         string_iteration_variables = []
         condition_terms = rule['condition_terms']
@@ -443,7 +471,6 @@ class Parser(object):
     @staticmethod
     def rebuild_yara_rule(rule):
         """Take a parsed yararule and rebuild it into a usable one."""
-
         rule_format = u"{imports}{scopes}rule {rulename}{tags} {{\n{meta}{strings}{condition}\n}}\n"
 
         rule_name = rule['rule_name']
@@ -771,6 +798,7 @@ class Plyara(Parser):
     t_STRING_ignore = ' \t\n'
 
     def t_STRING_error(self, t):
+        """Raise parsing error for illegal string character."""
         raise ParseTypeError("Illegal string character " + t.value[0] + " at line " + str(t.lexer.lineno),
                              t.lexer.lineno, t.lexer.lexpos)
 
@@ -834,6 +862,7 @@ class Plyara(Parser):
     t_BYTESTRING_ignore = ' \r\n\t'
 
     def t_BYTESTRING_error(self, t):
+        """Raise parsing error for illegal bytestring character."""
         raise ParseTypeError("Illegal bytestring character " + t.value[0] + " at line " + str(t.lexer.lineno),
                              t.lexer.lineno, t.lexer.lexpos)
 
@@ -866,6 +895,7 @@ class Plyara(Parser):
     t_REXSTRING_ignore = ' \r\n\t'
 
     def t_REXSTRING_error(self, t):
+        """Raise parsing error for illegal rexstring character."""
         raise ParseTypeError("Illegal rexstring character " + t.value[0] + " at line " + str(t.lexer.lineno),
                              t.lexer.lineno, t.lexer.lexpos)
 
@@ -910,6 +940,7 @@ class Plyara(Parser):
 
     # Error handling rule
     def t_error(self, t):
+        """Raise parsing error."""
         message = u'Illegal character {} at line {}'.format(t.value[0], t.lexer.lineno)
         raise ParseTypeError(message, t.lexer.lineno, t.lexer.lexpos)
 
@@ -1144,6 +1175,7 @@ class Plyara(Parser):
 
     # Error rule for syntax errors
     def p_error(self, p):
+        """Raise syntax errors."""
         if not p:
             # This happens when we try to parse an empty string or file, or one with no actual rules.
             pass
