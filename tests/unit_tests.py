@@ -915,6 +915,22 @@ class TestYaraRules(unittest.TestCase):
                 self.assertEqual(6, e.lineno)
                 raise e
 
+    def test_lineno_incremented_by_newlines_in_bytestring(self):
+        inputRules = r'''
+        rule sample
+        {
+            strings:
+                $ = { 01 02 03 04 }
+            condition:
+                for all of ($) : ( @ < 0xFF )
+        }
+        '''
+
+        plyara = Plyara()
+        result = plyara.parse_string(inputRules)
+
+        self.assertEqual(result[0].get('condition_terms')[8], '@')
+
 
 if __name__ == '__main__':
     unittest.main()
