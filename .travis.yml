@@ -22,7 +22,7 @@ script:
   - nosetests --with-coverage --cover-package=plyara --cover-xml
   - pycodestyle --max-line-length=120 plyara.py
   - pycodestyle --max-line-length=120 setup.py
-  - pydocstyle --ignore=D203,D205,D208,D209,D213,D300,D400,D403 plyara.py
+  - pydocstyle --ignore=D203,D205,D208,D209,D213,D300,D400,D401,D403 plyara.py
   - pydocstyle --ignore=D100 setup.py
   - pyflakes plyara.py
   - pyflakes setup.py
