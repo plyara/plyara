@@ -12,8 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Parse YARA rules and operate over them more easily.
+"""Parse YARA rules and operate over them more easily.
 
 Plyara is a script and library that lexes and parses a file consisting of one more YARA rules into a python
 dictionary representation. The goal of this tool is to make it easier to perform bulk operations or transformations of
@@ -53,8 +52,7 @@ class ElementTypes(enum.Enum):
 
 
 class ParseError(BaseException):
-    """
-    Base parsing error exception type.
+    """Base parsing error exception type.
 
     It stores also the line number and lex position as instance
     attributes 'lineno' and 'lexpos' respectively.
@@ -67,8 +65,7 @@ class ParseError(BaseException):
 
 
 class ParseTypeError(TypeError, ParseError):
-    """
-    Error emmited during parsing when a wrong token type is encountered.
+    """Error emmited during parsing when a wrong token type is encountered.
 
     It stores also the line number and lex position as instance
     attributes 'lineno' and 'lexpos' respectively.
@@ -81,8 +78,7 @@ class ParseTypeError(TypeError, ParseError):
 
 
 class ParseValueError(ValueError, ParseError):
-    """
-    Error emmited during parsing when a wrong value is encountered.
+    """Error emmited during parsing when a wrong value is encountered.
 
     It stores also the line number and lex position as instance
     attributes 'lineno' and 'lexpos' respectively.
