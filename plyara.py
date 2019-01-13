@@ -823,8 +823,8 @@ class Plyara(Parser):
         groups = t.lexer.lexmatch.groups()
         index = groups.index(t.value)
 
-        lower_bound = groups[index+1]
-        upper_bound = groups[index+2]
+        lower_bound = groups[index + 1]
+        upper_bound = groups[index + 2]
 
         if lower_bound and upper_bound:
             if not 0 <= int(lower_bound) <= int(upper_bound):
