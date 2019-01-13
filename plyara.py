@@ -959,7 +959,6 @@ class Plyara(Parser):
 
     def p_rule(self, p):
         '''rule : scopes RULE ID tag_section LBRACE rule_body RBRACE'''
-
         logger.debug(u'Matched rule: {}'.format(p[3]))
         logger.debug(u'Rule start: {}, Rule stop: {}'.format(p.lineno(2), p.lineno(7)))
 
@@ -1070,7 +1069,6 @@ class Plyara(Parser):
                       | STRINGNAME EQUALS REXSTRING comments
                       | STRINGNAME EQUALS REXSTRING string_modifiers
                       | STRINGNAME EQUALS REXSTRING string_modifiers comments'''
-
         key = p[1]
         value = p[3]
         logger.debug(u'Matched strings kv: {} equals {}'.format(key, value))
@@ -1164,7 +1162,6 @@ class Plyara(Parser):
                 | STRINGNAME_LENGTH
                 | STRINGCOUNT
                 | REXSTRING'''
-
         logger.debug(u'Matched a condition term: {}'.format(p[1]))
         self._add_element(ElementTypes.TERM, p[1])
 
