@@ -7,6 +7,7 @@ import codecs
 import unittest
 
 from plyara import Plyara
+from plyara import ParseTypeError
 
 UNHANDLED_RULE_MSG = "Unhandled Test Rule: {}"
 
@@ -266,6 +267,41 @@ class TestRuleParser(unittest.TestCase):
                                 entry['metadata']['string_value'] == 'Different String Metadata' and
                                 entry['metadata']['integer_value'] == '33' and
                                 entry['metadata']['boolean_value'] == 'false')
+
+            else:
+                raise AssertionError(UNHANDLED_RULE_MSG.format(rulename))
+
+    def test_metadata_pytypes(self):
+        with open('tests/data/metadata_ruleset.yar', 'r') as f:
+            inputString = f.read()
+
+        plyara = Plyara(return_python_types=True)
+        result = plyara.parse_string(inputString)
+
+        for entry in result:
+            rulename = entry['rule_name']
+
+            if rulename == "StringTypeMetadata":
+                self.assertTrue('string_value' in entry['metadata'] and
+                                entry['metadata']['string_value'] == 'String Metadata')
+
+            elif rulename == "IntegerTypeMetadata":
+                self.assertTrue('integer_value' in entry['metadata'] and
+                                isinstance(entry['metadata']['integer_value'], int) and
+                                entry['metadata']['integer_value'] is 100)
+
+            elif rulename == "BooleanTypeMetadata":
+                self.assertTrue('boolean_value' in entry['metadata'] and
+                                isinstance(entry['metadata']['boolean_value'], bool) and
+                                entry['metadata']['boolean_value'] is True)
+
+            elif rulename == "AllTypesMetadata":
+                self.assertTrue('string_value' in entry['metadata'] and
+                                'integer_value' in entry['metadata'] and
+                                'boolean_value' in entry['metadata'] and
+                                entry['metadata']['string_value'] == 'Different String Metadata' and
+                                entry['metadata']['integer_value'] is 33 and
+                                entry['metadata']['boolean_value'] is False)
 
             else:
                 raise AssertionError(UNHANDLED_RULE_MSG.format(rulename))
@@ -844,6 +880,56 @@ class TestYaraRules(unittest.TestCase):
         result = plyara.parse_string(inputRules)
 
         self.assertEqual(result, [])
+
+    def test_lineno_incremented_by_newlines_in_bytestring(self):
+        inputRules = r'''
+        rule sample
+        {
+            strings:
+                $ = { 00 00 00 00 00 00
+                      00 00 00 00 00 00 } //line 6
+            conditio: //fault
+                all of them
+        }
+        '''
+
+        plyara = Plyara()
+
+        with self.assertRaises(ParseTypeError):
+            try:
+                result = plyara.parse_string(inputRules)
+            except ParseTypeError as e:
+                self.assertEqual(7, e.lineno)
+                raise e
+
+    def test_lineno_incremented_by_windows_newlines_in_bytestring(self):
+        with open('tests/data/windows_newline_ruleset.yar', 'r') as f:
+            inputRules = f.read()
+
+        plyara = Plyara()
+
+        with self.assertRaises(ParseTypeError):
+            try:
+                result = plyara.parse_string(inputRules)
+            except ParseTypeError as e:
+                self.assertEqual(6, e.lineno)
+                raise e
+
+    def test_lineno_incremented_by_newlines_in_bytestring(self):
+        inputRules = r'''
+        rule sample
+        {
+            strings:
+                $ = { 01 02 03 04 }
+            condition:
+                for all of ($) : ( @ < 0xFF )
+        }
+        '''
+
+        plyara = Plyara()
+        result = plyara.parse_string(inputRules)
+
+        self.assertEqual(result[0].get('condition_terms')[8], '@')
 
 
 if __name__ == '__main__':

@@ -20,6 +20,7 @@ large sets of YARA rules, such as extracting indicators, updating attributes, an
 include linters and dependency checkers.
 """
 import argparse
+import distutils.util
 import enum
 import json
 import logging
@@ -115,7 +116,7 @@ class Parser(object):
 
     FUNCTION_KEYWORDS = ('uint8', 'uint16', 'uint32', 'uint8be', 'uint16be', 'uint32be')
 
-    def __init__(self, console_logging=False, store_raw_sections=True):
+    def __init__(self, console_logging=False, store_raw_sections=True, return_python_types=False):
         """Initialize the parser object.
 
         Args:
@@ -136,6 +137,8 @@ class Parser(object):
 
         if console_logging:
             self._set_logging()
+
+        self.return_python_types = return_python_types
 
         # adds functionality to track attributes containing raw section data
         # in case needed (ie modifying metadata and re-constructing a complete rule
@@ -465,7 +468,7 @@ class Parser(object):
         return logic_hash
 
     @staticmethod
-    def rebuild_yara_rule(rule):
+    def rebuild_yara_rule(rule, return_python_types=False):
         """Take a parsed yararule and rebuild it into a usable one."""
         rule_format = u"{imports}{scopes}rule {rulename}{tags} {{\n{meta}{strings}{condition}\n}}\n"
 
@@ -499,11 +502,19 @@ class Parser(object):
                     values = [values]
 
                 for v in values:
-                    try:
-                        if v in ('true', 'false') or int(v):
-                            pass
-                    except ValueError:
-                        v = '"{}"'.format(v)
+                    if return_python_types:
+                        if isinstance(v, bool):
+                            v = str(v).lower()
+                        elif isinstance(v, int):
+                            v = str(v)
+                        else:
+                            v = '"{}"'.format(v)
+                    else:
+                        try:
+                            if v in ('true', 'false') or int(v):
+                                pass
+                        except ValueError:
+                            v = '"{}"'.format(v)
                     unpacked_meta.append(u'\n\t\t{key} = {value}'.format(key=k, value=v))
             rule_meta = u'\n\tmeta:{}\n'.format(u''.join(unpacked_meta))
         else:
@@ -852,6 +863,13 @@ class Plyara(Parser):
                                   t.lexer.lineno, t.lexer.lexpos)
 
         t.lexer.begin('INITIAL')
+
+        # Account for newlines in bytestring.
+        if '\r\n' in t.value:
+            t.lexer.lineno += t.value.count('\r\n')
+        else:
+            t.lexer.lineno += t.value.count('\n')
+
         return t
 
     t_BYTESTRING_ignore = ' \r\n\t'
@@ -900,7 +918,7 @@ class Plyara(Parser):
         return t
 
     def t_STRINGNAME_ARRAY(self, t):
-        r'@[0-9a-zA-Z\-_*]+'
+        r'@[0-9a-zA-Z\-_*]*'
         t.value = t.value
         return t
 
@@ -1051,7 +1069,16 @@ class Plyara(Parser):
                    | ID EQUALS FALSE
                    | ID EQUALS NUM'''
         key = p[1]
-        value = p[3].strip('"')
+        value = p[3]
+        if self.return_python_types:
+            if re.match(r'".*"', value):
+                value = value.strip('"')
+            elif value == 'true' or value == 'false':
+                value = bool(distutils.util.strtobool(value))
+            else:
+                value = int(value)
+        else:
+            value = value.strip('"')
         logger.debug(u'Matched meta kv: {} equals {}'.format(key, value))
         self._add_element(ElementTypes.METADATA_KEY_VALUE, (key, value, ))
 
@@ -1185,12 +1212,13 @@ def main():
     parser = argparse.ArgumentParser(description='Parse YARA rules into a dictionary representation.')
     parser.add_argument('file', metavar='FILE', help='File containing YARA rules to parse.')
     parser.add_argument('--log', help='Enable debug logging to the console.', action='store_true')
+    parser.add_argument('--pytypes', help='Return Python types in meta section.', action='store_true')
     args, _ = parser.parse_known_args()
 
     with codecs.open(args.file, 'r', encoding='utf-8') as fh:
         input_string = fh.read()
 
-    plyara = Plyara(console_logging=args.log)
+    plyara = Plyara(console_logging=args.log, return_python_types=args.pytypes)
     rules = plyara.parse_string(input_string)
 
     # can't JSON-serialize sets, so convert them to lists at print time
