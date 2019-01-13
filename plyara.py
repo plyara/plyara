@@ -1,3 +1,24 @@
+#!/usr/bin/env python
+# Copyright 2014 Christian Buia
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""Parse YARA rules and operate over them more easily.
+
+Plyara is a script and library that lexes and parses a file consisting of one more YARA rules into a python
+dictionary representation. The goal of this tool is to make it easier to perform bulk operations or transformations of
+large sets of YARA rules, such as extracting indicators, updating attributes, and analyzing a corpus. Other applications
+include linters and dependency checkers.
+"""
 import argparse
 import distutils.util
 import enum
@@ -32,37 +53,40 @@ class ElementTypes(enum.Enum):
 
 
 class ParseError(BaseException):
-    """
-    Base parsing error exception type.
+    """Base parsing error exception type.
+
     It stores also the line number and lex position as instance
     attributes 'lineno' and 'lexpos' respectively.
     """
 
     def __init__(self, lineno, lexpos):
+        """Initialize exception object."""
         self.lineno = lineno
         self.lexpos = lexpos
 
 
 class ParseTypeError(TypeError, ParseError):
-    """
-    Error emmited during parsing when a wrong token type is encountered.
+    """Error emmited during parsing when a wrong token type is encountered.
+
     It stores also the line number and lex position as instance
     attributes 'lineno' and 'lexpos' respectively.
     """
 
     def __init__(self, message, lineno, lexpos):
+        """Initialize exception object."""
         TypeError.__init__(self, message)
         ParseError.__init__(self, lineno, lexpos)
 
 
 class ParseValueError(ValueError, ParseError):
-    """
-    Error emmited during parsing when a wrong value is encountered.
+    """Error emmited during parsing when a wrong value is encountered.
+
     It stores also the line number and lex position as instance
     attributes 'lineno' and 'lexpos' respectively.
     """
 
     def __init__(self, message, lineno, lexpos):
+        """Initialize exception object."""
         ValueError.__init__(self, message)
         ParseError.__init__(self, lineno, lexpos)
 
@@ -92,13 +116,12 @@ class Parser(object):
 
     FUNCTION_KEYWORDS = ('uint8', 'uint16', 'uint32', 'uint8be', 'uint16be', 'uint32be')
 
-
     def __init__(self, console_logging=False, store_raw_sections=True, return_python_types=False):
         """Initialize the parser object.
 
-            Args:
-                console_logging: enable a stream handler if no handlers exist (default False)
-                store_raw_sections: enable attribute storage of raw section input
+        Args:
+            console_logging: enable a stream handler if no handlers exist (default False)
+            store_raw_sections: enable attribute storage of raw section input
         """
         self.rules = list()
 
@@ -134,7 +157,7 @@ class Parser(object):
 
     @staticmethod
     def _set_logging():
-        """Set the console logger only if handler(s) aren't already set"""
+        """Set the console logger only if handler(s) aren't already set."""
         if not len(logger.handlers):
             logger.setLevel(logging.DEBUG)
             ch = logging.StreamHandler()
@@ -258,7 +281,7 @@ class Parser(object):
 
     @staticmethod
     def is_valid_rule_name(entry):
-        """Checks to see if entry is a valid rule name."""
+        """Check to see if entry is a valid rule name."""
         # Check if entry is blank
         if not entry:
             return False
@@ -283,13 +306,13 @@ class Parser(object):
 
     @staticmethod
     def is_valid_rule_tag(entry):
-        """Checks to see if entry is a valid rule tag."""
+        """Check to see if entry is a valid rule tag."""
         # Same lexical conventions as name
         return Parser.is_valid_rule_name(entry)
 
     @staticmethod
     def detect_imports(rule):
-        """Takes a parsed yararule and provide a list of required imports based on condition."""
+        """Take a parsed yararule and provide a list of required imports based on condition."""
         detected_imports = []
         condition_terms = rule['condition_terms']
 
@@ -309,7 +332,7 @@ class Parser(object):
 
     @staticmethod
     def detect_dependencies(rule):
-        """Takes a parsed yararule and provide a list of external rule dependencies."""
+        """Take a parsed yararule and provide a list of external rule dependencies."""
         dependencies = []
         string_iteration_variables = []
         condition_terms = rule['condition_terms']
@@ -417,7 +440,7 @@ class Parser(object):
                 # Wildcard Match
                 elif '*' in condition:
                     wildcard_strings = []
-                    condition = condition.replace('$', '\$').replace('*', '.*')
+                    condition = condition.replace('$', r'\$').replace('*', '.*')
                     pattern = re.compile(condition)
 
                     for name, value in string_mapping['named'].items():
@@ -447,7 +470,6 @@ class Parser(object):
     @staticmethod
     def rebuild_yara_rule(rule, return_python_types=False):
         """Take a parsed yararule and rebuild it into a usable one."""
-
         rule_format = u"{imports}{scopes}rule {rulename}{tags} {{\n{meta}{strings}{condition}\n}}\n"
 
         rule_name = rule['rule_name']
@@ -575,6 +597,7 @@ class Parser(object):
 
         return formatted_rule
 
+
 class Plyara(Parser):
     """Class to define the lexer and the parser rules."""
 
@@ -699,8 +722,8 @@ class Plyara(Parser):
     t_DOTDOT = r'\.\.'
 
     states = (
-        ('STRING','exclusive'),
-        ('BYTESTRING','exclusive'),
+        ('STRING', 'exclusive'),
+        ('BYTESTRING', 'exclusive'),
         ('REXSTRING', 'exclusive'),
     )
 
@@ -772,7 +795,7 @@ class Plyara(Parser):
         r'.'
         if t.lexer.escape == 0 and t.value == '"':
             t.type = "STRING"
-            t.value = t.lexer.lexdata[t.lexer.string_start : t.lexer.lexpos]
+            t.value = t.lexer.lexdata[t.lexer.string_start:t.lexer.lexpos]
             t.lexer.begin('INITIAL')
             return t
 
@@ -782,13 +805,13 @@ class Plyara(Parser):
     t_STRING_ignore = ' \t\n'
 
     def t_STRING_error(self, t):
+        """Raise parsing error for illegal string character."""
         raise ParseTypeError("Illegal string character " + t.value[0] + " at line " + str(t.lexer.lineno),
                              t.lexer.lineno, t.lexer.lexpos)
 
     # Byte String Handling
     def t_begin_BYTESTRING(self, t):
         r'\{'
-
         if hasattr(t.lexer, 'section') and t.lexer.section == 'strings':
             t.lexer.bytestring_start = t.lexer.lexpos - 1
             t.lexer.begin('BYTESTRING')
@@ -811,8 +834,8 @@ class Plyara(Parser):
         groups = t.lexer.lexmatch.groups()
         index = groups.index(t.value)
 
-        lower_bound = groups[index+1]
-        upper_bound = groups[index+2]
+        lower_bound = groups[index + 1]
+        upper_bound = groups[index + 2]
 
         if lower_bound and upper_bound:
             if not 0 <= int(lower_bound) <= int(upper_bound):
@@ -833,7 +856,7 @@ class Plyara(Parser):
     def t_BYTESTRING_end(self, t):
         r'\}'
         t.type = "BYTESTRING"
-        t.value = t.lexer.lexdata[t.lexer.bytestring_start : t.lexer.lexpos]
+        t.value = t.lexer.lexdata[t.lexer.bytestring_start:t.lexer.lexpos]
 
         if t.lexer.bytestring_group != 0:
             raise ParseValueError("Unbalanced group in bytestring " + t.value + " at line " + str(t.lexer.lineno),
@@ -852,6 +875,7 @@ class Plyara(Parser):
     t_BYTESTRING_ignore = ' \r\n\t'
 
     def t_BYTESTRING_error(self, t):
+        """Raise parsing error for illegal bytestring character."""
         raise ParseTypeError("Illegal bytestring character " + t.value[0] + " at line " + str(t.lexer.lineno),
                              t.lexer.lineno, t.lexer.lexpos)
 
@@ -870,7 +894,7 @@ class Plyara(Parser):
         r'/(?:[ismx]*)'
         if t.lexer.escape == 0:
             t.type = "REXSTRING"
-            t.value = t.lexer.lexdata[t.lexer.rexstring_start : t.lexer.lexpos]
+            t.value = t.lexer.lexdata[t.lexer.rexstring_start:t.lexer.lexpos]
             t.lexer.begin('INITIAL')
             return t
         else:
@@ -884,6 +908,7 @@ class Plyara(Parser):
     t_REXSTRING_ignore = ' \r\n\t'
 
     def t_REXSTRING_error(self, t):
+        """Raise parsing error for illegal rexstring character."""
         raise ParseTypeError("Illegal rexstring character " + t.value[0] + " at line " + str(t.lexer.lineno),
                              t.lexer.lineno, t.lexer.lexpos)
 
@@ -928,8 +953,9 @@ class Plyara(Parser):
 
     # Error handling rule
     def t_error(self, t):
-        raise ParseTypeError(u'Illegal character {} at line {}'.format(t.value[0], t.lexer.lineno),
-            t.lexer.lineno, t.lexer.lexpos)
+        """Raise parsing error."""
+        message = u'Illegal character {} at line {}'.format(t.value[0], t.lexer.lineno)
+        raise ParseTypeError(message, t.lexer.lineno, t.lexer.lexpos)
 
     # Parsing rules
 
@@ -951,7 +977,6 @@ class Plyara(Parser):
 
     def p_rule(self, p):
         '''rule : scopes RULE ID tag_section LBRACE rule_body RBRACE'''
-
         logger.debug(u'Matched rule: {}'.format(p[3]))
         logger.debug(u'Rule start: {}, Rule stop: {}'.format(p.lineno(2), p.lineno(7)))
 
@@ -1007,7 +1032,6 @@ class Plyara(Parser):
         '''tag : ID'''
         logger.debug(u'Matched tag: {}'.format(p[1]))
         self._add_element(ElementTypes.TAG, p[1])
-
 
     def p_rule_body(self, p):
         '''rule_body : sections'''
@@ -1072,7 +1096,6 @@ class Plyara(Parser):
                       | STRINGNAME EQUALS REXSTRING comments
                       | STRINGNAME EQUALS REXSTRING string_modifiers
                       | STRINGNAME EQUALS REXSTRING string_modifiers comments'''
-
         key = p[1]
         value = p[3]
         logger.debug(u'Matched strings kv: {} equals {}'.format(key, value))
@@ -1166,12 +1189,12 @@ class Plyara(Parser):
                 | STRINGNAME_LENGTH
                 | STRINGCOUNT
                 | REXSTRING'''
-
         logger.debug(u'Matched a condition term: {}'.format(p[1]))
         self._add_element(ElementTypes.TERM, p[1])
 
     # Error rule for syntax errors
     def p_error(self, p):
+        """Raise syntax errors."""
         if not p:
             # This happens when we try to parse an empty string or file, or one with no actual rules.
             pass
@@ -1180,8 +1203,8 @@ class Plyara(Parser):
             self.parser.errok()
             self._rule_comments.append(p)
         else:
-            raise ParseTypeError(u'Unknown text {} for token of type {} on line {}'
-                .format(p.value, p.type, p.lineno), p.lineno, p.lexpos)
+            message = u'Unknown text {} for token of type {} on line {}'.format(p.value, p.type, p.lineno)
+            raise ParseTypeError(message, p.lineno, p.lexpos)
 
 
 def main():
