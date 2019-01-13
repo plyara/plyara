@@ -1,4 +1,5 @@
 import argparse
+import distutils.util
 import enum
 import json
 import logging
@@ -477,10 +478,11 @@ class Parser(object):
                     values = [values]
 
                 for v in values:
-                    try:
-                        if v in ('true', 'false') or int(v):
-                            pass
-                    except ValueError:
+                    if isinstance(v, bool):
+                        v = str(v).lower()
+                    elif isinstance(v, int):
+                        v = str(v)
+                    else:
                         v = '"{}"'.format(v)
                     unpacked_meta.append(u'\n\t\t{key} = {value}'.format(key=k, value=v))
             rule_meta = u'\n\tmeta:{}\n'.format(u''.join(unpacked_meta))
@@ -1034,7 +1036,13 @@ class Plyara(Parser):
                    | ID EQUALS FALSE
                    | ID EQUALS NUM'''
         key = p[1]
-        value = p[3].strip('"')
+        value = p[3]
+        if re.match(r'".*"', value):
+            value = value.strip('"')
+        elif value == 'true' or value == 'false':
+            value = bool(distutils.util.strtobool(value))
+        else:
+            value = int(value)
         logger.debug(u'Matched meta kv: {} equals {}'.format(key, value))
         self._add_element(ElementTypes.METADATA_KEY_VALUE, (key, value, ))
 
