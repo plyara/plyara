@@ -801,7 +801,6 @@ class Plyara(Parser):
     # Byte String Handling
     def t_begin_BYTESTRING(self, t):
         r'\{'
-
         if hasattr(t.lexer, 'section') and t.lexer.section == 'strings':
             t.lexer.bytestring_start = t.lexer.lexpos - 1
             t.lexer.begin('BYTESTRING')
