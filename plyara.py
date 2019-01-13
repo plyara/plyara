@@ -1037,7 +1037,7 @@ class Plyara(Parser):
                    | ID EQUALS NUM'''
         key = p[1]
         value = p[3]
-        if re.match(r'".+"', value):
+        if re.match(r'".*"', value):
             value = value.strip('"')
         elif value == 'true' or value == 'false':
             value = bool(distutils.util.strtobool(value))
