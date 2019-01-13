@@ -254,6 +254,39 @@ class TestRuleParser(unittest.TestCase):
 
             elif rulename == "IntegerTypeMetadata":
                 self.assertTrue('integer_value' in entry['metadata'] and
+                                entry['metadata']['integer_value'] == '100')
+
+            elif rulename == "BooleanTypeMetadata":
+                self.assertTrue('boolean_value' in entry['metadata'] and
+                                entry['metadata']['boolean_value'] == 'true')
+
+            elif rulename == "AllTypesMetadata":
+                self.assertTrue('string_value' in entry['metadata'] and
+                                'integer_value' in entry['metadata'] and
+                                'boolean_value' in entry['metadata'] and
+                                entry['metadata']['string_value'] == 'Different String Metadata' and
+                                entry['metadata']['integer_value'] == '33' and
+                                entry['metadata']['boolean_value'] == 'false')
+
+            else:
+                raise AssertionError(UNHANDLED_RULE_MSG.format(rulename))
+
+    def test_metadata_pytypes(self):
+        with open('tests/data/metadata_ruleset.yar', 'r') as f:
+            inputString = f.read()
+
+        plyara = Plyara(return_python_types=True)
+        result = plyara.parse_string(inputString)
+
+        for entry in result:
+            rulename = entry['rule_name']
+
+            if rulename == "StringTypeMetadata":
+                self.assertTrue('string_value' in entry['metadata'] and
+                                entry['metadata']['string_value'] == 'String Metadata')
+
+            elif rulename == "IntegerTypeMetadata":
+                self.assertTrue('integer_value' in entry['metadata'] and
                                 isinstance(entry['metadata']['integer_value'], int) and
                                 entry['metadata']['integer_value'] is 100)
 
