@@ -882,7 +882,7 @@ class Plyara(Parser):
         return t
 
     def t_STRINGNAME_ARRAY(self, t):
-        r'@[0-9a-zA-Z\-_*]+'
+        r'@[0-9a-zA-Z\-_*]*'
         t.value = t.value
         return t
 
