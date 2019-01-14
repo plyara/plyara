@@ -192,16 +192,9 @@ class Parser(object):
             key, value = element_value
 
             if 'metadata' not in self.current_rule:
-                self.current_rule['metadata'] = {key: value}
+                self.current_rule['metadata'] = [{key: value}]
             else:
-                if key not in self.current_rule['metadata']:
-                    self.current_rule['metadata'][key] = value
-                else:
-                    if isinstance(self.current_rule['metadata'][key], list):
-                        self.current_rule['metadata'][key].append(value)
-                    else:
-                        kv_list = [self.current_rule['metadata'][key], value]
-                        self.current_rule['metadata'][key] = kv_list
+                self.current_rule['metadata'].append({key: value})
 
         elif element_type == ElementTypes.STRINGS_KEY_VALUE:
             key, value = element_value
@@ -496,19 +489,17 @@ class Parser(object):
         # Rule Metadata
         if rule.get('metadata'):
             unpacked_meta = []
-            # Check for and handle correctly quoting string metadata
-            for k, values in rule['metadata'].items():
-                if not isinstance(values, list):
-                    values = [values]
+            kv_list = [(k,) + (v, ) for dic in rule['metadata'] for k, v in dic.items()]
 
-                for v in values:
-                    if isinstance(v, bool):
-                        v = str(v).lower()
-                    elif isinstance(v, int):
-                        v = str(v)
-                    else:
-                        v = '"{}"'.format(v)
-                    unpacked_meta.append(u'\n\t\t{key} = {value}'.format(key=k, value=v))
+            # Check for and handle correctly quoting string metadata
+            for k, v in kv_list:
+                if isinstance(v, bool):
+                    v = str(v).lower()
+                elif isinstance(v, int):
+                    v = str(v)
+                else:
+                    v = '"{}"'.format(v)
+                unpacked_meta.append(u'\n\t\t{key} = {value}'.format(key=k, value=v))
             rule_meta = u'\n\tmeta:{}\n'.format(u''.join(unpacked_meta))
         else:
             rule_meta = u''

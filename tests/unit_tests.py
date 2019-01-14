@@ -247,28 +247,32 @@ class TestRuleParser(unittest.TestCase):
 
         for entry in result:
             rulename = entry['rule_name']
+            kv = entry['metadata']
+            kv_list = [(k,) + (v, ) for dic in kv for k, v in dic.items()]
 
             if rulename == "StringTypeMetadata":
-                self.assertTrue('string_value' in entry['metadata'] and
-                                entry['metadata']['string_value'] == 'String Metadata')
+                self.assertEqual(len(kv), 1)
+                self.assertEqual(kv_list[0][0], 'string_value')
+                self.assertEqual(kv_list[0][1], 'String Metadata')
 
             elif rulename == "IntegerTypeMetadata":
-                self.assertTrue('integer_value' in entry['metadata'] and
-                                isinstance(entry['metadata']['integer_value'], int) and
-                                entry['metadata']['integer_value'] is 100)
+                self.assertEqual(len(kv), 1)
+                self.assertEqual(kv_list[0][0], 'integer_value')
+                self.assertIs(kv_list[0][1], 100)
 
             elif rulename == "BooleanTypeMetadata":
-                self.assertTrue('boolean_value' in entry['metadata'] and
-                                isinstance(entry['metadata']['boolean_value'], bool) and
-                                entry['metadata']['boolean_value'] is True)
+                self.assertEqual(len(kv), 1)
+                self.assertEqual(kv_list[0][0], 'boolean_value')
+                self.assertIs(kv_list[0][1], True)
 
             elif rulename == "AllTypesMetadata":
-                self.assertTrue('string_value' in entry['metadata'] and
-                                'integer_value' in entry['metadata'] and
-                                'boolean_value' in entry['metadata'] and
-                                entry['metadata']['string_value'] == 'Different String Metadata' and
-                                entry['metadata']['integer_value'] is 33 and
-                                entry['metadata']['boolean_value'] is False)
+                self.assertEqual(len(kv), 3)
+                self.assertEqual(kv_list[0][0], 'string_value')
+                self.assertEqual(kv_list[1][0], 'integer_value')
+                self.assertEqual(kv_list[2][0], 'boolean_value')
+                self.assertEqual(kv_list[0][1], 'Different String Metadata')
+                self.assertIs(kv_list[1][1], 33)
+                self.assertIs(kv_list[2][1], False)
 
             else:
                 raise AssertionError(UNHANDLED_RULE_MSG.format(rulename))
@@ -394,8 +398,11 @@ class TestYaraRules(unittest.TestCase):
         result = plyara.parse_string(inputString)
 
         self.assertEqual(len(result), 3)
-        self.assertEqual(result[0]['metadata']['author'], u'Andrés Iniesta')
-        self.assertEqual(result[0]['metadata']['date'], '2015-01-01')
+        kv_list = [(k,) + (v, ) for dic in result[0]['metadata'] for k, v in dic.items()]
+        self.assertEqual(kv_list[0][0], 'author')
+        self.assertEqual(kv_list[0][1], u'Andrés Iniesta')
+        self.assertEqual(kv_list[1][0], 'date')
+        self.assertEqual(kv_list[1][1], '2015-01-01')
         self.assertTrue([x["name"] for x in result[0]['strings']] == ['$a', '$b'])
 
     def disable_test_rule_name_imports_and_scopes(self):
