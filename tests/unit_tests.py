@@ -338,6 +338,21 @@ class TestRuleParser(unittest.TestCase):
                                  ('$re2', r'/state: (on|off)/i'),
                                  ('$re3', r'/\x00https?:\/\/[^\x00]{4,500}\x00\x00\x00/')])
 
+            elif rulename == "Xor":
+                self.assertTrue([(s['name'], s['value'], s['modifiers'])
+                                for s in entry['strings']] ==
+                                [('$xor_string', '\"This program cannot\"', ['xor'])])
+
+            elif rulename == "WideXorAscii":
+                self.assertTrue([(s['name'], s['value'], s['modifiers'])
+                                for s in entry['strings']] ==
+                                [('$xor_string', '\"This program cannot\"', ['xor', 'wide', 'ascii'])])
+
+            elif rulename == "WideXor":
+                self.assertTrue([(s['name'], s['value'], s['modifiers'])
+                                for s in entry['strings']] ==
+                                [('$xor_string', '\"This program cannot\"', ['xor', 'wide'])])
+
             else:
                 raise AssertionError(UNHANDLED_RULE_MSG.format(rulename))
 

@@ -113,7 +113,7 @@ class Parser(object):
                 'int16be', 'int32be', 'matches', 'meta', 'nocase',
                 'not', 'or', 'of', 'private', 'rule', 'strings',
                 'them', 'true', 'uint8', 'uint16', 'uint32', 'uint8be',
-                'uint16be', 'uint32be', 'wide')
+                'uint16be', 'uint32be', 'wide', 'xor')
 
     FUNCTION_KEYWORDS = ('uint8', 'uint16', 'uint32', 'uint8be', 'uint16be', 'uint32be')
 
@@ -617,7 +617,7 @@ class Plyara(Parser):
         'LEFTBITSHIFT',
         'MODULO',
         'TILDE',
-        'XOR',
+        'XOR_OP',
         'PERIOD',
         'COLON',
         'STAR',
@@ -671,6 +671,7 @@ class Plyara(Parser):
         'uint8be': 'UINT8BE',
         'uint16be': 'UINT16BE',
         'uint32be': 'UINT32BE',
+        'xor': 'XOR'
     }
 
     tokens = tokens + list(reserved.values())
@@ -695,7 +696,7 @@ class Plyara(Parser):
     t_LEFTBITSHIFT = r'<<'
     t_MODULO = r'%'
     t_TILDE = r'~'
-    t_XOR = r'\^'
+    t_XOR_OP = r'\^'
     t_PERIOD = r'\.'
     t_COLON = r':'
     t_STAR = r'\*'
@@ -1090,7 +1091,8 @@ class Plyara(Parser):
         '''string_modifier : NOCASE
                            | ASCII
                            | WIDE
-                           | FULLWORD'''
+                           | FULLWORD
+                           | XOR'''
         logger.debug(u'Matched a string modifier: {}'.format(p[1]))
         self._add_element(ElementTypes.STRINGS_MODIFIER, p[1])
 
@@ -1131,7 +1133,7 @@ class Plyara(Parser):
                 | LEFTBITSHIFT
                 | MODULO
                 | TILDE
-                | XOR
+                | XOR_OP
                 | PERIOD
                 | COLON
                 | STAR
