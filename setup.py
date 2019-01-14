@@ -1,25 +1,29 @@
-import codecs
-from os import path
+import io
+import os
+import pathlib
+import setuptools
 import sys
-from setuptools import setup
 
-here = path.abspath(path.dirname(__file__))
+if sys.version_info < (3, ):
+    here = os.path.abspath(os.path.dirname(__file__))
+else:
+    here = pathlib.Path().cwd()
 
 # Get the long description from the README file
-with codecs.open(path.join(here, 'README.rst'), encoding='utf-8') as f:
-    long_description = f.read()
+with io.open(os.path.join(here, 'README.rst'), encoding='utf-8') as fh:
+    long_description = fh.read()
 
 install_requires = ['ply>=3.11']
 if sys.version_info < (3, ):
     install_requires.append('enum34')
 
-setup(
+setuptools.setup(
     name='plyara',
-    version='1.3.3',
+    version='2.0.0',
     description='Parse YARA rules.',
     long_description=long_description,
     url='https://github.com/plyara/plyara',
-    author='8u1a',
+    author='plyara Maintainers',
     license='Apache License 2.0',
     test_suite='tests.unit_tests',
     classifiers=[
@@ -39,5 +43,9 @@ setup(
         'console_scripts': [
             'plyara=plyara:main',
         ],
+    },
+    project_urls={
+        'Bug Reports': 'https://github.com/plyara/plyara/issues',
+        'Source': 'https://github.com/plyara/plyara',
     },
 )
