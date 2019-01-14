@@ -7,7 +7,7 @@ import codecs
 import unittest
 
 from plyara import Plyara
-from plyara import ParseTypeError
+from plyara import ParseTypeError, ParseValueError
 
 UNHANDLED_RULE_MSG = "Unhandled Test Rule: {}"
 
@@ -681,7 +681,7 @@ class TestYaraRules(unittest.TestCase):
         '''
 
         plyara = Plyara()
-        with self.assertRaises(plyara.ParseValueError):
+        with self.assertRaises(ParseValueError):
             result = plyara.parse_string(inputRules)
 
     def test_bytestring_bad_group(self):
@@ -695,7 +695,7 @@ class TestYaraRules(unittest.TestCase):
         '''
 
         plyara = Plyara()
-        with self.assertRaises(plyara.ParseValueError):
+        with self.assertRaises(ParseValueError):
             result = plyara.parse_string(inputRules)
 
     def test_rexstring(self):

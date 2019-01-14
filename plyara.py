@@ -65,7 +65,7 @@ class ParseError(Exception):
         self.lineno = lineno
         self.lexpos = lexpos
         if message is not None:
-            super().__init__(message)
+            super(ParseError).__init__(message)
 
 
 class ParseTypeError(ParseError):
@@ -77,7 +77,7 @@ class ParseTypeError(ParseError):
 
     def __init__(self, message, lineno, lexpos):
         """Initialize exception object."""
-        super().__init__(lineno, lexpos, message)
+        super(ParseTypeError).__init__(lineno, lexpos, message)
 
 
 class ParseValueError(ParseError):
@@ -89,7 +89,7 @@ class ParseValueError(ParseError):
 
     def __init__(self, message, lineno, lexpos):
         """Initialize exception object."""
-        super().__init__(lineno, lexpos, message)
+        super(ParseValueError).__init__(lineno, lexpos, message)
 
 
 class Parser(object):
