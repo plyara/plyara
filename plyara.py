@@ -53,7 +53,7 @@ class ElementTypes(enum.Enum):
     MCOMMENT = 11
 
 
-class ParseError(BaseException):
+class ParseError(Exception):
     """Base parsing error exception type.
 
     It stores also the line number and lex position as instance
