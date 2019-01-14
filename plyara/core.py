@@ -20,11 +20,8 @@ dictionary representation. The goal of this tool is to make it easier to perform
 large sets of YARA rules, such as extracting indicators, updating attributes, and analyzing a corpus. Other applications
 include linters and dependency checkers.
 """
-import argparse
 import distutils.util
 import enum
-import io
-import json
 import logging
 import tempfile
 import hashlib
@@ -32,6 +29,8 @@ import re
 
 import ply.lex as lex
 import ply.yacc as yacc
+
+from .exceptions import ParseTypeError, ParseValueError
 
 # Initialize the logger
 logger = logging.getLogger(__name__)
@@ -51,45 +50,6 @@ class ElementTypes(enum.Enum):
     INCLUDE = 9
     COMMENT = 10
     MCOMMENT = 11
-
-
-class ParseError(Exception):
-    """Base parsing error exception type.
-
-    It stores also the line number and lex position as instance
-    attributes 'lineno' and 'lexpos' respectively.
-    """
-
-    def __init__(self, lineno, lexpos, message=None):
-        """Initialize exception object."""
-        self.lineno = lineno
-        self.lexpos = lexpos
-        if message is not None:
-            super(ParseError, self).__init__(message)
-
-
-class ParseTypeError(ParseError):
-    """Error emmited during parsing when a wrong token type is encountered.
-
-    It stores also the line number and lex position as instance
-    attributes 'lineno' and 'lexpos' respectively.
-    """
-
-    def __init__(self, message, lineno, lexpos):
-        """Initialize exception object."""
-        super(ParseTypeError, self).__init__(lineno, lexpos, message)
-
-
-class ParseValueError(ParseError):
-    """Error emmited during parsing when a wrong value is encountered.
-
-    It stores also the line number and lex position as instance
-    attributes 'lineno' and 'lexpos' respectively.
-    """
-
-    def __init__(self, message, lineno, lexpos):
-        """Initialize exception object."""
-        super(ParseValueError, self).__init__(lineno, lexpos, message)
 
 
 class Parser(object):
@@ -1188,29 +1148,3 @@ class Plyara(Parser):
         else:
             message = u'Unknown text {} for token of type {} on line {}'.format(p.value, p.type, p.lineno)
             raise ParseTypeError(message, p.lineno, p.lexpos)
-
-
-def main():
-    """Run main function."""
-    parser = argparse.ArgumentParser(description='Parse YARA rules into a dictionary representation.')
-    parser.add_argument('file', metavar='FILE', help='File containing YARA rules to parse.')
-    parser.add_argument('--log', help='Enable debug logging to the console.', action='store_true')
-    args, _ = parser.parse_known_args()
-
-    with io.open(args.file, 'r', encoding='utf-8') as fh:
-        input_string = fh.read()
-
-    plyara = Plyara(console_logging=args.log)
-    rules = plyara.parse_string(input_string)
-
-    # can't JSON-serialize sets, so convert them to lists at print time
-    def default(obj):
-        if isinstance(obj, set):
-            return list(obj)
-        raise TypeError
-
-    print(json.dumps(rules, sort_keys=True, indent=4, default=default))
-
-
-if __name__ == '__main__':
-    main()

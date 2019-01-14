@@ -40,11 +40,11 @@ setuptools.setup(
         'Programming Language :: Python :: 3.7',
     ],
     keywords='malware analysis yara',
-    py_modules=['plyara'],
+    packages=setuptools.find_packages(exclude=['docs', 'examples', 'tests']),
     install_requires=install_requires,
     entry_points={
         'console_scripts': [
-            'plyara=plyara:main',
+            'plyara=plyara.command_line:main',
         ],
     },
     project_urls={

@@ -6,8 +6,8 @@ import sys
 import codecs
 import unittest
 
-from plyara import Plyara
-from plyara import ParseTypeError, ParseValueError
+from plyara.core import Plyara
+from plyara.exceptions import ParseTypeError, ParseValueError
 
 UNHANDLED_RULE_MSG = "Unhandled Test Rule: {}"
 
@@ -377,7 +377,7 @@ class TestRuleParser(unittest.TestCase):
 
 class TestYaraRules(unittest.TestCase):
 
-    _PLYARA_SCRIPT_NAME = "plyara.py"
+    _PLYARA_SCRIPT_NAME = "plyara/command_line.py"
 
     def test_multiple_rules(self):
         inputString = u'''
