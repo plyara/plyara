@@ -8,6 +8,7 @@ import unittest
 
 from plyara.core import Plyara
 from plyara.exceptions import ParseTypeError, ParseValueError
+from plyara.utils import *
 
 UNHANDLED_RULE_MSG = "Unhandled Test Rule: {}"
 
@@ -24,7 +25,7 @@ class TestStaticMethods(unittest.TestCase):
         for entry in result:
             rulename = entry['rule_name']
             setname, _ = rulename.split('_')
-            rulehash = Plyara.generate_logic_hash(entry)
+            rulehash = generate_logic_hash(entry)
 
             if setname not in rule_mapping:
                 rule_mapping[setname] = [rulehash]
@@ -37,19 +38,19 @@ class TestStaticMethods(unittest.TestCase):
                 raise AssertionError("Collision detection failure for {}".format(setname))
 
     def test_is_valid_rule_name(self):
-        self.assertTrue(Plyara.is_valid_rule_name('test'))
-        self.assertTrue(Plyara.is_valid_rule_name('test123'))
-        self.assertTrue(Plyara.is_valid_rule_name('test_test'))
-        self.assertTrue(Plyara.is_valid_rule_name('_test_'))
-        self.assertTrue(Plyara.is_valid_rule_name('include_test'))
-        self.assertFalse(Plyara.is_valid_rule_name('123test'))
-        self.assertFalse(Plyara.is_valid_rule_name('123 test'))
-        self.assertFalse(Plyara.is_valid_rule_name('test 123'))
-        self.assertFalse(Plyara.is_valid_rule_name('test test'))
-        self.assertFalse(Plyara.is_valid_rule_name('test-test'))
-        self.assertFalse(Plyara.is_valid_rule_name('include'))
-        self.assertFalse(Plyara.is_valid_rule_name('test!*@&*!&'))
-        self.assertFalse(Plyara.is_valid_rule_name(''))
+        self.assertTrue(is_valid_rule_name('test'))
+        self.assertTrue(is_valid_rule_name('test123'))
+        self.assertTrue(is_valid_rule_name('test_test'))
+        self.assertTrue(is_valid_rule_name('_test_'))
+        self.assertTrue(is_valid_rule_name('include_test'))
+        self.assertFalse(is_valid_rule_name('123test'))
+        self.assertFalse(is_valid_rule_name('123 test'))
+        self.assertFalse(is_valid_rule_name('test 123'))
+        self.assertFalse(is_valid_rule_name('test test'))
+        self.assertFalse(is_valid_rule_name('test-test'))
+        self.assertFalse(is_valid_rule_name('include'))
+        self.assertFalse(is_valid_rule_name('test!*@&*!&'))
+        self.assertFalse(is_valid_rule_name(''))
 
     def test_rebuild_yara_rule(self):
         with codecs.open('tests/data/rebuild_ruleset.yar', 'r', encoding='utf-8') as f:
@@ -59,7 +60,7 @@ class TestStaticMethods(unittest.TestCase):
 
         rebuilt_rules = ""
         for rule in result:
-            rebuilt_rules += Plyara.rebuild_yara_rule(rule)
+            rebuilt_rules += rebuild_yara_rule(rule)
 
         self.assertEqual(inputString, rebuilt_rules)
 
@@ -79,7 +80,7 @@ class TestStaticMethods(unittest.TestCase):
         """
         parsed = Plyara().parse_string(test_rule)
         for rule in parsed:
-           unparsed = Plyara.rebuild_yara_rule(rule)
+           unparsed = rebuild_yara_rule(rule)
            self.assertTrue('string_value = "TEST STRING"' in unparsed)
            self.assertTrue('string_value = "DIFFERENT TEST STRING"' in unparsed)
            self.assertTrue('bool_value = true' in unparsed)
@@ -93,17 +94,17 @@ class TestStaticMethods(unittest.TestCase):
 
         result = Plyara().parse_string(inputString)
 
-        self.assertEqual(Plyara.detect_dependencies(result[0]), [])
-        self.assertEqual(Plyara.detect_dependencies(result[1]), [])
-        self.assertEqual(Plyara.detect_dependencies(result[2]), [])
-        self.assertEqual(Plyara.detect_dependencies(result[3]), ['is__osx', 'priv01', 'priv02', 'priv03', 'priv04'])
-        self.assertEqual(Plyara.detect_dependencies(result[4]), ['is__elf', 'priv01', 'priv02', 'priv03', 'priv04'])
-        self.assertEqual(Plyara.detect_dependencies(result[5]), ['is__elf', 'is__osx', 'priv01', 'priv02'])
-        self.assertEqual(Plyara.detect_dependencies(result[6]), ['is__elf', 'is__osx', 'priv01'])
-        self.assertEqual(Plyara.detect_dependencies(result[7]), ['is__elf'])
-        self.assertEqual(Plyara.detect_dependencies(result[8]), ['is__osx', 'is__elf'])
-        self.assertEqual(Plyara.detect_dependencies(result[9]), ['is__osx'])
-        self.assertEqual(Plyara.detect_dependencies(result[10]), ['is__elf', 'is__osx'])
+        self.assertEqual(detect_dependencies(result[0]), [])
+        self.assertEqual(detect_dependencies(result[1]), [])
+        self.assertEqual(detect_dependencies(result[2]), [])
+        self.assertEqual(detect_dependencies(result[3]), ['is__osx', 'priv01', 'priv02', 'priv03', 'priv04'])
+        self.assertEqual(detect_dependencies(result[4]), ['is__elf', 'priv01', 'priv02', 'priv03', 'priv04'])
+        self.assertEqual(detect_dependencies(result[5]), ['is__elf', 'is__osx', 'priv01', 'priv02'])
+        self.assertEqual(detect_dependencies(result[6]), ['is__elf', 'is__osx', 'priv01'])
+        self.assertEqual(detect_dependencies(result[7]), ['is__elf'])
+        self.assertEqual(detect_dependencies(result[8]), ['is__osx', 'is__elf'])
+        self.assertEqual(detect_dependencies(result[9]), ['is__osx'])
+        self.assertEqual(detect_dependencies(result[10]), ['is__elf', 'is__osx'])
 
     def test_detect_imports(self):
         for imp in ('androguard', 'cuckoo', 'dotnet', 'elf', 'hash', 'magic', 'math', 'pe'):
@@ -111,7 +112,7 @@ class TestStaticMethods(unittest.TestCase):
                 inputString = f.read()
             results = Plyara().parse_string(inputString)
             for rule in results:
-                self.assertEqual(Plyara.detect_imports(rule), [imp])
+                self.assertEqual(detect_imports(rule), [imp])
 
 
 class TestRuleParser(unittest.TestCase):
