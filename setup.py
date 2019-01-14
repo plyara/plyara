@@ -1,12 +1,12 @@
 import io
 import os
-import pathlib
 import setuptools
 import sys
 
-if sys.version_info < (3, ):
+if sys.version_info < (3, 6, ):
     here = os.path.abspath(os.path.dirname(__file__))
 else:
+    import pathlib
     here = pathlib.Path().cwd()
 
 # Get the long description from the README file
