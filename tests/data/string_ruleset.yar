@@ -91,3 +91,30 @@ rule RegExp
     condition:
         $re1 and $re2 and $re3
 }
+
+rule Xor
+{
+    strings:
+        $xor_string = "This program cannot" xor
+
+    condition:
+       $xor_string
+}
+
+rule WideXorAscii
+{
+    strings:
+        $xor_string = "This program cannot" xor wide ascii
+
+    condition:
+        $xor_string
+}
+
+rule WideXor
+{
+    strings:
+        $xor_string = "This program cannot" xor wide
+
+    condition:
+        $xor_string
+}
