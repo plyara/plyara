@@ -1,7 +1,7 @@
 import setuptools
 import sys
 
-if sys.version_info == (2, 7, ):
+if sys.version_info < (3, ):
     from io import open
 if sys.version_info < (3, 6, ):
     import os
