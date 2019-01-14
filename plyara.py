@@ -60,13 +60,15 @@ class ParseError(Exception):
     attributes 'lineno' and 'lexpos' respectively.
     """
 
-    def __init__(self, lineno, lexpos):
+    def __init__(self, lineno, lexpos, message=None):
         """Initialize exception object."""
         self.lineno = lineno
         self.lexpos = lexpos
+        if message is not None:
+            super().__init__(message)
 
 
-class ParseTypeError(TypeError, ParseError):
+class ParseTypeError(ParseError):
     """Error emmited during parsing when a wrong token type is encountered.
 
     It stores also the line number and lex position as instance
@@ -75,11 +77,10 @@ class ParseTypeError(TypeError, ParseError):
 
     def __init__(self, message, lineno, lexpos):
         """Initialize exception object."""
-        TypeError.__init__(self, message)
-        ParseError.__init__(self, lineno, lexpos)
+        super().__init__(lineno, lexpos, message)
 
 
-class ParseValueError(ValueError, ParseError):
+class ParseValueError(ParseError):
     """Error emmited during parsing when a wrong value is encountered.
 
     It stores also the line number and lex position as instance
@@ -88,8 +89,7 @@ class ParseValueError(ValueError, ParseError):
 
     def __init__(self, message, lineno, lexpos):
         """Initialize exception object."""
-        ValueError.__init__(self, message)
-        ParseError.__init__(self, lineno, lexpos)
+        super().__init__(lineno, lexpos, message)
 
 
 class Parser(object):
