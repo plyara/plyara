@@ -22,9 +22,9 @@ include linters and dependency checkers.
 import argparse
 import distutils.util
 import enum
+import io
 import json
 import logging
-import codecs
 import tempfile
 import hashlib
 import re
@@ -1202,7 +1202,7 @@ def main():
     parser.add_argument('--log', help='Enable debug logging to the console.', action='store_true')
     args, _ = parser.parse_known_args()
 
-    with codecs.open(args.file, 'r', encoding='utf-8') as fh:
+    with io.open(args.file, 'r', encoding='utf-8') as fh:
         input_string = fh.read()
 
     plyara = Plyara(console_logging=args.log)
