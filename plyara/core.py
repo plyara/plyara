@@ -377,9 +377,7 @@ class Plyara(Parser):
         r'(//.*)(?=\n)'
         return t
 
-    # http://comments.gmane.org/gmane.comp.python.ply/134
     def t_MCOMMENT(self, t):
-        # r'/\*(.|\n)*?\*/'
         r'/\*(.|\n|\r\n)*?\*/'
         if '\r\n' in t.value:
             t.lexer.lineno += t.value.count('\r\n')
