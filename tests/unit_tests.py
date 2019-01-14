@@ -681,7 +681,7 @@ class TestYaraRules(unittest.TestCase):
         '''
 
         plyara = Plyara()
-        with self.assertRaises(ValueError):
+        with self.assertRaises(plyara.ParseValueError):
             result = plyara.parse_string(inputRules)
 
     def test_bytestring_bad_group(self):
@@ -695,7 +695,7 @@ class TestYaraRules(unittest.TestCase):
         '''
 
         plyara = Plyara()
-        with self.assertRaises(ValueError):
+        with self.assertRaises(plyara.ParseValueError):
             result = plyara.parse_string(inputRules)
 
     def test_rexstring(self):
