@@ -143,6 +143,7 @@ class Parser(object):
         # in case needed (ie modifying metadata and re-constructing a complete rule
         # while maintaining original comments and padding)
         self.store_raw_sections = store_raw_sections
+        self._raw_input = None
         self._meta_start = None
         self._meta_end = None
         self._strings_start = None
@@ -173,13 +174,13 @@ class Parser(object):
 
             if self.store_raw_sections:
                 if self._meta_start:
-                    self.current_rule['raw_meta'] = self.raw_input[self._meta_start:self._meta_end]
+                    self.current_rule['raw_meta'] = self._raw_input[self._meta_start:self._meta_end]
 
                 if self._strings_start:
-                    self.current_rule['raw_strings'] = self.raw_input[self._strings_start:self._strings_end]
+                    self.current_rule['raw_strings'] = self._raw_input[self._strings_start:self._strings_end]
 
                 if self._condition_start:
-                    self.current_rule['raw_condition'] = self.raw_input[self._condition_start:self._condition_end]
+                    self.current_rule['raw_condition'] = self._raw_input[self._condition_start:self._condition_end]
 
             self._flush_accumulators()
 
@@ -267,7 +268,7 @@ class Parser(object):
 
     def parse_string(self, input_string):
         """Take a string input expected to consist of YARA rules, and return list of dictionaries representing them."""
-        self.raw_input = input_string
+        self._raw_input = input_string
         yacc.parse(input_string)
 
         for rule in self.rules:
