@@ -830,8 +830,7 @@ class Plyara(Parser):
             # This happens when we try to parse an empty string or file, or one with no actual rules.
             pass
         elif p.type in ('COMMENT', 'MCOMMENT'):
-            # Just a comment - tell parser that it is okay
-            self.parser.errok()
+            self.parser.errok()  # This is a method from PLY to reset the error state from parsing a comment
             self._rule_comments.append(p)
         else:
             message = u'Unknown text {} for token of type {} on line {}'.format(p.value, p.type, p.lineno)
