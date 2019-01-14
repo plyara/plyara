@@ -833,6 +833,7 @@ class Plyara(Parser):
             pass
         elif p.type in ('COMMENT', 'MCOMMENT'):
             # Just a comment - tell parser that it is okay
+            self.parser.errok()
             self._rule_comments.append(p)
         else:
             message = u'Unknown text {} for token of type {} on line {}'.format(p.value, p.type, p.lineno)
