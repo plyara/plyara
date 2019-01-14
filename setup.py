@@ -1,16 +1,19 @@
-import io
-import os
 import setuptools
 import sys
 
+if sys.version_info == (2, 7, ):
+    from io import open
 if sys.version_info < (3, 6, ):
+    import os
     here = os.path.abspath(os.path.dirname(__file__))
+    readme = os.path.join(here, 'README.rst')
 else:
     import pathlib
     here = pathlib.Path().cwd()
+    readme = str(here.joinpath('README.rst'))
 
 # Get the long description from the README file
-with io.open(os.path.join(here, 'README.rst'), encoding='utf-8') as fh:
+with open(readme, encoding='utf-8') as fh:
     long_description = fh.read()
 
 install_requires = ['ply>=3.11']
