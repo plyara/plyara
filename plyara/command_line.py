@@ -1,3 +1,7 @@
+"""plyara command line script.
+
+This module contains command line script for parsing rules.
+"""
 import argparse
 import io
 import json
