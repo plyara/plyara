@@ -287,7 +287,7 @@ class Plyara(Parser):
         'LEFTBITSHIFT',
         'MODULO',
         'TILDE',
-        'XOR_OP',
+        'XOR_OP',  # XOR operator token (from conditions section)
         'PERIOD',
         'COLON',
         'STAR',
@@ -341,7 +341,7 @@ class Plyara(Parser):
         'uint8be': 'UINT8BE',
         'uint16be': 'UINT16BE',
         'uint32be': 'UINT32BE',
-        'xor': 'XOR'
+        'xor': 'XOR_MOD'  # XOR string modifier token (from strings section)
     }
 
     tokens = tokens + list(reserved.values())
@@ -823,7 +823,7 @@ class Plyara(Parser):
                            | ASCII
                            | WIDE
                            | FULLWORD
-                           | XOR'''
+                           | XOR_MOD'''
         logger.debug('Matched a string modifier: {}'.format(p[1]))
         self._add_element(ElementTypes.STRINGS_MODIFIER, p[1])
 
