@@ -102,12 +102,12 @@ class TestUtilities(unittest.TestCase):
         parsed = Plyara().parse_string(test_rule)
         for rule in parsed:
             unparsed = rebuild_yara_rule(rule)
-            self.assertTrue('string_value = "TEST STRING"' in unparsed)
-            self.assertTrue('string_value = "DIFFERENT TEST STRING"' in unparsed)
-            self.assertTrue('bool_value = true' in unparsed)
-            self.assertTrue('bool_value = false' in unparsed)
-            self.assertTrue('digit_value = 5' in unparsed)
-            self.assertTrue('digit_value = 10' in unparsed)
+            self.assertIn('string_value = "TEST STRING"', unparsed)
+            self.assertIn('string_value = "DIFFERENT TEST STRING"', unparsed)
+            self.assertIn('bool_value = true', unparsed)
+            self.assertIn('bool_value = false', unparsed)
+            self.assertIn('digit_value = 5', unparsed)
+            self.assertIn('digit_value = 10', unparsed)
 
     def test_detect_dependencies(self):
         with open(data_dir.joinpath('detect_dependencies_ruleset.yar'), 'r') as fh:
@@ -148,7 +148,7 @@ class TestRuleParser(unittest.TestCase):
         result = self.parser.parse_string(inputString)
 
         for rule in result:
-            self.assertTrue('pe' in rule['imports'])
+            self.assertIn('pe', rule['imports'])
 
     def test_import_elf(self):
         with open(data_dir.joinpath('import_ruleset_elf.yar'), 'r') as fh:
@@ -157,7 +157,7 @@ class TestRuleParser(unittest.TestCase):
         result = self.parser.parse_string(inputString)
 
         for rule in result:
-            self.assertTrue('elf' in rule['imports'])
+            self.assertIn('elf', rule['imports'])
 
     def test_import_cuckoo(self):
         with open(data_dir.joinpath('import_ruleset_cuckoo.yar'), 'r') as fh:
@@ -166,7 +166,7 @@ class TestRuleParser(unittest.TestCase):
         result = self.parser.parse_string(inputString)
 
         for rule in result:
-            self.assertTrue('cuckoo' in rule['imports'])
+            self.assertIn('cuckoo', rule['imports'])
 
     def test_import_magic(self):
         with open(data_dir.joinpath('import_ruleset_magic.yar'), 'r') as fh:
@@ -175,7 +175,7 @@ class TestRuleParser(unittest.TestCase):
         result = self.parser.parse_string(inputString)
 
         for rule in result:
-            self.assertTrue('magic' in rule['imports'])
+            self.assertIn('magic', rule['imports'])
 
     def test_import_hash(self):
         with open(data_dir.joinpath('import_ruleset_hash.yar'), 'r') as fh:
@@ -184,7 +184,7 @@ class TestRuleParser(unittest.TestCase):
         result = self.parser.parse_string(inputString)
 
         for rule in result:
-            self.assertTrue('hash' in rule['imports'])
+            self.assertIn('hash', rule['imports'])
 
     def test_import_math(self):
         with open(data_dir.joinpath('import_ruleset_math.yar'), 'r') as fh:
@@ -193,7 +193,7 @@ class TestRuleParser(unittest.TestCase):
         result = self.parser.parse_string(inputString)
 
         for rule in result:
-            self.assertTrue('math' in rule['imports'])
+            self.assertIn('math', rule['imports'])
 
     def test_import_dotnet(self):
         with open(data_dir.joinpath('import_ruleset_dotnet.yar'), 'r') as fh:
@@ -202,7 +202,7 @@ class TestRuleParser(unittest.TestCase):
         result = self.parser.parse_string(inputString)
 
         for rule in result:
-            self.assertTrue('dotnet' in rule['imports'])
+            self.assertIn('dotnet', rule['imports'])
 
     def test_import_androguard(self):
         with open(data_dir.joinpath('import_ruleset_androguard.yar'), 'r') as fh:
@@ -211,7 +211,7 @@ class TestRuleParser(unittest.TestCase):
         result = self.parser.parse_string(inputString)
 
         for rule in result:
-            self.assertTrue('androguard' in rule['imports'])
+            self.assertIn('androguard', rule['imports'])
 
     def test_scopes(self):
         with open(data_dir.joinpath('scope_ruleset.yar'), 'r') as fh:
@@ -223,14 +223,14 @@ class TestRuleParser(unittest.TestCase):
             rulename = entry['rule_name']
 
             if rulename == 'GlobalScope':
-                self.assertTrue('global' in entry['scopes'])
+                self.assertIn('global', entry['scopes'])
 
             elif rulename == 'PrivateScope':
-                self.assertTrue('private' in entry['scopes'])
+                self.assertIn('private', entry['scopes'])
 
             elif rulename == 'PrivateGlobalScope':
-                self.assertTrue('global' in entry['scopes'] and
-                                'private' in entry['scopes'])
+                self.assertIn('global', entry['scopes'])
+                self.assertIn('private', entry['scopes'])
             else:
                 raise AssertionError(UNHANDLED_RULE_MSG.format(rulename))
 
@@ -244,19 +244,19 @@ class TestRuleParser(unittest.TestCase):
             rulename = entry['rule_name']
 
             if rulename == 'OneTag':
-                self.assertTrue(len(entry['tags']) == 1 and
-                                'tag1' in entry['tags'])
+                self.assertEqual(len(entry['tags']), 1)
+                self.assertIn('tag1', entry['tags'])
 
             elif rulename == 'TwoTags':
-                self.assertTrue(len(entry['tags']) == 2 and
-                                'tag1' in entry['tags'] and
-                                'tag2' in entry['tags'])
+                self.assertEqual(len(entry['tags']), 2)
+                self.assertIn('tag1', entry['tags'])
+                self.assertIn('tag2', entry['tags'])
 
             elif rulename == 'ThreeTags':
-                self.assertTrue(len(entry['tags']) == 3 and
-                                'tag1' in entry['tags'] and
-                                'tag2' in entry['tags'] and
-                                'tag3' in entry['tags'])
+                self.assertTrue(len(entry['tags']), 3)
+                self.assertIn('tag1', entry['tags'])
+                self.assertIn('tag2', entry['tags'])
+                self.assertIn('tag3', entry['tags'])
 
             else:
                 raise AssertionError(UNHANDLED_RULE_MSG.format(rulename))
@@ -467,23 +467,23 @@ class TestYaraRules(unittest.TestCase):
             rule_name = rule['rule_name']
 
             if rule_name == 'four':
-                self.assertTrue('scopes' not in rule)
-                self.assertTrue('imports' in rule)
+                self.assertNotIn('scopes', rule)
+                self.assertIn('imports', rule)
             if rule_name == 'five':
-                self.assertTrue('imports' in rule)
-                self.assertTrue('global' in rule['scopes'])
+                self.assertIn('imports', rule)
+                self.assertIn('global', rule['scopes'])
             if rule_name == 'six':
-                self.assertTrue('imports' in rule)
-                self.assertTrue('private' in rule['scopes'])
+                self.assertIn('imports', rule)
+                self.assertIn('private', rule['scopes'])
             if rule_name == 'seven':
-                self.assertTrue('imports' in rule)
+                self.assertIn('imports', rule)
                 self.assertTrue('private' in rule['scopes'] and 'global' in rule['scopes'])
             if rule_name == 'eight':
-                self.assertTrue('lib1' in rule['imports'])
-                self.assertTrue('scopes' not in rule)
+                self.assertIn('lib1', rule['imports'])
+                self.assertNotIn('scopes', rule)
             if rule_name == 'nine':
                 self.assertTrue('lib1' in rule['imports'] and 'lib2' in rule['imports'])
-                self.assertTrue('scopes' not in rule)
+                self.assertNotIn('scopes', rule)
             if rule_name == 'ten':
                 self.assertTrue('lib1' in rule['imports'] and 'lib2' in rule['imports'])
                 self.assertTrue('global' in rule['scopes'] and 'private' in rule['scopes'])
@@ -514,15 +514,15 @@ class TestYaraRules(unittest.TestCase):
             rule_name = rule['rule_name']
 
             if rule_name == 'one':
-                self.assertTrue('scopes' not in rule)
-                self.assertTrue('imports' not in rule)
+                self.assertNotIn('scopes', rule)
+                self.assertNotIn('imports', rule)
 
         for rule in result2:
             rule_name = rule['rule_name']
 
             if rule_name == 'two':
                 self.assertTrue('lib1' in rule['imports'] and 'lib2' in rule['imports'])
-                self.assertTrue('scopes' not in rule)
+                self.assertNotIn('scopes', rule)
             if rule_name == 'three':
                 self.assertTrue('lib1' in rule['imports'] and 'lib2' in rule['imports'])
                 self.assertTrue('global' in rule['scopes'] and 'private' in rule['scopes'])
@@ -548,8 +548,8 @@ class TestYaraRules(unittest.TestCase):
         plyara = Plyara()
         result = plyara.parse_string(inputRule)
 
-        self.assertTrue(len(result) == 1)
-        self.assertTrue(result[0]['rule_name'] == 'testName')
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]['rule_name'], 'testName')
 
     def test_store_raw(self):
         inputRule = r'''
@@ -618,9 +618,12 @@ class TestYaraRules(unittest.TestCase):
         for rule in result:
             rule_name = rule['rule_name']
             if rule_name == 'eleven':
-                self.assertTrue(len(rule['tags']) == 1 and 'tag1' in rule['tags'])
+                self.assertEqual(len(rule['tags']), 1)
+                self.assertIn('tag1', rule['tags'])
             if rule_name == 'twelve':
-                self.assertTrue(len(rule['tags']) == 2 and 'tag1' in rule['tags'] and 'tag2' in rule['tags'])
+                self.assertEqual(len(rule['tags']), 2)
+                self.assertIn('tag1', rule['tags'])
+                self.assertIn('tag2', rule['tags'])
 
     def test_empty_string(self):
         inputRules = r'''
@@ -646,7 +649,7 @@ class TestYaraRules(unittest.TestCase):
         for rule in result:
             rule_name = rule['rule_name']
             if rule_name == 'thirteen':
-                self.assertTrue(len(rule['metadata']) == 3)
+                self.assertEqual(len(rule['metadata']), 3)
 
     def test_bytestring(self):
         inputRules = r'''
