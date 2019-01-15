@@ -18,7 +18,6 @@
 This module contains command line script for parsing rules.
 """
 import argparse
-import io
 import json
 
 from plyara.core import Plyara
@@ -31,7 +30,7 @@ def main():
     parser.add_argument('--log', help='Enable debug logging to the console.', action='store_true')
     args, _ = parser.parse_known_args()
 
-    with io.open(args.file, 'r', encoding='utf-8') as fh:
+    with open(args.file, 'r', encoding='utf-8') as fh:
         input_string = fh.read()
 
     plyara = Plyara(console_logging=args.log)
