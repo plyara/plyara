@@ -239,7 +239,6 @@ class Parser:
 
         Returns:
             dict: All the parsed components of a YARA rule.
-
         """
         self._raw_input = input_string
         yacc.parse(input_string)
