@@ -374,6 +374,7 @@ class Plyara(Parser):
         ('REXSTRING', 'exclusive', ),
     )
 
+    # Complex token handling
     def t_RBRACE(self, t):
         r'}'
         t.value = t.value
@@ -436,7 +437,7 @@ class Plyara(Parser):
 
         return t
 
-    # Text String Handling
+    # Text string handling
     def t_begin_STRING(self, t):
         r'"'
         t.lexer.escape = 0
@@ -466,7 +467,7 @@ class Plyara(Parser):
         raise ParseTypeError('Illegal string character: {}, at line: {}'.format(t.value[0], t.lexer.lineno),
                              t.lexer.lineno, t.lexer.lexpos)
 
-    # Byte String Handling
+    # Byte string handling
     def t_begin_BYTESTRING(self, t):
         r'\{'
         if hasattr(t.lexer, 'section') and t.lexer.section == 'strings':
@@ -637,7 +638,6 @@ class Plyara(Parser):
                              t.lexer.lineno, t.lexer.lexpos)
 
     # Parsing rules
-
     precedence = (
         ('right', 'NUM', ),
         ('right', 'ID', ),
@@ -735,7 +735,7 @@ class Plyara(Parser):
     def p_condition_section(self, p):
         '''condition_section : SECTIONCONDITION expression'''
 
-    # Meta elements.
+    # Meta elements
     def p_meta_kvs(self, p):
         '''meta_kvs : meta_kvs meta_kv
                     | meta_kv'''
@@ -758,7 +758,7 @@ class Plyara(Parser):
         logger.debug('Matched meta kv: {} equals {}'.format(key, value))
         self._add_element(ElementTypes.METADATA_KEY_VALUE, (key, value, ))
 
-    # Strings elements.
+    # Strings elements
     def p_strings_kvs(self, p):
         '''strings_kvs : strings_kvs strings_kv
                        | strings_kv'''
@@ -795,7 +795,7 @@ class Plyara(Parser):
                     | MCOMMENT'''
         logger.debug('Matched a comment: {}'.format(p[1]))
 
-    # Condition elements.
+    # Condition elements
     def p_expression(self, p):
         '''expression : expression term
                       | term'''
