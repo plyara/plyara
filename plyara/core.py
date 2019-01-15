@@ -54,7 +54,7 @@ class ElementTypes(enum.Enum):
 class Parser:
     """Interpret the output of the parser and produce an alternative representation of YARA rules."""
 
-    COMPARISON_OPERATORS = ('==', '!=', '>', '<', '>=', '<=')
+    COMPARISON_OPERATORS = ('==', '!=', '>', '<', '>=', '<=', )
 
     IMPORT_OPTIONS = ('pe',
                       'elf',
@@ -63,7 +63,7 @@ class Parser:
                       'hash',
                       'math',
                       'dotnet',
-                      'androguard')
+                      'androguard', )
 
     KEYWORDS = ('all', 'and', 'any', 'ascii', 'at', 'condition',
                 'contains', 'entrypoint', 'false', 'filesize',
@@ -72,9 +72,9 @@ class Parser:
                 'int16be', 'int32be', 'matches', 'meta', 'nocase',
                 'not', 'or', 'of', 'private', 'rule', 'strings',
                 'them', 'true', 'uint8', 'uint16', 'uint32', 'uint8be',
-                'uint16be', 'uint32be', 'wide', 'xor')
+                'uint16be', 'uint32be', 'wide', 'xor', )
 
-    FUNCTION_KEYWORDS = ('uint8', 'uint16', 'uint32', 'uint8be', 'uint16be', 'uint32be')
+    FUNCTION_KEYWORDS = ('uint8', 'uint16', 'uint32', 'uint8be', 'uint16be', 'uint32be', )
 
     def __init__(self, console_logging=False, store_raw_sections=True):
         """Initialize the parser object.
@@ -357,9 +357,9 @@ class Plyara(Parser):
     t_DOTDOT = r'\.\.'
 
     states = (
-        ('STRING', 'exclusive'),
-        ('BYTESTRING', 'exclusive'),
-        ('REXSTRING', 'exclusive'),
+        ('STRING', 'exclusive', ),
+        ('BYTESTRING', 'exclusive', ),
+        ('REXSTRING', 'exclusive', ),
     )
 
     def t_RBRACE(self, t):
