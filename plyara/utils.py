@@ -246,7 +246,7 @@ def generate_logic_hash(rule):
         else:
             condition_mapping.append(condition)
 
-    logic_hash = hashlib.sha1(''.join(condition_mapping).encode()).hexdigest()
+    logic_hash = hashlib.sha256(''.join(condition_mapping).encode()).hexdigest()
     return logic_hash
 
 
