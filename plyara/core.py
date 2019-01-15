@@ -378,6 +378,7 @@ class Plyara(Parser):
         r'}'
         t.value = t.value
         self._condition_end = t.lexpos
+
         return t
 
     def t_NEWLINE(self, t):
@@ -387,6 +388,7 @@ class Plyara(Parser):
 
     def t_COMMENT(self, t):
         r'(//.*)(?=\n)'
+
         return t
 
     def t_MCOMMENT(self, t):
@@ -395,11 +397,13 @@ class Plyara(Parser):
             t.lexer.lineno += t.value.count('\r\n')
         else:
             t.lexer.lineno += t.value.count('\n')
+
         return t
 
     def t_HEXNUM(self, t):
         r'0x[A-Fa-f0-9]+'
         t.value = t.value
+
         return t
 
     def t_SECTIONMETA(self, t):
@@ -407,6 +411,7 @@ class Plyara(Parser):
         t.value = t.value
         self._meta_start = t.lexpos
         t.lexer.section = 'meta'
+
         return t
 
     def t_SECTIONSTRINGS(self, t):
@@ -416,6 +421,7 @@ class Plyara(Parser):
         if self._meta_end is None:
             self._meta_end = t.lexpos
         t.lexer.section = 'strings'
+
         return t
 
     def t_SECTIONCONDITION(self, t):
@@ -427,6 +433,7 @@ class Plyara(Parser):
         if self._strings_end is None:
             self._strings_end = t.lexpos
         t.lexer.section = 'condition'
+
         return t
 
     # Text String Handling
@@ -442,6 +449,7 @@ class Plyara(Parser):
             t.type = "STRING"
             t.value = t.lexer.lexdata[t.lexer.string_start:t.lexer.lexpos]
             t.lexer.begin('INITIAL')
+
             return t
 
         if t.value == '\\' or t.lexer.escape == 1:
@@ -467,6 +475,7 @@ class Plyara(Parser):
             t.lexer.bytestring_group = 0
         else:
             t.type = "LBRACE"
+
             return t
 
     def t_BYTESTRING_pair(self, t):
@@ -541,6 +550,7 @@ class Plyara(Parser):
             t.lexer.escape = 0
         else:
             t.type = "FORWARDSLASH"
+
             return t
 
     def t_REXSTRING_end(self, t):
@@ -549,6 +559,7 @@ class Plyara(Parser):
             t.type = "REXSTRING"
             t.value = t.lexer.lexdata[t.lexer.rexstring_start:t.lexer.lexpos]
             t.lexer.begin('INITIAL')
+
             return t
         else:
             t.lexer.escape ^= 1
@@ -572,36 +583,43 @@ class Plyara(Parser):
     def t_STRINGNAME(self, t):
         r'\$[0-9a-zA-Z\-_*]*'
         t.value = t.value
+
         return t
 
     def t_STRINGNAME_ARRAY(self, t):
         r'@[0-9a-zA-Z\-_*]*'
         t.value = t.value
+
         return t
 
     def t_STRINGNAME_LENGTH(self, t):
         r'![0-9a-zA-Z\-_*]+'
         t.value = t.value
+
         return t
 
     def t_FILESIZE_SIZE(self, t):
         r"\d+[KM]B"
         t.value = t.value
+
         return t
 
     def t_NUM(self, t):
         r'\d+(\.\d+)?|0x\d+'
         t.value = t.value
+
         return t
 
     def t_ID(self, t):
         r'[a-zA-Z_]{1}[a-zA-Z_0-9.]*'
         t.type = self.reserved.get(t.value, 'ID')  # Check for reserved words
+
         return t
 
     def t_STRINGCOUNT(self, t):
         r'\#[^\s]*'
         t.value = t.value
+
         return t
 
     # A string containing ignored characters (spaces and tabs)
