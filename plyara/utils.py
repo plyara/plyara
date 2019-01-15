@@ -193,7 +193,7 @@ def generate_logic_hash(rule):
 
         # Handle string modifiers
         if modifiers:
-            value = entry['value'] + '<MODIFIED>' + ' & '.join(sorted(modifiers))
+            value = '{}<MODIFIED>{}'.format(entry['value'], ' & '.join(sorted(modifiers)))
         else:
             value = entry['value']
 
@@ -213,12 +213,12 @@ def generate_logic_hash(rule):
     for condition in conditions:
         # All string references (sort for consistency)
         if condition == 'them' or condition == '$*':
-            condition_mapping.append('<STRINGVALUE>' + ' | '.join(sorted_string_values))
+            condition_mapping.append('<STRINGVALUE>{}'.format(' | '.join(sorted_string_values)))
 
         elif condition.startswith('$') and condition != '$':
             # Exact Match
             if condition in string_mapping['named']:
-                condition_mapping.append('<STRINGVALUE>' + string_mapping['named'][condition])
+                condition_mapping.append('<STRINGVALUE>{}'.format(string_mapping['named'][condition]))
             # Wildcard Match
             elif '*' in condition:
                 wildcard_strings = list()
@@ -230,7 +230,7 @@ def generate_logic_hash(rule):
                         wildcard_strings.append(value)
 
                 wildcard_strings.sort()
-                condition_mapping.append('<STRINGVALUE>' + ' | '.join(wildcard_strings))
+                condition_mapping.append('<STRINGVALUE>{}'.format(' | '.join(wildcard_strings)))
             else:
                 logger.error('[!] Unhandled String Condition {}'.format(condition))
 
@@ -239,7 +239,7 @@ def generate_logic_hash(rule):
             condition = condition.replace('#', '$')
 
             if condition in string_mapping['named']:
-                condition_mapping.append('<COUNTOFSTRING>' + string_mapping['named'][condition])
+                condition_mapping.append('<COUNTOFSTRING>{}'.format(string_mapping['named'][condition]))
             else:
                 logger.error('[!] Unhandled String Count Condition {}'.format(condition))
 
@@ -272,13 +272,13 @@ def rebuild_yara_rule(rule):
 
     # Rule Scopes
     if rule.get('scopes'):
-        rule_scopes = '{} '.format(u' '.join(rule['scopes']))
+        rule_scopes = '{} '.format(' '.join(rule['scopes']))
     else:
         rule_scopes = str()
 
     # Rule Tags
     if rule.get('tags'):
-        rule_tags = ' : {}'.format(u' '.join(rule['tags']))
+        rule_tags = ' : {}'.format(' '.join(rule['tags']))
     else:
         rule_tags = str()
 
@@ -322,7 +322,7 @@ def rebuild_yara_rule(rule):
 
             string_container.append(fstring)
 
-        rule_strings = '\n\tstrings:{}\n'.format(u''.join(string_container))
+        rule_strings = '\n\tstrings:{}\n'.format(''.join(string_container))
     else:
         rule_strings = str()
 
