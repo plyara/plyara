@@ -631,7 +631,6 @@ class Plyara(Parser):
         return t
 
     # A string containing ignored characters (spaces and tabs)
-    # t_ignore = ' \t\r\n'
     t_ignore = ' \t'
 
     # Error handling rule
