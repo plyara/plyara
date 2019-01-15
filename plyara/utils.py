@@ -28,7 +28,14 @@ logger = logging.getLogger(__name__)
 
 
 def is_valid_rule_name(entry):
-    """Check to see if entry is a valid rule name."""
+    """Check to see if entry is a valid rule name.
+
+    Args:
+        entry: String containing rule name.
+
+    Returns:
+        bool
+    """
     # Check if entry is blank
     if not entry:
         return False
@@ -53,13 +60,27 @@ def is_valid_rule_name(entry):
 
 
 def is_valid_rule_tag(entry):
-    """Check to see if entry is a valid rule tag."""
+    """Check to see if entry is a valid rule tag.
+
+    Args:
+        entry: String containing tag.
+
+    Returns:
+        bool
+    """
     # Same lexical conventions as name
     return is_valid_rule_name(entry)
 
 
 def detect_imports(rule):
-    """Take a parsed yararule and provide a list of required imports based on condition."""
+    """Take a parsed yararule and provide a list of required imports based on condition.
+
+    Args:
+        rule: Dict output from a parsed rule.
+
+    Returns:
+        list: Imports that are required.
+    """
     detected_imports = []
     condition_terms = rule['condition_terms']
 
@@ -79,7 +100,14 @@ def detect_imports(rule):
 
 
 def detect_dependencies(rule):
-    """Take a parsed yararule and provide a list of external rule dependencies."""
+    """Take a parsed yararule and provide a list of external rule dependencies.
+
+    Args:
+        rule: Dict output from a parsed rule.
+
+    Returns:
+        list: External rule dependencies.
+    """
     dependencies = []
     string_iteration_variables = []
     condition_terms = rule['condition_terms']
@@ -144,7 +172,14 @@ def detect_dependencies(rule):
 
 
 def generate_logic_hash(rule):
-    """Calculate hash value of rule strings and condition."""
+    """Calculate hash value of rule strings and condition.
+
+    Args:
+        rule: Dict output from a parsed rule.
+
+    Returns:
+        str: Hexdigest SHA1.
+    """
     strings = rule.get('strings', [])
     conditions = rule['condition_terms']
 
@@ -216,7 +251,14 @@ def generate_logic_hash(rule):
 
 
 def rebuild_yara_rule(rule):
-    """Take a parsed yararule and rebuild it into a usable one."""
+    """Take a parsed yararule and rebuild it into a usable one.
+
+    Args:
+        rule: Dict output from a parsed rule.
+
+    Returns:
+        str: Formatted text string of YARA rule.
+    """
     rule_format = u"{imports}{scopes}rule {rulename}{tags} {{\n{meta}{strings}{condition}\n}}\n"
 
     rule_name = rule['rule_name']
