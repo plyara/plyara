@@ -28,7 +28,7 @@ def main():
     parser = argparse.ArgumentParser(description='Parse YARA rules into a dictionary representation.')
     parser.add_argument('file', metavar='FILE', help='File containing YARA rules to parse.')
     parser.add_argument('--log', help='Enable debug logging to the console.', action='store_true')
-    args, _ = parser.parse_known_args()
+    args = parser.parse_args()
 
     with open(args.file, 'r', encoding='utf-8') as fh:
         input_string = fh.read()
