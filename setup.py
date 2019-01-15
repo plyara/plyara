@@ -1,26 +1,13 @@
-import setuptools
-import sys
+import pathlib
+from setuptools import find_packages, setup
 
-if sys.version_info < (3, ):
-    from io import open
-if sys.version_info < (3, 6, ):
-    import os
-    here = os.path.abspath(os.path.dirname(__file__))
-    readme = os.path.join(here, 'README.rst')
-else:
-    import pathlib
-    here = pathlib.Path().cwd()
-    readme = str(here.joinpath('README.rst'))
+here = pathlib.Path().cwd()
 
 # Get the long description from the README file
-with open(readme, encoding='utf-8') as fh:
+with open(here.joinpath('README.rst'), encoding='utf-8') as fh:
     long_description = fh.read()
 
-install_requires = ['ply>=3.11']
-if sys.version_info < (3, ):
-    install_requires.append('enum34')
-
-setuptools.setup(
+setup(
     name='plyara',
     version='2.0.0',
     description='Parse YARA rules.',
@@ -34,14 +21,12 @@ setuptools.setup(
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Build Tools',
         'License :: OSI Approved :: Apache Software License',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.7',
     ],
     keywords='malware analysis yara',
-    packages=setuptools.find_packages(exclude=['docs', 'examples', 'tests']),
-    install_requires=install_requires,
+    packages=find_packages(exclude=['docs', 'examples', 'tests']),
+    install_requires=['ply>=3.11'],
     entry_points={
         'console_scripts': [
             'plyara=plyara.command_line:main',
