@@ -435,7 +435,7 @@ class TestYaraRules(unittest.TestCase):
         self.assertEqual(kv_list[0][1], 'Andrés Iniesta')
         self.assertEqual(kv_list[1][0], 'date')
         self.assertEqual(kv_list[1][1], '2015-01-01')
-        self.assertTrue([x['name'] for x in result[0]['strings']] == ['$a', '$b'])
+        self.assertEqual([x['name'] for x in result[0]['strings']], ['$a', '$b'])
 
     def disable_test_rule_name_imports_and_scopes(self):
         inputStringNIS = r'''
@@ -588,7 +588,7 @@ class TestYaraRules(unittest.TestCase):
         plyara = Plyara(store_raw_sections=True)
         result = plyara.parse_string(inputRule)
 
-        self.assertTrue(len(result) == 4)
+        self.assertEqual(len(result), 4)
         self.assertTrue(result[0].get('raw_meta', False))
         self.assertTrue(result[0].get('raw_strings', False))
         self.assertTrue(result[0].get('raw_condition', False))
@@ -692,9 +692,11 @@ class TestYaraRules(unittest.TestCase):
                 self.assertEqual(rule['strings'][0]['value'], '{ E2 34 A1 C8 23 FB }')
                 self.assertEqual(rule['strings'][4]['value'], '{ E2 34 A1 [4-6] FB }')
                 self.assertEqual(rule['strings'][8]['value'], '{ E2 23 ( 62 B4 | 56 ) 45 FB }')
-                self.assertEqual(rule['strings'][9]['value'], '{ E2 23 62 B4 56 // comment\n                     45 FB }')
+                long_string = '{ E2 23 62 B4 56 // comment\n                     45 FB }'
+                self.assertEqual(rule['strings'][9]['value'], long_string)
                 self.assertEqual(rule['strings'][10]['value'], '{ E2 23 62 B4 56 /* comment */ 45 FB }')
-                self.assertEqual(rule['strings'][11]['value'], '{\n                E2 23 62 B4 56 45 FB // comment\n            }')
+                long_string = '{\n                E2 23 62 B4 56 45 FB // comment\n            }'
+                self.assertEqual(rule['strings'][11]['value'], long_string)
 
     def test_nested_bytestring(self):
         inputRules = r'''
