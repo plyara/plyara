@@ -1,3 +1,10 @@
+#!/usr/bin/env python3
+"""A setuptools based setup module.
+
+See:
+https://packaging.python.org/en/latest/distributing.html
+https://github.com/pypa/sampleproject
+"""
 import pathlib
 from setuptools import find_packages, setup
 
