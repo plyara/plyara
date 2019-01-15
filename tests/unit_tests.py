@@ -36,8 +36,8 @@ data_dir = tests.joinpath('data')
 class TestStaticMethods(unittest.TestCase):
 
     def test_logic_hash_generator(self):
-        with open(data_dir.joinpath('logic_collision_ruleset.yar'), 'r') as f:
-            inputString = f.read()
+        with open(data_dir.joinpath('logic_collision_ruleset.yar'), 'r') as fh:
+            inputString = fh.read()
 
         result = Plyara().parse_string(inputString)
 
@@ -74,8 +74,8 @@ class TestStaticMethods(unittest.TestCase):
         self.assertFalse(is_valid_rule_name(''))
 
     def test_rebuild_yara_rule(self):
-        with open(data_dir.joinpath('rebuild_ruleset.yar'), 'r', encoding='utf-8') as f:
-            inputString = f.read()
+        with open(data_dir.joinpath('rebuild_ruleset.yar'), 'r', encoding='utf-8') as fh:
+            inputString = fh.read()
 
         result = Plyara().parse_string(inputString)
 
@@ -110,8 +110,8 @@ class TestStaticMethods(unittest.TestCase):
             self.assertTrue('digit_value = 10' in unparsed)
 
     def test_detect_dependencies(self):
-        with open(data_dir.joinpath('detect_dependencies_ruleset.yar'), 'r') as f:
-            inputString = f.read()
+        with open(data_dir.joinpath('detect_dependencies_ruleset.yar'), 'r') as fh:
+            inputString = fh.read()
 
         result = Plyara().parse_string(inputString)
 
@@ -129,8 +129,8 @@ class TestStaticMethods(unittest.TestCase):
 
     def test_detect_imports(self):
         for imp in ('androguard', 'cuckoo', 'dotnet', 'elf', 'hash', 'magic', 'math', 'pe'):
-            with open(data_dir.joinpath('import_ruleset_{}.yar'.format(imp)), 'r') as f:
-                inputString = f.read()
+            with open(data_dir.joinpath('import_ruleset_{}.yar'.format(imp)), 'r') as fh:
+                inputString = fh.read()
             results = Plyara().parse_string(inputString)
             for rule in results:
                 self.assertEqual(detect_imports(rule), [imp])
@@ -142,8 +142,8 @@ class TestRuleParser(unittest.TestCase):
         self.parser = Plyara()
 
     def test_import_pe(self):
-        with open(data_dir.joinpath('import_ruleset_pe.yar'), 'r') as f:
-            inputString = f.read()
+        with open(data_dir.joinpath('import_ruleset_pe.yar'), 'r') as fh:
+            inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
 
@@ -151,8 +151,8 @@ class TestRuleParser(unittest.TestCase):
             self.assertTrue('pe' in rule['imports'])
 
     def test_import_elf(self):
-        with open(data_dir.joinpath('import_ruleset_elf.yar'), 'r') as f:
-            inputString = f.read()
+        with open(data_dir.joinpath('import_ruleset_elf.yar'), 'r') as fh:
+            inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
 
@@ -160,8 +160,8 @@ class TestRuleParser(unittest.TestCase):
             self.assertTrue('elf' in rule['imports'])
 
     def test_import_cuckoo(self):
-        with open(data_dir.joinpath('import_ruleset_cuckoo.yar'), 'r') as f:
-            inputString = f.read()
+        with open(data_dir.joinpath('import_ruleset_cuckoo.yar'), 'r') as fh:
+            inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
 
@@ -169,8 +169,8 @@ class TestRuleParser(unittest.TestCase):
             self.assertTrue('cuckoo' in rule['imports'])
 
     def test_import_magic(self):
-        with open(data_dir.joinpath('import_ruleset_magic.yar'), 'r') as f:
-            inputString = f.read()
+        with open(data_dir.joinpath('import_ruleset_magic.yar'), 'r') as fh:
+            inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
 
@@ -178,8 +178,8 @@ class TestRuleParser(unittest.TestCase):
             self.assertTrue('magic' in rule['imports'])
 
     def test_import_hash(self):
-        with open(data_dir.joinpath('import_ruleset_hash.yar'), 'r') as f:
-            inputString = f.read()
+        with open(data_dir.joinpath('import_ruleset_hash.yar'), 'r') as fh:
+            inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
 
@@ -187,8 +187,8 @@ class TestRuleParser(unittest.TestCase):
             self.assertTrue('hash' in rule['imports'])
 
     def test_import_math(self):
-        with open(data_dir.joinpath('import_ruleset_math.yar'), 'r') as f:
-            inputString = f.read()
+        with open(data_dir.joinpath('import_ruleset_math.yar'), 'r') as fh:
+            inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
 
@@ -196,8 +196,8 @@ class TestRuleParser(unittest.TestCase):
             self.assertTrue('math' in rule['imports'])
 
     def test_import_dotnet(self):
-        with open(data_dir.joinpath('import_ruleset_dotnet.yar'), 'r') as f:
-            inputString = f.read()
+        with open(data_dir.joinpath('import_ruleset_dotnet.yar'), 'r') as fh:
+            inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
 
@@ -205,8 +205,8 @@ class TestRuleParser(unittest.TestCase):
             self.assertTrue('dotnet' in rule['imports'])
 
     def test_import_androguard(self):
-        with open(data_dir.joinpath('import_ruleset_androguard.yar'), 'r') as f:
-            inputString = f.read()
+        with open(data_dir.joinpath('import_ruleset_androguard.yar'), 'r') as fh:
+            inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
 
@@ -214,8 +214,8 @@ class TestRuleParser(unittest.TestCase):
             self.assertTrue('androguard' in rule['imports'])
 
     def test_scopes(self):
-        with open(data_dir.joinpath('scope_ruleset.yar'), 'r') as f:
-            inputString = f.read()
+        with open(data_dir.joinpath('scope_ruleset.yar'), 'r') as fh:
+            inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
 
@@ -235,8 +235,8 @@ class TestRuleParser(unittest.TestCase):
                 raise AssertionError(UNHANDLED_RULE_MSG.format(rulename))
 
     def test_tags(self):
-        with open(data_dir.joinpath('tag_ruleset.yar'), 'r') as f:
-            inputString = f.read()
+        with open(data_dir.joinpath('tag_ruleset.yar'), 'r') as fh:
+            inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
 
@@ -262,8 +262,8 @@ class TestRuleParser(unittest.TestCase):
                 raise AssertionError(UNHANDLED_RULE_MSG.format(rulename))
 
     def test_metadata(self):
-        with open(data_dir.joinpath('metadata_ruleset.yar'), 'r') as f:
-            inputString = f.read()
+        with open(data_dir.joinpath('metadata_ruleset.yar'), 'r') as fh:
+            inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
 
@@ -300,8 +300,8 @@ class TestRuleParser(unittest.TestCase):
                 raise AssertionError(UNHANDLED_RULE_MSG.format(rulename))
 
     def test_strings(self):
-        with open(data_dir.joinpath('string_ruleset.yar'), 'r') as f:
-            inputString = f.read()
+        with open(data_dir.joinpath('string_ruleset.yar'), 'r') as fh:
+            inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
 
@@ -374,15 +374,15 @@ class TestRuleParser(unittest.TestCase):
                 raise AssertionError(UNHANDLED_RULE_MSG.format(rulename))
 
     def test_conditions(self):
-        with open(data_dir.joinpath('condition_ruleset.yar'), 'r') as f:
-            inputString = f.read()
+        with open(data_dir.joinpath('condition_ruleset.yar'), 'r') as fh:
+            inputString = fh.read()
 
         # Just checking for parsing errors
         self.parser.parse_string(inputString)
 
     def test_include(self):
-        with open(data_dir.joinpath('include_ruleset.yar'), 'r') as f:
-            inputString = f.read()
+        with open(data_dir.joinpath('include_ruleset.yar'), 'r') as fh:
+            inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
         self.assertEqual(result[0]['includes'], ['string_ruleset.yar'])
@@ -906,8 +906,8 @@ class TestYaraRules(unittest.TestCase):
                 raise e
 
     def test_lineno_incremented_by_windows_newlines_in_bytestring(self):
-        with open('tests/data/windows_newline_ruleset.yar', 'r') as f:
-            inputRules = f.read()
+        with open('tests/data/windows_newline_ruleset.yar', 'r') as fh:
+            inputRules = fh.read()
 
         plyara = Plyara()
 
