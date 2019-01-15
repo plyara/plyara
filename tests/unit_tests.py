@@ -397,7 +397,7 @@ class TestYaraRules(unittest.TestCase):
     _PLYARA_SCRIPT_NAME = 'command_line.py'
 
     def test_multiple_rules(self):
-        inputString = u'''
+        inputString = '''
         rule FirstRule {
             meta:
                 author = "Andrés Iniesta"
@@ -432,7 +432,7 @@ class TestYaraRules(unittest.TestCase):
         self.assertEqual(len(result), 3)
         kv_list = [(k,) + (v, ) for dic in result[0]['metadata'] for k, v in dic.items()]
         self.assertEqual(kv_list[0][0], 'author')
-        self.assertEqual(kv_list[0][1], u'Andrés Iniesta')
+        self.assertEqual(kv_list[0][1], 'Andrés Iniesta')
         self.assertEqual(kv_list[1][0], 'date')
         self.assertEqual(kv_list[1][1], '2015-01-01')
         self.assertTrue([x['name'] for x in result[0]['strings']] == ['$a', '$b'])
