@@ -446,7 +446,7 @@ class Plyara(Parser):
     def t_STRING_value(self, t):
         r'.'
         if t.lexer.escape == 0 and t.value == '"':
-            t.type = "STRING"
+            t.type = 'STRING'
             t.value = t.lexer.lexdata[t.lexer.string_start:t.lexer.lexpos]
             t.lexer.begin('INITIAL')
 
@@ -463,7 +463,7 @@ class Plyara(Parser):
         Args:
             t: Token input from lexer.
         """
-        raise ParseTypeError("Illegal string character " + t.value[0] + " at line " + str(t.lexer.lineno),
+        raise ParseTypeError('Illegal string character ' + t.value[0] + ' at line ' + str(t.lexer.lineno),
                              t.lexer.lineno, t.lexer.lexpos)
 
     # Byte String Handling
@@ -474,7 +474,7 @@ class Plyara(Parser):
             t.lexer.begin('BYTESTRING')
             t.lexer.bytestring_group = 0
         else:
-            t.type = "LBRACE"
+            t.type = 'LBRACE'
 
             return t
 
@@ -497,7 +497,7 @@ class Plyara(Parser):
 
         if lower_bound and upper_bound:
             if not 0 <= int(lower_bound) <= int(upper_bound):
-                raise ParseValueError("Illegal bytestring jump bounds " + t.value + " at line " + str(t.lexer.lineno),
+                raise ParseValueError('Illegal bytestring jump bounds ' + t.value + ' at line ' + str(t.lexer.lineno),
                                       t.lexer.lineno, t.lexer.lexpos)
 
     def t_BYTESTRING_group_start(self, t):
@@ -513,11 +513,11 @@ class Plyara(Parser):
 
     def t_BYTESTRING_end(self, t):
         r'\}'
-        t.type = "BYTESTRING"
+        t.type = 'BYTESTRING'
         t.value = t.lexer.lexdata[t.lexer.bytestring_start:t.lexer.lexpos]
 
         if t.lexer.bytestring_group != 0:
-            raise ParseValueError("Unbalanced group in bytestring " + t.value + " at line " + str(t.lexer.lineno),
+            raise ParseValueError('Unbalanced group in bytestring ' + t.value + ' at line ' + str(t.lexer.lineno),
                                   t.lexer.lineno, t.lexer.lexpos)
 
         t.lexer.begin('INITIAL')
@@ -538,7 +538,7 @@ class Plyara(Parser):
         Args:
             t: Token input from lexer.
         """
-        raise ParseTypeError("Illegal bytestring character " + t.value[0] + " at line " + str(t.lexer.lineno),
+        raise ParseTypeError('Illegal bytestring character ' + t.value[0] + ' at line ' + str(t.lexer.lineno),
                              t.lexer.lineno, t.lexer.lexpos)
 
     # Rexstring Handling
@@ -549,14 +549,14 @@ class Plyara(Parser):
             t.lexer.begin('REXSTRING')
             t.lexer.escape = 0
         else:
-            t.type = "FORWARDSLASH"
+            t.type = 'FORWARDSLASH'
 
             return t
 
     def t_REXSTRING_end(self, t):
         r'/(?:[ismx]*)'
         if t.lexer.escape == 0:
-            t.type = "REXSTRING"
+            t.type = 'REXSTRING'
             t.value = t.lexer.lexdata[t.lexer.rexstring_start:t.lexer.lexpos]
             t.lexer.begin('INITIAL')
 
@@ -577,7 +577,7 @@ class Plyara(Parser):
         Args:
             t: Token input from lexer.
         """
-        raise ParseTypeError("Illegal rexstring character " + t.value[0] + " at line " + str(t.lexer.lineno),
+        raise ParseTypeError('Illegal rexstring character ' + t.value[0] + ' at line ' + str(t.lexer.lineno),
                              t.lexer.lineno, t.lexer.lexpos)
 
     def t_STRINGNAME(self, t):
