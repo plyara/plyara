@@ -22,7 +22,10 @@ import unittest
 
 from plyara.core import Plyara
 from plyara.exceptions import ParseTypeError, ParseValueError
-from plyara.utils import *
+from plyara.utils import generate_logic_hash
+from plyara.utils import rebuild_yara_rule
+from plyara.utils import detect_imports, detect_dependencies
+from plyara.utils import is_valid_rule_name
 
 UNHANDLED_RULE_MSG = 'Unhandled Test Rule: {}'
 
