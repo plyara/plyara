@@ -153,7 +153,7 @@ def detect_dependencies(rule):
                 continue
 
             # Check for external string variable dependency
-            if ((next_term in ('matches', 'contains')) or (previous_term in ('matches', 'contains'))):
+            if ((next_term in ('matches', 'contains', )) or (previous_term in ('matches', 'contains', ))):
                 continue
 
             # Check for external integer variable dependency
@@ -165,7 +165,7 @@ def detect_dependencies(rule):
             # Checks for likely rule reference
             if previous_term is None and next_term is None:
                 dependencies.append(term)
-            elif previous_term in ('and', 'or') or next_term in ('and', 'or'):
+            elif previous_term in ('and', 'or', ) or next_term in ('and', 'or', ):
                 dependencies.append(term)
 
     return dependencies
@@ -285,7 +285,7 @@ def rebuild_yara_rule(rule):
     # Rule Metadata
     if rule.get('metadata'):
         unpacked_meta = []
-        kv_list = [(k,) + (v, ) for dic in rule['metadata'] for k, v in dic.items()]
+        kv_list = [(k, ) + (v, ) for dic in rule['metadata'] for k, v in dic.items()]
 
         # Check for and handle correctly quoting string metadata
         for k, v in kv_list:
