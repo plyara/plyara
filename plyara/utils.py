@@ -85,7 +85,7 @@ def detect_imports(rule):
     condition_terms = rule['condition_terms']
 
     for imp in Parser.IMPORT_OPTIONS:
-        imp_module = "{}.".format(imp)
+        imp_module = '{}.'.format(imp)
 
         if imp in condition_terms and imp not in detected_imports:
             detected_imports.append(imp)
