@@ -49,7 +49,7 @@ class TestStaticMethods(unittest.TestCase):
         for setname, hashvalues in rule_mapping.items():
 
             if not len(set(hashvalues)) == 1:
-                raise AssertionError(''Collision detection failure for {}.format(setname))
+                raise AssertionError('Collision detection failure for {}'.format(setname))
 
     def test_is_valid_rule_name(self):
         self.assertTrue(is_valid_rule_name('test'))
