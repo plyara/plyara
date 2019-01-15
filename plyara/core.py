@@ -463,7 +463,7 @@ class Plyara(Parser):
         Args:
             t: Token input from lexer.
         """
-        raise ParseTypeError('Illegal string character ' + t.value[0] + ' at line ' + str(t.lexer.lineno),
+        raise ParseTypeError('Illegal string character: {}, at line: {}'.format(t.value[0], t.lexer.lineno),
                              t.lexer.lineno, t.lexer.lexpos)
 
     # Byte String Handling
@@ -497,7 +497,7 @@ class Plyara(Parser):
 
         if lower_bound and upper_bound:
             if not 0 <= int(lower_bound) <= int(upper_bound):
-                raise ParseValueError('Illegal bytestring jump bounds ' + t.value + ' at line ' + str(t.lexer.lineno),
+                raise ParseValueError('Illegal bytestring jump bounds: {}, at line: {}'.format(t.value, t.lexer.lineno),
                                       t.lexer.lineno, t.lexer.lexpos)
 
     def t_BYTESTRING_group_start(self, t):
@@ -517,7 +517,7 @@ class Plyara(Parser):
         t.value = t.lexer.lexdata[t.lexer.bytestring_start:t.lexer.lexpos]
 
         if t.lexer.bytestring_group != 0:
-            raise ParseValueError('Unbalanced group in bytestring ' + t.value + ' at line ' + str(t.lexer.lineno),
+            raise ParseValueError('Unbalanced group in bytestring: {}, at line: {}'.format(t.value, t.lexer.lineno),
                                   t.lexer.lineno, t.lexer.lexpos)
 
         t.lexer.begin('INITIAL')
@@ -538,7 +538,7 @@ class Plyara(Parser):
         Args:
             t: Token input from lexer.
         """
-        raise ParseTypeError('Illegal bytestring character ' + t.value[0] + ' at line ' + str(t.lexer.lineno),
+        raise ParseTypeError('Illegal bytestring character : {}, at line: {}'.format(t.value[0], t.lexer.lineno),
                              t.lexer.lineno, t.lexer.lexpos)
 
     # Rexstring Handling
@@ -577,7 +577,7 @@ class Plyara(Parser):
         Args:
             t: Token input from lexer.
         """
-        raise ParseTypeError('Illegal rexstring character ' + t.value[0] + ' at line ' + str(t.lexer.lineno),
+        raise ParseTypeError('Illegal rexstring character : {}, at line: {}'.format(t.value[0], t.lexer.lineno),
                              t.lexer.lineno, t.lexer.lexpos)
 
     def t_STRINGNAME(self, t):
@@ -633,8 +633,8 @@ class Plyara(Parser):
         Args:
             t: Token input from lexer.
         """
-        message = 'Illegal character {} at line {}'.format(t.value[0], t.lexer.lineno)
-        raise ParseTypeError(message, t.lexer.lineno, t.lexer.lexpos)
+        raise ParseTypeError('Illegal character {} at line {}'.format(t.value[0], t.lexer.lineno),
+                             t.lexer.lineno, t.lexer.lexpos)
 
     # Parsing rules
 
@@ -656,7 +656,7 @@ class Plyara(Parser):
 
     def p_rule(self, p):
         '''rule : scopes RULE ID tag_section LBRACE rule_body RBRACE'''
-        logger.debug('Matched rule: {}'.format(p[3]))
+        logger.info('Matched rule: {}'.format(p[3]))
         logger.debug('Rule start: {}, Rule stop: {}'.format(p.lineno(2), p.lineno(7)))
 
         while self._rule_comments:
@@ -714,7 +714,7 @@ class Plyara(Parser):
 
     def p_rule_body(self, p):
         '''rule_body : sections'''
-        logger.debug('Matched rule body')
+        logger.info('Matched rule body')
 
     def p_rule_sections(self, p):
         '''sections : sections section
@@ -727,7 +727,7 @@ class Plyara(Parser):
 
     def p_meta_section(self, p):
         '''meta_section : SECTIONMETA meta_kvs'''
-        logger.debug('Matched meta section')
+        logger.info('Matched meta section')
 
     def p_strings_section(self, p):
         '''strings_section : SECTIONSTRINGS strings_kvs'''
@@ -739,7 +739,7 @@ class Plyara(Parser):
     def p_meta_kvs(self, p):
         '''meta_kvs : meta_kvs meta_kv
                     | meta_kv'''
-        logger.debug('Matched meta kvs')
+        logger.info('Matched meta kvs')
 
     def p_meta_kv(self, p):
         '''meta_kv : ID EQUALS STRING
@@ -762,7 +762,7 @@ class Plyara(Parser):
     def p_strings_kvs(self, p):
         '''strings_kvs : strings_kvs strings_kv
                        | strings_kv'''
-        logger.debug('Matched strings kvs')
+        logger.info('Matched strings kvs')
 
     def p_strings_kv(self, p):
         '''strings_kv : STRINGNAME EQUALS STRING
