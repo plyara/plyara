@@ -17,10 +17,12 @@ script:
   - nosetests --with-coverage --cover-package=plyara --cover-xml
   - pycodestyle --max-line-length=120 plyara/*.py
   - pycodestyle --max-line-length=120 setup.py
+  - pycodestyle --max-line-length=120 tests/unit_tests.py
   - pydocstyle --ignore=D104 plyara/__init__.py
   - pydocstyle --ignore=D203,D205,D208,D209,D213,D300,D400,D401,D403,D406,D407,D413 plyara/core.py
   - pydocstyle --ignore=D203,D213 plyara/exceptions.py
   - pydocstyle --ignore=D203,D213,D406,D407,D413 plyara/utils.py
+  - pydocstyle --ignore=D203,D213 tests/unit_tests.py
   - pydocstyle plyara/command_line.py
   - pydocstyle setup.py
   - pyflakes plyara/core.py
@@ -28,6 +30,7 @@ script:
   - pyflakes plyara/command_line.py
   - pyflakes plyara/utils.py
   - pyflakes setup.py
+  - pyflakes tests/unit_tests.py
   - python setup.py checkdocs
 after_success:
   - python-codacy-coverage
