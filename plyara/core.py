@@ -51,7 +51,7 @@ class ElementTypes(enum.Enum):
     MCOMMENT = 11
 
 
-class Parser(object):
+class Parser:
     """Interpret the output of the parser and produce an alternative representation of YARA rules."""
 
     COMPARISON_OPERATORS = ('==', '!=', '>', '<', '>=', '<=')
