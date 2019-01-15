@@ -23,7 +23,7 @@ script:
   - pydocstyle --ignore=D203,D205,D208,D209,D213,D300,D400,D401,D403 plyara/core.py
   - pydocstyle --ignore=D203,D205,D208,D209,D213,D300,D400,D401,D403 plyara/exceptions.py
   - pydocstyle plyara/command_line.py
-  - pydocstyle --ignore=D100 setup.py
+  - pydocstyle setup.py
   - pyflakes plyara/core.py
   - pyflakes plyara/exceptions.py
   - pyflakes plyara/command_line.py
