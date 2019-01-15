@@ -115,9 +115,9 @@ class TestStaticMethods(unittest.TestCase):
 
         result = Plyara().parse_string(inputString)
 
-        self.assertEqual(detect_dependencies(result[0]), [])
-        self.assertEqual(detect_dependencies(result[1]), [])
-        self.assertEqual(detect_dependencies(result[2]), [])
+        self.assertEqual(detect_dependencies(result[0]), list())
+        self.assertEqual(detect_dependencies(result[1]), list())
+        self.assertEqual(detect_dependencies(result[2]), list())
         self.assertEqual(detect_dependencies(result[3]), ['is__osx', 'priv01', 'priv02', 'priv03', 'priv04'])
         self.assertEqual(detect_dependencies(result[4]), ['is__elf', 'priv01', 'priv02', 'priv03', 'priv04'])
         self.assertEqual(detect_dependencies(result[5]), ['is__elf', 'is__osx', 'priv01', 'priv02'])
@@ -877,12 +877,12 @@ class TestYaraRules(unittest.TestCase):
         self.assertEqual(result[0]['raw_meta'], 'meta: author = "Test" ')
 
     def test_parse_file_without_rules_returns_empty_list(self):
-        inputRules = ''
+        inputRules = str()
 
         plyara = Plyara()
         result = plyara.parse_string(inputRules)
 
-        self.assertEqual(result, [])
+        self.assertEqual(result, list())
 
     def test_lineno_incremented_by_newlines_in_bytestring(self):
         inputRules = r'''
