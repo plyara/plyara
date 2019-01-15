@@ -148,7 +148,7 @@ def detect_dependencies(rule):
             if term in string_iteration_variables:
                 continue
 
-            if previous_term in ('any', 'all') and next_term == 'in':
+            if previous_term in ('any', 'all', ) and next_term == 'in':
                 string_iteration_variables.append(term)
                 continue
 
