@@ -81,7 +81,7 @@ def detect_imports(rule):
     Returns:
         list: Imports that are required.
     """
-    detected_imports = []
+    detected_imports = list()
     condition_terms = rule['condition_terms']
 
     for imp in Parser.IMPORT_OPTIONS:
@@ -108,8 +108,8 @@ def detect_dependencies(rule):
     Returns:
         list: External rule dependencies.
     """
-    dependencies = []
-    string_iteration_variables = []
+    dependencies = list()
+    string_iteration_variables = list()
     condition_terms = rule['condition_terms']
 
     # Number of terms for index iteration and reference
@@ -180,16 +180,16 @@ def generate_logic_hash(rule):
     Returns:
         str: Hexdigest SHA1.
     """
-    strings = rule.get('strings', [])
+    strings = rule.get('strings', list())
     conditions = rule['condition_terms']
 
-    string_values = []
-    condition_mapping = []
-    string_mapping = {'anonymous': [], 'named': {}}
+    string_values = list()
+    condition_mapping = list()
+    string_mapping = {'anonymous': list(), 'named': dict()}
 
     for entry in strings:
         name = entry['name']
-        modifiers = entry.get('modifiers', [])
+        modifiers = entry.get('modifiers', list())
 
         # Handle string modifiers
         if modifiers:
@@ -221,7 +221,7 @@ def generate_logic_hash(rule):
                 condition_mapping.append('<STRINGVALUE>' + string_mapping['named'][condition])
             # Wildcard Match
             elif '*' in condition:
-                wildcard_strings = []
+                wildcard_strings = list()
                 condition = condition.replace('$', r'\$').replace('*', '.*')
                 pattern = re.compile(condition)
 
@@ -268,19 +268,19 @@ def rebuild_yara_rule(rule):
         unpacked_imports = ['import "{}"\n'.format(entry) for entry in rule['imports']]
         rule_imports = '{}\n'.format(''.join(unpacked_imports))
     else:
-        rule_imports = ''
+        rule_imports = str()
 
     # Rule Scopes
     if rule.get('scopes'):
         rule_scopes = '{} '.format(u' '.join(rule['scopes']))
     else:
-        rule_scopes = ''
+        rule_scopes = str()
 
     # Rule Tags
     if rule.get('tags'):
         rule_tags = ' : {}'.format(u' '.join(rule['tags']))
     else:
-        rule_tags = ''
+        rule_tags = str()
 
     # Rule Metadata
     if rule.get('metadata'):
@@ -298,12 +298,12 @@ def rebuild_yara_rule(rule):
             unpacked_meta.append('\n\t\t{key} = {value}'.format(key=k, value=v))
         rule_meta = '\n\tmeta:{}\n'.format(''.join(unpacked_meta))
     else:
-        rule_meta = ''
+        rule_meta = str()
 
     # Rule Strings
     if rule.get('strings'):
 
-        string_container = []
+        string_container = list()
 
         for rule_string in rule['strings']:
             if 'modifiers' in rule_string:
@@ -324,11 +324,11 @@ def rebuild_yara_rule(rule):
 
         rule_strings = '\n\tstrings:{}\n'.format(u''.join(string_container))
     else:
-        rule_strings = ''
+        rule_strings = str()
 
     if rule.get('condition_terms'):
         # Format condition with appropriate whitespace between keywords
-        cond = []
+        cond = list()
 
         for term in rule['condition_terms']:
 
@@ -368,7 +368,7 @@ def rebuild_yara_rule(rule):
         fcondition = ''.join(cond).rstrip(' ')
         rule_condition = '\n\tcondition:\n\t\t{}'.format(fcondition)
     else:
-        rule_condition = ''
+        rule_condition = str()
 
     formatted_rule = rule_format.format(imports=rule_imports,
                                         rulename=rule_name,
