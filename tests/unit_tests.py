@@ -33,7 +33,7 @@ tests = pathlib.Path('tests')
 data_dir = tests.joinpath('data')
 
 
-class TestStaticMethods(unittest.TestCase):
+class TestUtilities(unittest.TestCase):
 
     def test_logic_hash_generator(self):
         with open(data_dir.joinpath('logic_collision_ruleset.yar'), 'r') as fh:
