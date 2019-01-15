@@ -621,9 +621,9 @@ class Plyara(Parser):
     # Parsing rules
 
     precedence = (
-        ('right', 'NUM'),
-        ('right', 'ID'),
-        ('right', 'HEXNUM')
+        ('right', 'NUM', ),
+        ('right', 'ID', ),
+        ('right', 'HEXNUM', )
     )
 
     def p_ruleset(self, p):
