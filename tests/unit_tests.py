@@ -24,7 +24,7 @@ from plyara.core import Plyara
 from plyara.exceptions import ParseTypeError, ParseValueError
 from plyara.utils import *
 
-UNHANDLED_RULE_MSG = "Unhandled Test Rule: {}"
+UNHANDLED_RULE_MSG = 'Unhandled Test Rule: {}'
 
 class TestStaticMethods(unittest.TestCase):
 
@@ -49,7 +49,7 @@ class TestStaticMethods(unittest.TestCase):
         for setname, hashvalues in rule_mapping.items():
 
             if not len(set(hashvalues)) == 1:
-                raise AssertionError("Collision detection failure for {}".format(setname))
+                raise AssertionError(''Collision detection failure for {}.format(setname))
 
     def test_is_valid_rule_name(self):
         self.assertTrue(is_valid_rule_name('test'))
@@ -215,13 +215,13 @@ class TestRuleParser(unittest.TestCase):
         for entry in result:
             rulename = entry['rule_name']
 
-            if rulename == "GlobalScope":
+            if rulename == 'GlobalScope':
                 self.assertTrue('global' in entry['scopes'])
 
-            elif rulename == "PrivateScope":
+            elif rulename == 'PrivateScope':
                 self.assertTrue('private' in entry['scopes'])
 
-            elif rulename == "PrivateGlobalScope":
+            elif rulename == 'PrivateGlobalScope':
                 self.assertTrue('global' in entry['scopes'] and
                                 'private' in entry['scopes'])
             else:
@@ -236,16 +236,16 @@ class TestRuleParser(unittest.TestCase):
         for entry in result:
             rulename = entry['rule_name']
 
-            if rulename == "OneTag":
+            if rulename == 'OneTag':
                 self.assertTrue(len(entry['tags']) == 1 and
                                 'tag1' in entry['tags'])
 
-            elif rulename == "TwoTags":
+            elif rulename == 'TwoTags':
                 self.assertTrue(len(entry['tags']) == 2 and
                                 'tag1' in entry['tags'] and
                                 'tag2' in entry['tags'])
 
-            elif rulename == "ThreeTags":
+            elif rulename == 'ThreeTags':
                 self.assertTrue(len(entry['tags']) == 3 and
                                 'tag1' in entry['tags'] and
                                 'tag2' in entry['tags'] and
@@ -265,22 +265,22 @@ class TestRuleParser(unittest.TestCase):
             kv = entry['metadata']
             kv_list = [(k,) + (v, ) for dic in kv for k, v in dic.items()]
 
-            if rulename == "StringTypeMetadata":
+            if rulename == 'StringTypeMetadata':
                 self.assertEqual(len(kv), 1)
                 self.assertEqual(kv_list[0][0], 'string_value')
                 self.assertEqual(kv_list[0][1], 'String Metadata')
 
-            elif rulename == "IntegerTypeMetadata":
+            elif rulename == 'IntegerTypeMetadata':
                 self.assertEqual(len(kv), 1)
                 self.assertEqual(kv_list[0][0], 'integer_value')
                 self.assertIs(kv_list[0][1], 100)
 
-            elif rulename == "BooleanTypeMetadata":
+            elif rulename == 'BooleanTypeMetadata':
                 self.assertEqual(len(kv), 1)
                 self.assertEqual(kv_list[0][0], 'boolean_value')
                 self.assertIs(kv_list[0][1], True)
 
-            elif rulename == "AllTypesMetadata":
+            elif rulename == 'AllTypesMetadata':
                 self.assertEqual(len(kv), 3)
                 self.assertEqual(kv_list[0][0], 'string_value')
                 self.assertEqual(kv_list[1][0], 'integer_value')
@@ -303,43 +303,43 @@ class TestRuleParser(unittest.TestCase):
             kv = entry['strings']
             kv_list = [tuple(x.values()) for x in kv]
 
-            if rulename == "Text":
+            if rulename == 'Text':
                 self.assertEqual(len(kv), 1)
                 self.assertEqual(kv_list[0], ('$text_string', 'foobar', 'text', ))
 
-            elif rulename == "FullwordText":
+            elif rulename == 'FullwordText':
                 self.assertEqual(len(kv), 1)
                 self.assertEqual(kv_list[0], ('$text_string', 'foobar', 'text', ['fullword'], ))
 
-            elif rulename == "CaseInsensitiveText":
+            elif rulename == 'CaseInsensitiveText':
                 self.assertEqual(len(kv), 1)
                 self.assertEqual(kv_list[0], ('$text_string', 'foobar', 'text', ['nocase'], ))
 
-            elif rulename == "WideCharText":
+            elif rulename == 'WideCharText':
                 self.assertEqual(len(kv), 1)
                 self.assertEqual(kv_list[0], ('$wide_string', 'Borland', 'text', ['wide'], ))
 
-            elif rulename == "WideCharAsciiText":
+            elif rulename == 'WideCharAsciiText':
                 self.assertEqual(len(kv), 1)
                 self.assertEqual(kv_list[0], ('$wide_and_ascii_string', 'Borland', 'text', ['wide', 'ascii'], ))
 
-            elif rulename == "HexWildcard":
+            elif rulename == 'HexWildcard':
                 self.assertEqual(len(kv), 1)
                 self.assertEqual(kv_list[0], ('$hex_string', '{ E2 34 ?? C8 A? FB }', 'byte', ))
 
-            elif rulename == "HexJump":
+            elif rulename == 'HexJump':
                 self.assertEqual(len(kv), 1)
                 self.assertEqual(kv_list[0], ('$hex_string', '{ F4 23 [4-6] 62 B4 }', 'byte', ))
 
-            elif rulename == "HexAlternatives":
+            elif rulename == 'HexAlternatives':
                 self.assertEqual(len(kv), 1)
                 self.assertEqual(kv_list[0], ('$hex_string', '{ F4 23 ( 62 B4 | 56 ) 45 }', 'byte', ))
 
-            elif rulename == "HexMultipleAlternatives":
+            elif rulename == 'HexMultipleAlternatives':
                 self.assertEqual(len(kv), 1)
                 self.assertEqual(kv_list[0], ('$hex_string', '{ F4 23 ( 62 B4 | 56 | 45 ?? 67 ) 45 }', 'byte', ))
 
-            elif rulename == "RegExp":
+            elif rulename == 'RegExp':
                 self.assertEqual(len(kv), 3)
                 self.assertEqual(kv_list[0][0], '$re1')
                 self.assertEqual(kv_list[0][1], '/md5: [0-9a-fA-F]{32}/')
@@ -351,15 +351,15 @@ class TestRuleParser(unittest.TestCase):
                 self.assertEqual(kv_list[2][1], r'/\x00https?:\/\/[^\x00]{4,500}\x00\x00\x00/')
                 self.assertEqual(kv_list[2][2], 'regex')
 
-            elif rulename == "Xor":
+            elif rulename == 'Xor':
                 self.assertEqual(len(kv), 1)
                 self.assertEqual(kv_list[0], ('$xor_string', 'This program cannot', 'text', ['xor'], ))
 
-            elif rulename == "WideXorAscii":
+            elif rulename == 'WideXorAscii':
                 self.assertEqual(len(kv), 1)
                 self.assertEqual(kv_list[0], ('$xor_string', 'This program cannot', 'text', ['xor', 'wide', 'ascii'], ))
 
-            elif rulename == "WideXor":
+            elif rulename == 'WideXor':
                 self.assertEqual(len(kv), 1)
                 self.assertEqual(kv_list[0], ('$xor_string', 'This program cannot', 'text', ['xor', 'wide'], ))
 
@@ -428,7 +428,7 @@ class TestYaraRules(unittest.TestCase):
         self.assertEqual(kv_list[0][1], u'Andrés Iniesta')
         self.assertEqual(kv_list[1][0], 'date')
         self.assertEqual(kv_list[1][1], '2015-01-01')
-        self.assertTrue([x["name"] for x in result[0]['strings']] == ['$a', '$b'])
+        self.assertTrue([x['name'] for x in result[0]['strings']] == ['$a', '$b'])
 
     def disable_test_rule_name_imports_and_scopes(self):
         inputStringNIS = r'''
@@ -457,7 +457,7 @@ class TestYaraRules(unittest.TestCase):
         self.assertEqual(len(result), 7)
 
         for rule in result:
-            rule_name = rule["rule_name"]
+            rule_name = rule['rule_name']
 
             if rule_name == 'four':
                 self.assertTrue('scopes' not in rule)
@@ -504,14 +504,14 @@ class TestYaraRules(unittest.TestCase):
         self.assertEqual(len(result2), 2)
 
         for rule in result1:
-            rule_name = rule["rule_name"]
+            rule_name = rule['rule_name']
 
             if rule_name == 'one':
                 self.assertTrue('scopes' not in rule)
                 self.assertTrue('imports' not in rule)
 
         for rule in result2:
-            rule_name = rule["rule_name"]
+            rule_name = rule['rule_name']
 
             if rule_name == 'two':
                 self.assertTrue('lib1' in rule['imports'] and 'lib2' in rule['imports'])
@@ -542,7 +542,7 @@ class TestYaraRules(unittest.TestCase):
         result = plyara.parse_string(inputRule)
 
         self.assertTrue(len(result) == 1)
-        self.assertTrue(result[0]['rule_name'] == "testName")
+        self.assertTrue(result[0]['rule_name'] == 'testName')
 
     def test_store_raw(self):
         inputRule = r'''
@@ -582,21 +582,21 @@ class TestYaraRules(unittest.TestCase):
         result = plyara.parse_string(inputRule)
 
         self.assertTrue(len(result) == 4)
-        self.assertTrue(result[0].get("raw_meta", False))
-        self.assertTrue(result[0].get("raw_strings", False))
-        self.assertTrue(result[0].get("raw_condition", False))
+        self.assertTrue(result[0].get('raw_meta', False))
+        self.assertTrue(result[0].get('raw_strings', False))
+        self.assertTrue(result[0].get('raw_condition', False))
 
-        self.assertFalse(result[1].get("raw_meta", False))
-        self.assertTrue(result[1].get("raw_strings", False))
-        self.assertTrue(result[1].get("raw_condition", False))
+        self.assertFalse(result[1].get('raw_meta', False))
+        self.assertTrue(result[1].get('raw_strings', False))
+        self.assertTrue(result[1].get('raw_condition', False))
 
-        self.assertFalse(result[2].get("raw_meta", False))
-        self.assertFalse(result[2].get("raw_strings", False))
-        self.assertTrue(result[2].get("raw_condition", False))
+        self.assertFalse(result[2].get('raw_meta', False))
+        self.assertFalse(result[2].get('raw_strings', False))
+        self.assertTrue(result[2].get('raw_condition', False))
 
-        self.assertTrue(result[3].get("raw_meta", False))
-        self.assertTrue(result[3].get("raw_strings", False))
-        self.assertTrue(result[3].get("raw_condition", False))
+        self.assertTrue(result[3].get('raw_meta', False))
+        self.assertTrue(result[3].get('raw_strings', False))
+        self.assertTrue(result[3].get('raw_condition', False))
 
     def test_tags(self):
         inputTags = r'''
@@ -609,7 +609,7 @@ class TestYaraRules(unittest.TestCase):
         result = plyara.parse_string(inputTags)
 
         for rule in result:
-            rule_name = rule["rule_name"]
+            rule_name = rule['rule_name']
             if rule_name == 'eleven':
                 self.assertTrue(len(rule['tags']) == 1 and 'tag1' in rule['tags'])
             if rule_name == 'twelve':
@@ -638,7 +638,7 @@ class TestYaraRules(unittest.TestCase):
         result = plyara.parse_string(inputRules)
 
         for rule in result:
-            rule_name = rule["rule_name"]
+            rule_name = rule['rule_name']
             if rule_name == 'thirteen':
                 self.assertTrue(len(rule['metadata']) == 3)
 
@@ -673,7 +673,7 @@ class TestYaraRules(unittest.TestCase):
 
         self.assertEqual(len(result), 1)
         for rule in result:
-            rule_name = rule["rule_name"]
+            rule_name = rule['rule_name']
             if rule_name == 'testName':
                 self.assertEqual(len(rule['strings']), 12)
                 for hex_string in rule['strings']:
@@ -755,7 +755,7 @@ class TestYaraRules(unittest.TestCase):
 
         self.assertEqual(len(result), 1)
         for rule in result:
-            rule_name = rule["rule_name"]
+            rule_name = rule['rule_name']
             if rule_name == 'testName':
                 self.assertEqual(len(rule['strings']), 6)
                 for rex_string in rule['strings']:
@@ -772,7 +772,7 @@ class TestYaraRules(unittest.TestCase):
                         self.assertEqual(rex_string['value'], '/abc123 \\d\\/ afterspace/')
                         self.assertEqual(rex_string['modifiers'], ['nocase'])
                     else:
-                        self.assertFalse("Unknown string name...")
+                        self.assertFalse('Unknown string name...')
 
     def test_string(self):
         inputRules = r'''
