@@ -149,7 +149,7 @@ class Parser:
             self._flush_accumulators()
 
             self.rules.append(self.current_rule)
-            logger.debug(u'Adding Rule: {}'.format(self.current_rule['rule_name']))
+            logger.debug('Adding Rule: {}'.format(self.current_rule['rule_name']))
             self.current_rule = dict()
 
         elif element_type == ElementTypes.METADATA_KEY_VALUE:
@@ -615,7 +615,7 @@ class Plyara(Parser):
         Args:
             t: Token input from lexer.
         """
-        message = u'Illegal character {} at line {}'.format(t.value[0], t.lexer.lineno)
+        message = 'Illegal character {} at line {}'.format(t.value[0], t.lexer.lineno)
         raise ParseTypeError(message, t.lexer.lineno, t.lexer.lexpos)
 
     # Parsing rules
@@ -638,8 +638,8 @@ class Plyara(Parser):
 
     def p_rule(self, p):
         '''rule : scopes RULE ID tag_section LBRACE rule_body RBRACE'''
-        logger.debug(u'Matched rule: {}'.format(p[3]))
-        logger.debug(u'Rule start: {}, Rule stop: {}'.format(p.lineno(2), p.lineno(7)))
+        logger.debug('Matched rule: {}'.format(p[3]))
+        logger.debug('Rule start: {}, Rule stop: {}'.format(p.lineno(2), p.lineno(7)))
 
         while self._rule_comments:
             comment = self._rule_comments.pop()
@@ -666,19 +666,19 @@ class Plyara(Parser):
     def p_import(self, p):
         '''import : IMPORT STRING'''
         import_value = p[2].replace('"', '')
-        logger.debug(u'Matched import: {}'.format(import_value))
+        logger.debug('Matched import: {}'.format(import_value))
         self._add_element(ElementTypes.IMPORT, import_value)
 
     def p_include(self, p):
         '''include : INCLUDE STRING'''
         include_value = p[2].replace('"', '')
-        logger.debug(u'Matched include: {}'.format(include_value))
+        logger.debug('Matched include: {}'.format(include_value))
         self._add_element(ElementTypes.INCLUDE, include_value)
 
     def p_scope(self, p):
         '''scope : PRIVATE
                  | GLOBAL'''
-        logger.debug(u'Matched scope identifier: {}'.format(p[1]))
+        logger.debug('Matched scope identifier: {}'.format(p[1]))
         self._add_element(ElementTypes.SCOPE, p[1])
 
     def p_tag_section(self, p):
@@ -691,12 +691,12 @@ class Plyara(Parser):
 
     def p_tag(self, p):
         '''tag : ID'''
-        logger.debug(u'Matched tag: {}'.format(p[1]))
+        logger.debug('Matched tag: {}'.format(p[1]))
         self._add_element(ElementTypes.TAG, p[1])
 
     def p_rule_body(self, p):
         '''rule_body : sections'''
-        logger.debug(u'Matched rule body')
+        logger.debug('Matched rule body')
 
     def p_rule_sections(self, p):
         '''sections : sections section
@@ -709,7 +709,7 @@ class Plyara(Parser):
 
     def p_meta_section(self, p):
         '''meta_section : SECTIONMETA meta_kvs'''
-        logger.debug(u'Matched meta section')
+        logger.debug('Matched meta section')
 
     def p_strings_section(self, p):
         '''strings_section : SECTIONSTRINGS strings_kvs'''
@@ -721,7 +721,7 @@ class Plyara(Parser):
     def p_meta_kvs(self, p):
         '''meta_kvs : meta_kvs meta_kv
                     | meta_kv'''
-        logger.debug(u'Matched meta kvs')
+        logger.debug('Matched meta kvs')
 
     def p_meta_kv(self, p):
         '''meta_kv : ID EQUALS STRING
@@ -737,14 +737,14 @@ class Plyara(Parser):
             value = bool(distutils.util.strtobool(value))
         else:
             value = int(value)
-        logger.debug(u'Matched meta kv: {} equals {}'.format(key, value))
+        logger.debug('Matched meta kv: {} equals {}'.format(key, value))
         self._add_element(ElementTypes.METADATA_KEY_VALUE, (key, value, ))
 
     # Strings elements.
     def p_strings_kvs(self, p):
         '''strings_kvs : strings_kvs strings_kv
                        | strings_kv'''
-        logger.debug(u'Matched strings kvs')
+        logger.debug('Matched strings kvs')
 
     def p_strings_kv(self, p):
         '''strings_kv : STRINGNAME EQUALS STRING
@@ -756,7 +756,7 @@ class Plyara(Parser):
                       | STRINGNAME EQUALS REXSTRING string_modifiers comments'''
         key = p[1]
         value = p[3]
-        logger.debug(u'Matched strings kv: {} equals {}'.format(key, value))
+        logger.debug('Matched strings kv: {} equals {}'.format(key, value))
         self._add_element(ElementTypes.STRINGS_KEY_VALUE, (key, value, ))
 
     def p_string_modifers(self, p):
@@ -769,13 +769,13 @@ class Plyara(Parser):
                            | WIDE
                            | FULLWORD
                            | XOR'''
-        logger.debug(u'Matched a string modifier: {}'.format(p[1]))
+        logger.debug('Matched a string modifier: {}'.format(p[1]))
         self._add_element(ElementTypes.STRINGS_MODIFIER, p[1])
 
     def p_comments(self, p):
         '''comments : COMMENT
                     | MCOMMENT'''
-        logger.debug(u'Matched a comment: {}'.format(p[1]))
+        logger.debug('Matched a comment: {}'.format(p[1]))
 
     # Condition elements.
     def p_expression(self, p):
@@ -848,7 +848,7 @@ class Plyara(Parser):
                 | STRINGNAME_LENGTH
                 | STRINGCOUNT
                 | REXSTRING'''
-        logger.debug(u'Matched a condition term: {}'.format(p[1]))
+        logger.debug('Matched a condition term: {}'.format(p[1]))
         self._add_element(ElementTypes.TERM, p[1])
 
     # Error rule for syntax errors
@@ -865,5 +865,5 @@ class Plyara(Parser):
             self.parser.errok()  # This is a method from PLY to reset the error state from parsing a comment
             self._rule_comments.append(p)
         else:
-            message = u'Unknown text {} for token of type {} on line {}'.format(p.value, p.type, p.lineno)
+            message = 'Unknown text {} for token of type {} on line {}'.format(p.value, p.type, p.lineno)
             raise ParseTypeError(message, p.lineno, p.lexpos)
