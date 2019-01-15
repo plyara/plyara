@@ -85,7 +85,7 @@ def detect_imports(rule):
     condition_terms = rule['condition_terms']
 
     for imp in Parser.IMPORT_OPTIONS:
-        imp_module = u"{}.".format(imp)
+        imp_module = "{}.".format(imp)
 
         if imp in condition_terms and imp not in detected_imports:
             detected_imports.append(imp)
@@ -193,7 +193,7 @@ def generate_logic_hash(rule):
 
         # Handle string modifiers
         if modifiers:
-            value = entry['value'] + u'<MODIFIED>' + u' & '.join(sorted(modifiers))
+            value = entry['value'] + '<MODIFIED>' + ' & '.join(sorted(modifiers))
         else:
             value = entry['value']
 
@@ -213,12 +213,12 @@ def generate_logic_hash(rule):
     for condition in conditions:
         # All string references (sort for consistency)
         if condition == 'them' or condition == '$*':
-            condition_mapping.append(u'<STRINGVALUE>' + u' | '.join(sorted_string_values))
+            condition_mapping.append('<STRINGVALUE>' + ' | '.join(sorted_string_values))
 
         elif condition.startswith('$') and condition != '$':
             # Exact Match
             if condition in string_mapping['named']:
-                condition_mapping.append(u'<STRINGVALUE>' + string_mapping['named'][condition])
+                condition_mapping.append('<STRINGVALUE>' + string_mapping['named'][condition])
             # Wildcard Match
             elif '*' in condition:
                 wildcard_strings = []
@@ -230,9 +230,9 @@ def generate_logic_hash(rule):
                         wildcard_strings.append(value)
 
                 wildcard_strings.sort()
-                condition_mapping.append(u'<STRINGVALUE>' + u' | '.join(wildcard_strings))
+                condition_mapping.append('<STRINGVALUE>' + ' | '.join(wildcard_strings))
             else:
-                logger.error(u'[!] Unhandled String Condition {}'.format(condition))
+                logger.error('[!] Unhandled String Condition {}'.format(condition))
 
         # Count Match
         elif condition.startswith('#') and condition != '#':
@@ -241,12 +241,12 @@ def generate_logic_hash(rule):
             if condition in string_mapping['named']:
                 condition_mapping.append('<COUNTOFSTRING>' + string_mapping['named'][condition])
             else:
-                logger.error(u'[!] Unhandled String Count Condition {}'.format(condition))
+                logger.error('[!] Unhandled String Count Condition {}'.format(condition))
 
         else:
             condition_mapping.append(condition)
 
-    logic_hash = hashlib.sha1(u''.join(condition_mapping).encode()).hexdigest()
+    logic_hash = hashlib.sha1(''.join(condition_mapping).encode()).hexdigest()
     return logic_hash
 
 
@@ -259,28 +259,28 @@ def rebuild_yara_rule(rule):
     Returns:
         str: Formatted text string of YARA rule.
     """
-    rule_format = u"{imports}{scopes}rule {rulename}{tags} {{\n{meta}{strings}{condition}\n}}\n"
+    rule_format = "{imports}{scopes}rule {rulename}{tags} {{\n{meta}{strings}{condition}\n}}\n"
 
     rule_name = rule['rule_name']
 
     # Rule Imports
     if rule.get('imports'):
-        unpacked_imports = [u'import "{}"\n'.format(entry) for entry in rule['imports']]
-        rule_imports = u'{}\n'.format(u''.join(unpacked_imports))
+        unpacked_imports = ['import "{}"\n'.format(entry) for entry in rule['imports']]
+        rule_imports = '{}\n'.format(''.join(unpacked_imports))
     else:
-        rule_imports = u''
+        rule_imports = ''
 
     # Rule Scopes
     if rule.get('scopes'):
-        rule_scopes = u'{} '.format(u' '.join(rule['scopes']))
+        rule_scopes = '{} '.format(u' '.join(rule['scopes']))
     else:
-        rule_scopes = u''
+        rule_scopes = ''
 
     # Rule Tags
     if rule.get('tags'):
-        rule_tags = u' : {}'.format(u' '.join(rule['tags']))
+        rule_tags = ' : {}'.format(u' '.join(rule['tags']))
     else:
-        rule_tags = u''
+        rule_tags = ''
 
     # Rule Metadata
     if rule.get('metadata'):
@@ -295,10 +295,10 @@ def rebuild_yara_rule(rule):
                 v = str(v)
             else:
                 v = '"{}"'.format(v)
-            unpacked_meta.append(u'\n\t\t{key} = {value}'.format(key=k, value=v))
-        rule_meta = u'\n\tmeta:{}\n'.format(u''.join(unpacked_meta))
+            unpacked_meta.append('\n\t\t{key} = {value}'.format(key=k, value=v))
+        rule_meta = '\n\tmeta:{}\n'.format(''.join(unpacked_meta))
     else:
-        rule_meta = u''
+        rule_meta = ''
 
     # Rule Strings
     if rule.get('strings'):
@@ -322,9 +322,9 @@ def rebuild_yara_rule(rule):
 
             string_container.append(fstring)
 
-        rule_strings = u'\n\tstrings:{}\n'.format(u''.join(string_container))
+        rule_strings = '\n\tstrings:{}\n'.format(u''.join(string_container))
     else:
-        rule_strings = u''
+        rule_strings = ''
 
     if rule.get('condition_terms'):
         # Format condition with appropriate whitespace between keywords
@@ -339,7 +339,7 @@ def rebuild_yara_rule(rule):
 
                 elif term in Parser.KEYWORDS:
                     cond.append(term)
-                    cond.append(u' ')
+                    cond.append(' ')
 
                 else:
                     cond.append(term)
@@ -350,25 +350,25 @@ def rebuild_yara_rule(rule):
                     cond.append(term)
 
                 elif cond and cond[-1] != ' ' and term in Parser.FUNCTION_KEYWORDS:
-                    cond.append(u' ')
+                    cond.append(' ')
                     cond.append(term)
 
                 elif cond[-1] == ' ' and term in Parser.KEYWORDS:
                     cond.append(term)
-                    cond.append(u' ')
+                    cond.append(' ')
 
                 elif cond and cond[-1] != ' ' and term in Parser.KEYWORDS:
-                    cond.append(u' ')
+                    cond.append(' ')
                     cond.append(term)
-                    cond.append(u' ')
+                    cond.append(' ')
 
                 else:
                     cond.append(term)
 
-        fcondition = u''.join(cond).rstrip(' ')
-        rule_condition = u'\n\tcondition:\n\t\t{}'.format(fcondition)
+        fcondition = ''.join(cond).rstrip(' ')
+        rule_condition = '\n\tcondition:\n\t\t{}'.format(fcondition)
     else:
-        rule_condition = u''
+        rule_condition = ''
 
     formatted_rule = rule_format.format(imports=rule_imports,
                                         rulename=rule_name,
