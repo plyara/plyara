@@ -15,10 +15,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import ast
-import os
+import pathlib
 import subprocess
 import sys
-import codecs
 import unittest
 
 from plyara.core import Plyara
@@ -68,7 +67,7 @@ class TestStaticMethods(unittest.TestCase):
         self.assertFalse(is_valid_rule_name(''))
 
     def test_rebuild_yara_rule(self):
-        with codecs.open('tests/data/rebuild_ruleset.yar', 'r', encoding='utf-8') as f:
+        with open('tests/data/rebuild_ruleset.yar', 'r', encoding='utf-8') as f:
             inputString = f.read()
 
         result = Plyara().parse_string(inputString)
@@ -388,7 +387,7 @@ class TestRuleParser(unittest.TestCase):
 
 class TestYaraRules(unittest.TestCase):
 
-    _PLYARA_SCRIPT_NAME = "plyara/command_line.py"
+    _PLYARA_SCRIPT_NAME = 'command_line.py'
 
     def test_multiple_rules(self):
         inputString = u'''
@@ -822,16 +821,14 @@ class TestYaraRules(unittest.TestCase):
             self.assertEqual(rule['strings'][13]['value'], 'test string')
 
     def test_plyara_script(self):
-        cwd = os.getcwd()
-        script_path = os.path.join(cwd, self._PLYARA_SCRIPT_NAME)
-        test_file_path = os.path.join(cwd, 'tests', 'data', 'test_file.txt')
+        cwd = pathlib.Path().cwd()
+        script_path = cwd / 'plyara' / self._PLYARA_SCRIPT_NAME
+        test_file_path = cwd / 'tests' / 'data' / 'test_file.txt'
 
-        script_process = subprocess.Popen([sys.executable, script_path, test_file_path],
-                                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.run([sys.executable, script_path, test_file_path], capture_output=True)
 
-        process_stdout, process_stderr = script_process.communicate()
-        rule_list = ast.literal_eval(process_stdout.decode('utf-8'))
-        self.assertTrue(len(rule_list) == 4)
+        rule_list = ast.literal_eval(process.stdout.decode('utf-8'))
+        self.assertEqual(len(rule_list), 4)
 
     def test_raw_condition_contains_all_condition_text(self):
         inputRules = r'''
