@@ -470,6 +470,9 @@ class Plyara(Parser):
 
         Args:
             t: Token input from lexer.
+
+        Raises:
+            ParseTypeError
         """
         raise ParseTypeError('Illegal string character: {}, at line: {}'.format(t.value[0], t.lexer.lineno),
                              t.lexer.lineno, t.lexer.lexpos)
@@ -545,6 +548,9 @@ class Plyara(Parser):
 
         Args:
             t: Token input from lexer.
+
+        Raises:
+            ParseTypeError
         """
         raise ParseTypeError('Illegal bytestring character : {}, at line: {}'.format(t.value[0], t.lexer.lineno),
                              t.lexer.lineno, t.lexer.lexpos)
@@ -584,6 +590,9 @@ class Plyara(Parser):
 
         Args:
             t: Token input from lexer.
+
+        Raises:
+            ParseTypeError
         """
         raise ParseTypeError('Illegal rexstring character : {}, at line: {}'.format(t.value[0], t.lexer.lineno),
                              t.lexer.lineno, t.lexer.lexpos)
@@ -639,6 +648,9 @@ class Plyara(Parser):
 
         Args:
             t: Token input from lexer.
+
+        Raises:
+            ParseTypeError
         """
         raise ParseTypeError('Illegal character {} at line {}'.format(t.value[0], t.lexer.lineno),
                              t.lexer.lineno, t.lexer.lexpos)
@@ -900,6 +912,9 @@ class Plyara(Parser):
 
         Args:
             p: Data from the parser.
+
+        Raises:
+            ParseTypeError
         """
         if not p:
             # This happens when we try to parse an empty string or file, or one with no actual rules.
