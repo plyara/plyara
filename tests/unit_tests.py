@@ -29,6 +29,7 @@ from plyara.utils import is_valid_rule_name
 
 UNHANDLED_RULE_MSG = 'Unhandled Test Rule: {}'
 
+
 class TestStaticMethods(unittest.TestCase):
 
     def test_logic_hash_generator(self):
@@ -97,13 +98,13 @@ class TestStaticMethods(unittest.TestCase):
         """
         parsed = Plyara().parse_string(test_rule)
         for rule in parsed:
-           unparsed = rebuild_yara_rule(rule)
-           self.assertTrue('string_value = "TEST STRING"' in unparsed)
-           self.assertTrue('string_value = "DIFFERENT TEST STRING"' in unparsed)
-           self.assertTrue('bool_value = true' in unparsed)
-           self.assertTrue('bool_value = false' in unparsed)
-           self.assertTrue('digit_value = 5' in unparsed)
-           self.assertTrue('digit_value = 10' in unparsed)
+            unparsed = rebuild_yara_rule(rule)
+            self.assertTrue('string_value = "TEST STRING"' in unparsed)
+            self.assertTrue('string_value = "DIFFERENT TEST STRING"' in unparsed)
+            self.assertTrue('bool_value = true' in unparsed)
+            self.assertTrue('bool_value = false' in unparsed)
+            self.assertTrue('digit_value = 5' in unparsed)
+            self.assertTrue('digit_value = 10' in unparsed)
 
     def test_detect_dependencies(self):
         with open('tests/data/detect_dependencies_ruleset.yar', 'r') as f:
@@ -616,8 +617,7 @@ class TestYaraRules(unittest.TestCase):
             if rule_name == 'eleven':
                 self.assertTrue(len(rule['tags']) == 1 and 'tag1' in rule['tags'])
             if rule_name == 'twelve':
-                self.assertTrue(len(rule['tags']) == 2 and
-                        'tag1' in rule['tags'] and 'tag2' in rule['tags'])
+                self.assertTrue(len(rule['tags']) == 2 and 'tag1' in rule['tags'] and 'tag2' in rule['tags'])
 
     def test_empty_string(self):
         inputRules = r'''
@@ -701,7 +701,7 @@ class TestYaraRules(unittest.TestCase):
         '''
 
         plyara = Plyara()
-        result = plyara.parse_string(inputRules)
+        plyara.parse_string(inputRules)
 
     def test_bytestring_bad_jump(self):
         inputRules = r'''
@@ -717,7 +717,7 @@ class TestYaraRules(unittest.TestCase):
 
         plyara = Plyara()
         with self.assertRaises(ParseValueError):
-            result = plyara.parse_string(inputRules)
+            plyara.parse_string(inputRules)
 
     def test_bytestring_bad_group(self):
         inputRules = r'''
@@ -731,7 +731,7 @@ class TestYaraRules(unittest.TestCase):
 
         plyara = Plyara()
         with self.assertRaises(ParseValueError):
-            result = plyara.parse_string(inputRules)
+            plyara.parse_string(inputRules)
 
     def test_rexstring(self):
         inputRules = r'''
@@ -897,7 +897,7 @@ class TestYaraRules(unittest.TestCase):
 
         with self.assertRaises(ParseTypeError):
             try:
-                result = plyara.parse_string(inputRules)
+                plyara.parse_string(inputRules)
             except ParseTypeError as e:
                 self.assertEqual(7, e.lineno)
                 raise e
@@ -910,7 +910,7 @@ class TestYaraRules(unittest.TestCase):
 
         with self.assertRaises(ParseTypeError):
             try:
-                result = plyara.parse_string(inputRules)
+                plyara.parse_string(inputRules)
             except ParseTypeError as e:
                 self.assertEqual(6, e.lineno)
                 raise e
