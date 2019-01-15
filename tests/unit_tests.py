@@ -73,7 +73,7 @@ class TestStaticMethods(unittest.TestCase):
 
         result = Plyara().parse_string(inputString)
 
-        rebuilt_rules = ""
+        rebuilt_rules = str()
         for rule in result:
             rebuilt_rules += rebuild_yara_rule(rule)
 
@@ -301,73 +301,68 @@ class TestRuleParser(unittest.TestCase):
 
         for entry in result:
             rulename = entry['rule_name']
+            kv = entry['strings']
+            kv_list = [tuple(x.values()) for x in kv]
 
             if rulename == "Text":
-                self.assertTrue([(s['name'], s['value'])
-                                for s in entry['strings']] ==
-                                [('$text_string', '\"foobar\"')])
+                self.assertEqual(len(kv), 1)
+                self.assertEqual(kv_list[0], ('$text_string', 'foobar', 'text', ))
 
             elif rulename == "FullwordText":
-                self.assertTrue([(s['name'], s['value'], s['modifiers'])
-                                for s in entry['strings']] ==
-                                [('$text_string', '\"foobar\"', ['fullword'])])
+                self.assertEqual(len(kv), 1)
+                self.assertEqual(kv_list[0], ('$text_string', 'foobar', 'text', ['fullword'], ))
 
             elif rulename == "CaseInsensitiveText":
-                self.assertTrue([(s['name'], s['value'], s['modifiers'])
-                                for s in entry['strings']] ==
-                                [('$text_string', '\"foobar\"', ['nocase'])])
+                self.assertEqual(len(kv), 1)
+                self.assertEqual(kv_list[0], ('$text_string', 'foobar', 'text', ['nocase'], ))
 
             elif rulename == "WideCharText":
-                self.assertTrue([(s['name'], s['value'], s['modifiers'])
-                                for s in entry['strings']] ==
-                                [('$wide_string', '\"Borland\"', ['wide'])])
+                self.assertEqual(len(kv), 1)
+                self.assertEqual(kv_list[0], ('$wide_string', 'Borland', 'text', ['wide'], ))
 
             elif rulename == "WideCharAsciiText":
-                self.assertTrue([(s['name'], s['value'], s['modifiers'])
-                                for s in entry['strings']] ==
-                                [('$wide_and_ascii_string', '\"Borland\"', ['wide', 'ascii'])])
+                self.assertEqual(len(kv), 1)
+                self.assertEqual(kv_list[0], ('$wide_and_ascii_string', 'Borland', 'text', ['wide', 'ascii'], ))
 
             elif rulename == "HexWildcard":
-                self.assertTrue([(s['name'], s['value'])
-                                for s in entry['strings']] ==
-                                [('$hex_string', '{ E2 34 ?? C8 A? FB }')])
+                self.assertEqual(len(kv), 1)
+                self.assertEqual(kv_list[0], ('$hex_string', '{ E2 34 ?? C8 A? FB }', 'byte', ))
 
             elif rulename == "HexJump":
-                self.assertTrue([(s['name'], s['value'])
-                                for s in entry['strings']] ==
-                                [('$hex_string', '{ F4 23 [4-6] 62 B4 }')])
+                self.assertEqual(len(kv), 1)
+                self.assertEqual(kv_list[0], ('$hex_string', '{ F4 23 [4-6] 62 B4 }', 'byte', ))
 
             elif rulename == "HexAlternatives":
-                self.assertTrue([(s['name'], s['value'])
-                                for s in entry['strings']] ==
-                                [('$hex_string', '{ F4 23 ( 62 B4 | 56 ) 45 }')])
+                self.assertEqual(len(kv), 1)
+                self.assertEqual(kv_list[0], ('$hex_string', '{ F4 23 ( 62 B4 | 56 ) 45 }', 'byte', ))
 
             elif rulename == "HexMultipleAlternatives":
-                self.assertTrue([(s['name'], s['value'])
-                                for s in entry['strings']] ==
-                                [('$hex_string', '{ F4 23 ( 62 B4 | 56 | 45 ?? 67 ) 45 }')])
+                self.assertEqual(len(kv), 1)
+                self.assertEqual(kv_list[0], ('$hex_string', '{ F4 23 ( 62 B4 | 56 | 45 ?? 67 ) 45 }', 'byte', ))
 
             elif rulename == "RegExp":
-                self.assertTrue([(s['name'], s['value'])
-                                for s in entry['strings']] ==
-                                [('$re1', r'/md5: [0-9a-fA-F]{32}/'),
-                                 ('$re2', r'/state: (on|off)/i'),
-                                 ('$re3', r'/\x00https?:\/\/[^\x00]{4,500}\x00\x00\x00/')])
+                self.assertEqual(len(kv), 3)
+                self.assertEqual(kv_list[0][0], '$re1')
+                self.assertEqual(kv_list[0][1], '/md5: [0-9a-fA-F]{32}/')
+                self.assertEqual(kv_list[0][2], 'regex')
+                self.assertEqual(kv_list[1][0], '$re2')
+                self.assertEqual(kv_list[1][1], '/state: (on|off)/i')
+                self.assertEqual(kv_list[1][2], 'regex')
+                self.assertEqual(kv_list[2][0], '$re3')
+                self.assertEqual(kv_list[2][1], r'/\x00https?:\/\/[^\x00]{4,500}\x00\x00\x00/')
+                self.assertEqual(kv_list[2][2], 'regex')
 
             elif rulename == "Xor":
-                self.assertTrue([(s['name'], s['value'], s['modifiers'])
-                                for s in entry['strings']] ==
-                                [('$xor_string', '\"This program cannot\"', ['xor'])])
+                self.assertEqual(len(kv), 1)
+                self.assertEqual(kv_list[0], ('$xor_string', 'This program cannot', 'text', ['xor'], ))
 
             elif rulename == "WideXorAscii":
-                self.assertTrue([(s['name'], s['value'], s['modifiers'])
-                                for s in entry['strings']] ==
-                                [('$xor_string', '\"This program cannot\"', ['xor', 'wide', 'ascii'])])
+                self.assertEqual(len(kv), 1)
+                self.assertEqual(kv_list[0], ('$xor_string', 'This program cannot', 'text', ['xor', 'wide', 'ascii'], ))
 
             elif rulename == "WideXor":
-                self.assertTrue([(s['name'], s['value'], s['modifiers'])
-                                for s in entry['strings']] ==
-                                [('$xor_string', '\"This program cannot\"', ['xor', 'wide'])])
+                self.assertEqual(len(kv), 1)
+                self.assertEqual(kv_list[0], ('$xor_string', 'This program cannot', 'text', ['xor', 'wide'], ))
 
             else:
                 raise AssertionError(UNHANDLED_RULE_MSG.format(rulename))
@@ -811,20 +806,20 @@ class TestYaraRules(unittest.TestCase):
         self.assertEqual(len(result), 1)
         for rule in result:
             self.assertEqual(len(rule['strings']), 14)
-            self.assertEqual(rule['strings'][0]['value'], '"test string"')
-            self.assertEqual(rule['strings'][1]['value'], '"test string"')
-            self.assertEqual(rule['strings'][2]['value'], '"test string"')
-            self.assertEqual(rule['strings'][3]['value'], '"teststring"')
-            self.assertEqual(rule['strings'][4]['value'], '"test // string"')
-            self.assertEqual(rule['strings'][5]['value'], '"test /* string */ string"')
-            self.assertEqual(rule['strings'][6]['value'], '"teststring"')
-            self.assertEqual(rule['strings'][7]['value'], '"\'test"')
-            self.assertEqual(rule['strings'][8]['value'], '"\'test\' string"')
-            self.assertEqual(rule['strings'][9]['value'], '"\\"test string\\""')
-            self.assertEqual(rule['strings'][10]['value'], '"test \\"string\\""')
-            self.assertEqual(rule['strings'][11]['value'], '"test \\"string\\" test \\\\"')
-            self.assertEqual(rule['strings'][12]['value'], '"test string"')
-            self.assertEqual(rule['strings'][13]['value'], '"test string"')
+            self.assertEqual(rule['strings'][0]['value'], 'test string')
+            self.assertEqual(rule['strings'][1]['value'], 'test string')
+            self.assertEqual(rule['strings'][2]['value'], 'test string')
+            self.assertEqual(rule['strings'][3]['value'], 'teststring')
+            self.assertEqual(rule['strings'][4]['value'], 'test // string')
+            self.assertEqual(rule['strings'][5]['value'], 'test /* string */ string')
+            self.assertEqual(rule['strings'][6]['value'], 'teststring')
+            self.assertEqual(rule['strings'][7]['value'], "'test")
+            self.assertEqual(rule['strings'][8]['value'], "'test' string")
+            self.assertEqual(rule['strings'][9]['value'], '\\"test string\\"')
+            self.assertEqual(rule['strings'][10]['value'], 'test \\"string\\"')
+            self.assertEqual(rule['strings'][11]['value'], 'test \\"string\\" test \\\\')
+            self.assertEqual(rule['strings'][12]['value'], 'test string')
+            self.assertEqual(rule['strings'][13]['value'], 'test string')
 
     def test_plyara_script(self):
         cwd = os.getcwd()

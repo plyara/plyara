@@ -21,7 +21,7 @@ import hashlib
 import logging
 import re
 
-from .core import Parser
+from .core import Parser, StringTypes
 
 # Initialize the logger
 logger = logging.getLogger(__name__)
@@ -264,16 +264,19 @@ def rebuild_yara_rule(rule):
         string_container = []
 
         for rule_string in rule['strings']:
-
             if 'modifiers' in rule_string:
-                string_modifiers = u' '.join(rule_string['modifiers'])
-
-                fstring = u'\n\t\t{} = {} {}'.format(rule_string['name'],
-                                                     rule_string['value'],
-                                                     string_modifiers)
+                string_modifiers = ' '.join(rule_string['modifiers'])
+                if rule_string['type'] == 'text':
+                    string_format = '\n\t\t{} = "{}" {}'
+                else:
+                    string_format = '\n\t\t{} = {} {}'
+                fstring = string_format.format(rule_string['name'], rule_string['value'], string_modifiers)
             else:
-                fstring = u'\n\t\t{} = {}'.format(rule_string['name'],
-                                                  rule_string['value'])
+                if rule_string['type'] == 'text':
+                    string_format = '\n\t\t{} = "{}"'
+                else:
+                    string_format = '\n\t\t{} = {}'
+                fstring = string_format.format(rule_string['name'], rule_string['value'])
 
             string_container.append(fstring)
 

@@ -51,6 +51,14 @@ class ElementTypes(enum.Enum):
     MCOMMENT = 11
 
 
+class StringTypes(enum.Enum):
+    """String types found in a YARA rule."""
+
+    TEXT = 1
+    BYTE = 2
+    REGEX = 3
+
+
 class Parser:
     """Interpret the output of the parser and produce an alternative representation of YARA rules."""
 
@@ -161,9 +169,9 @@ class Parser:
                 self.current_rule['metadata'].append({key: value})
 
         elif element_type == ElementTypes.STRINGS_KEY_VALUE:
-            key, value = element_value
+            key, value, string_type = element_value
 
-            string_dict = {'name': key, 'value': value}
+            string_dict = {'name': key, 'value': value, 'type': string_type.name.lower()}
 
             if any(self.string_modifiers):
                 string_dict['modifiers'] = self.string_modifiers
@@ -764,18 +772,35 @@ class Plyara(Parser):
                        | strings_kv'''
         logger.info('Matched strings kvs')
 
-    def p_strings_kv(self, p):
+    def _parse_string_kv(self, p, string_type):
+        """Perform parsing for all string types.
+
+        Args:
+            p: Parser object.
+        """
+        key = p[1]
+        value = p[3]
+        match = re.match('"(.+)"', value)
+        if match:
+            value = match.group(1)
+        logger.debug('Matched strings kv: {} equals {}'.format(key, value))
+        self._add_element(ElementTypes.STRINGS_KEY_VALUE, (key, value, string_type, ))
+
+    def p_text_strings_kv(self, p):
         '''strings_kv : STRINGNAME EQUALS STRING
-                      | STRINGNAME EQUALS STRING string_modifiers
-                      | STRINGNAME EQUALS BYTESTRING
-                      | STRINGNAME EQUALS REXSTRING
+                      | STRINGNAME EQUALS STRING string_modifiers'''
+        self._parse_string_kv(p, StringTypes.TEXT)
+
+    def p_byte_strings_kv(self, p):
+        '''strings_kv : STRINGNAME EQUALS BYTESTRING'''
+        self._parse_string_kv(p, StringTypes.BYTE)
+
+    def p_regex_strings_kv(self, p):
+        '''strings_kv : STRINGNAME EQUALS REXSTRING
                       | STRINGNAME EQUALS REXSTRING comments
                       | STRINGNAME EQUALS REXSTRING string_modifiers
                       | STRINGNAME EQUALS REXSTRING string_modifiers comments'''
-        key = p[1]
-        value = p[3]
-        logger.debug('Matched strings kv: {} equals {}'.format(key, value))
-        self._add_element(ElementTypes.STRINGS_KEY_VALUE, (key, value, ))
+        self._parse_string_kv(p, StringTypes.REGEX)
 
     def p_string_modifers(self, p):
         '''string_modifiers : string_modifiers string_modifier
