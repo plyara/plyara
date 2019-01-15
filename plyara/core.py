@@ -80,8 +80,8 @@ class Parser:
         """Initialize the parser object.
 
         Args:
-            console_logging: enable a stream handler if no handlers exist (default False)
-            store_raw_sections: enable attribute storage of raw section input
+            console_logging: Enable a stream handler if no handlers exist. (default False)
+            store_raw_sections: Enable attribute storage of raw section input. (default True)
         """
         self.rules = list()
 
@@ -124,7 +124,12 @@ class Parser:
             logger.addHandler(ch)
 
     def _add_element(self, element_type, element_value):
-        """Accept elements from the parser and uses them to construct a representation of the YARA rule."""
+        """Accept elements from the parser and uses them to construct a representation of the YARA rule.
+
+        Args:
+            element_type: The element type determined by the parser. Input is one of ElementTypes.
+            element_value: This is the contents of the element as parsed from the rule.
+        """
         if element_type == ElementTypes.RULE_NAME:
             rule_name, start_line, stop_line = element_value
             self.current_rule['rule_name'] = rule_name
@@ -219,7 +224,14 @@ class Parser:
         self._condition_end = None
 
     def parse_string(self, input_string):
-        """Take a string input expected to consist of YARA rules, and return list of dictionaries representing them."""
+        """Take a string input expected to consist of YARA rules, and return list of dictionaries representing them.
+
+        Args:
+            input_string: String input expected to consist of YARA rules.
+
+        Returns:
+            dict: All the parsed components of a YARA rule.
+        """
         self._raw_input = input_string
         yacc.parse(input_string)
 
@@ -233,7 +245,7 @@ class Parser:
 
 
 class Plyara(Parser):
-    """Class to define the lexer and the parser rules."""
+    """Define the lexer and the parser rules."""
 
     tokens = [
         'BYTESTRING',
@@ -438,7 +450,11 @@ class Plyara(Parser):
     t_STRING_ignore = ' \t\n'
 
     def t_STRING_error(self, t):
-        """Raise parsing error for illegal string character."""
+        """Raise parsing error for illegal string character.
+
+        Args:
+            t: Token input from lexer.
+        """
         raise ParseTypeError("Illegal string character " + t.value[0] + " at line " + str(t.lexer.lineno),
                              t.lexer.lineno, t.lexer.lexpos)
 
@@ -508,7 +524,11 @@ class Plyara(Parser):
     t_BYTESTRING_ignore = ' \r\n\t'
 
     def t_BYTESTRING_error(self, t):
-        """Raise parsing error for illegal bytestring character."""
+        """Raise parsing error for illegal bytestring character.
+
+        Args:
+            t: Token input from lexer.
+        """
         raise ParseTypeError("Illegal bytestring character " + t.value[0] + " at line " + str(t.lexer.lineno),
                              t.lexer.lineno, t.lexer.lexpos)
 
@@ -541,7 +561,11 @@ class Plyara(Parser):
     t_REXSTRING_ignore = ' \r\n\t'
 
     def t_REXSTRING_error(self, t):
-        """Raise parsing error for illegal rexstring character."""
+        """Raise parsing error for illegal rexstring character.
+
+        Args:
+            t: Token input from lexer.
+        """
         raise ParseTypeError("Illegal rexstring character " + t.value[0] + " at line " + str(t.lexer.lineno),
                              t.lexer.lineno, t.lexer.lexpos)
 
@@ -586,7 +610,11 @@ class Plyara(Parser):
 
     # Error handling rule
     def t_error(self, t):
-        """Raise parsing error."""
+        """Raise parsing error.
+
+        Args:
+            t: Token input from lexer.
+        """
         message = u'Illegal character {} at line {}'.format(t.value[0], t.lexer.lineno)
         raise ParseTypeError(message, t.lexer.lineno, t.lexer.lexpos)
 
@@ -825,7 +853,11 @@ class Plyara(Parser):
 
     # Error rule for syntax errors
     def p_error(self, p):
-        """Raise syntax errors."""
+        """Raise syntax errors.
+
+        Args:
+            p: Data from the parser.
+        """
         if not p:
             # This happens when we try to parse an empty string or file, or one with no actual rules.
             pass
