@@ -19,7 +19,7 @@ script:
   - pycodestyle --max-line-length=120 setup.py
   - pydocstyle --ignore=D104 plyara/__init__.py
   - pydocstyle --ignore=D203,D205,D208,D209,D213,D300,D400,D401,D403,D406,D407,D413 plyara/core.py
-  - pydocstyle --ignore=D203,D205,D208,D209,D213,D300,D400,D401,D403 plyara/exceptions.py
+  - pydocstyle --ignore=D203 plyara/exceptions.py
   - pydocstyle plyara/command_line.py
   - pydocstyle setup.py
   - pyflakes plyara/core.py
