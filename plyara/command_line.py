@@ -37,13 +37,7 @@ def main():
     plyara = Plyara(console_logging=args.log)
     rules = plyara.parse_string(input_string)
 
-    # can't JSON-serialize sets, so convert them to lists at print time
-    def default(obj):
-        if isinstance(obj, set):
-            return list(obj)
-        raise TypeError
-
-    print(json.dumps(rules, sort_keys=True, indent=4, default=default))
+    print(json.dumps(rules, sort_keys=True, indent=4))
 
 
 if __name__ == '__main__':

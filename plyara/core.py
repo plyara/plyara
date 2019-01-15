@@ -225,7 +225,7 @@ class Parser(object):
 
         for rule in self.rules:
             if any(self.imports):
-                rule['imports'] = self.imports
+                rule['imports'] = list(self.imports)
             if any(self.includes):
                 rule['includes'] = self.includes
 
