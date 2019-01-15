@@ -17,9 +17,7 @@ install:
   - "python setup.py install"
 script:
   - nosetests --with-coverage --cover-package=plyara --cover-xml
-  - pycodestyle --max-line-length=120 plyara/core.py
-  - pycodestyle --max-line-length=120 plyara/exceptions.py
-  - pycodestyle --max-line-length=120 plyara/command_line.py
+  - pycodestyle --max-line-length=120 plyara/*.py
   - pycodestyle --max-line-length=120 setup.py
   - pydocstyle --ignore=D203,D205,D208,D209,D213,D300,D400,D401,D403 plyara/core.py
   - pydocstyle --ignore=D203,D205,D208,D209,D213,D300,D400,D401,D403 plyara/exceptions.py
