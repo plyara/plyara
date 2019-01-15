@@ -756,7 +756,9 @@ class Plyara(Parser):
         key = p[1]
         value = p[3]
         if re.match(r'".*"', value):
-            value = value.strip('"')
+            match = re.match('"(.+)"', value)
+            if match:
+                value = match.group(1)
         elif value == 'true' or value == 'false':
             value = bool(distutils.util.strtobool(value))
         else:
