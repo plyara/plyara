@@ -374,6 +374,10 @@ class TestRuleParser(unittest.TestCase):
                 self.assertEqual(len(kv), 1)
                 self.assertEqual(kv_list[0], ('$xor_string', 'This program cannot', 'text', ['xor', 'wide'], ))
 
+            elif rulename == 'DoubleBackslash':
+                self.assertEqual(len(kv), 1)
+                self.assertEqual(kv_list[0], ('$bs', r'\"\\\\\\\"', 'text', ))
+
             else:
                 raise AssertionError(UNHANDLED_RULE_MSG.format(rulename))
 
