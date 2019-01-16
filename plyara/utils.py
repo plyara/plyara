@@ -21,7 +21,7 @@ import hashlib
 import logging
 import re
 
-from .core import Parser
+from plyara.core import Parser
 
 # Initialize the logger
 logger = logging.getLogger(__name__)

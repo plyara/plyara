@@ -24,7 +24,7 @@ import subprocess
 import sys
 import unittest
 
-from plyara.core import Plyara
+from plyara import Plyara
 from plyara.exceptions import ParseTypeError, ParseValueError
 from plyara.utils import generate_logic_hash
 from plyara.utils import rebuild_yara_rule
