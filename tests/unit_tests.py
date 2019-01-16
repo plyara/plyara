@@ -395,6 +395,15 @@ class TestRuleParser(unittest.TestCase):
         self.parser.parse_string('include "file1.yara"\ninclude "file2.yara"\ninclude "file3.yara"')
         self.assertEqual(len(self.parser.includes), 3)
 
+    def test_rules_from_yara_project(self):
+        with open('tests/data/test_rules_from_yara_project.yar', 'r') as fh:
+            inputRules = fh.read()
+
+        plyara = Plyara()
+        output = plyara.parse_string(inputRules)
+
+        self.assertEqual(len(output), 293)
+
 
 class TestYaraRules(unittest.TestCase):
 
