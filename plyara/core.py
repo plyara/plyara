@@ -30,6 +30,12 @@ import ply.lex as lex
 import ply.yacc as yacc
 
 from .exceptions import ParseTypeError, ParseValueError
+from .utils import is_valid_rule_name as deprecated_is_valid_rule_name
+from .utils import is_valid_rule_tag as deprecated_is_valid_rule_tag
+from .utils import detect_imports as deprecated_detect_imports
+from .utils import detect_dependencies as deprecated_detect_dependencies
+from .utils import generate_logic_hash as deprecated_generate_logic_hash
+from .utils import rebuild_yara_rule as deprecated_rebuild_yara_rule
 
 # Initialize the logger
 logger = logging.getLogger(__name__)
@@ -250,6 +256,42 @@ class Parser:
                 rule['includes'] = self.includes
 
         return self.rules
+
+    @staticmethod
+    def is_valid_rule_name(entry):
+        """Validate rule name: DEPRECATED."""
+        logger.warning('DEPRECATED METHOD is_valid_rule_name(): use plyara.utils')
+        return deprecated_is_valid_rule_name(entry)
+
+    @staticmethod
+    def is_valid_rule_tag(entry):
+        """Validate tag: DEPRECATED."""
+        logger.warning('DEPRECATED METHOD is_valid_rule_tag(): use plyara.utils')
+        return deprecated_is_valid_rule_tag(entry)
+
+    @staticmethod
+    def detect_imports(rule):
+        """Detect imports: DEPRECATED."""
+        logger.warning('DEPRECATED METHOD detect_imports(): use plyara.utils')
+        return deprecated_detect_imports(rule)
+
+    @staticmethod
+    def detect_dependencies(rule):
+        """Detect dependencies: DEPRECATED."""
+        logger.warning('DEPRECATED METHOD detect_dependencies(): use plyara.utils')
+        return deprecated_detect_dependencies(rule)
+
+    @staticmethod
+    def generate_logic_hash(rule):
+        """Generate logic hash: DEPRECATED."""
+        logger.warning('DEPRECATED METHOD generate_logic_hash(): use plyara.utils')
+        return deprecated_generate_logic_hash(rule)
+
+    @staticmethod
+    def rebuild_yara_rule(rule):
+        """Rebuild rule: DEPRECATED."""
+        logger.warning('DEPRECATED METHOD rebuild_yara_rule(): use plyara.utils')
+        return deprecated_rebuild_yara_rule(rule)
 
 
 class Plyara(Parser):
