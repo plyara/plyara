@@ -255,42 +255,48 @@ class Parser:
     def is_valid_rule_name(entry):
         """Validate rule name: DEPRECATED."""
         from plyara.utils import is_valid_rule_name
-        logger.warning('DEPRECATED METHOD is_valid_rule_name(): use plyara.utils')
+        import warnings
+        warnings.warn('Static method is_valid_rule_name() is deprecated: use plyara.utils', DeprecationWarning)
         return is_valid_rule_name(entry)
 
     @staticmethod
     def is_valid_rule_tag(entry):
         """Validate tag: DEPRECATED."""
         from plyara.utils import is_valid_rule_tag
-        logger.warning('DEPRECATED METHOD is_valid_rule_tag(): use plyara.utils')
+        import warnings
+        warnings.warn('Static method is_valid_rule_tag() is deprecated: use plyara.utils', DeprecationWarning)
         return is_valid_rule_tag(entry)
 
     @staticmethod
     def detect_imports(rule):
         """Detect imports: DEPRECATED."""
         from plyara.utils import detect_imports
-        logger.warning('DEPRECATED METHOD detect_imports(): use plyara.utils')
+        import warnings
+        warnings.warn('Static method detect_imports() is deprecated: use plyara.utils', DeprecationWarning)
         return detect_imports(rule)
 
     @staticmethod
     def detect_dependencies(rule):
         """Detect dependencies: DEPRECATED."""
         from plyara.utils import detect_dependencies
-        logger.warning('DEPRECATED METHOD detect_dependencies(): use plyara.utils')
+        import warnings
+        warnings.warn('Static method detect_dependencies() is deprecated: use plyara.utils', DeprecationWarning)
         return detect_dependencies(rule)
 
     @staticmethod
     def generate_logic_hash(rule):
         """Generate logic hash: DEPRECATED."""
         from plyara.utils import generate_logic_hash
-        logger.warning('DEPRECATED METHOD generate_logic_hash(): use plyara.utils')
+        import warnings
+        warnings.warn('Static method generate_logic_hash() is deprecated: use plyara.utils', DeprecationWarning)
         return generate_logic_hash(rule)
 
     @staticmethod
     def rebuild_yara_rule(rule):
         """Rebuild rule: DEPRECATED."""
         from plyara.utils import rebuild_yara_rule
-        logger.warning('DEPRECATED METHOD rebuild_yara_rule(): use plyara.utils')
+        import warnings
+        warnings.warn('Static method rebuild_yara_rule() is deprecated: use plyara.utils', DeprecationWarning)
         return rebuild_yara_rule(rule)
 
 
