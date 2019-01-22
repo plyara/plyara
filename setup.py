@@ -10,7 +10,7 @@ with codecs.open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 setup(
     name='plyara',
-    version='1.4.0',
+    version='1.4.1',
     description='Parse YARA rules.',
     long_description=long_description,
     url='https://github.com/plyara/plyara',
