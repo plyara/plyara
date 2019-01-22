@@ -9,10 +9,6 @@ here = path.abspath(path.dirname(__file__))
 with codecs.open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
-install_requires = ['ply>=3.11']
-if sys.version_info < (3, ):
-    install_requires.append('enum34')
-
 setup(
     name='plyara',
     version='1.4.0',
@@ -34,7 +30,10 @@ setup(
     ],
     keywords='malware analysis yara',
     py_modules=['plyara'],
-    install_requires=install_requires,
+    install_requires=[
+        'ply>=3.11',
+        'enum34;python_version<"3.4"',
+    ],
     entry_points={
         'console_scripts': [
             'plyara=plyara:main',
