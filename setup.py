@@ -1,6 +1,5 @@
 import codecs
 from os import path
-import sys
 from setuptools import setup
 
 here = path.abspath(path.dirname(__file__))
@@ -8,10 +7,6 @@ here = path.abspath(path.dirname(__file__))
 # Get the long description from the README file
 with codecs.open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
-
-install_requires = ['ply>=3.11']
-if sys.version_info < (3, ):
-    install_requires.append('enum34')
 
 setup(
     name='plyara',
@@ -34,7 +29,10 @@ setup(
     ],
     keywords='malware analysis yara',
     py_modules=['plyara'],
-    install_requires=install_requires,
+    install_requires=[
+        'ply>=3.11',
+        'enum34;python_version<"3.4"',
+    ],
     entry_points={
         'console_scripts': [
             'plyara=plyara:main',
