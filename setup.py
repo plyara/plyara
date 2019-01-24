@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 #!/usr/bin/env python3
 # Copyright 2014 Christian Buia
 # Copyright 2019 plyara Maintainers
@@ -15,11 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """A setuptools based setup module.
-=======
-import codecs
-from os import path
-from setuptools import setup
->>>>>>> master
 
 See:
 https://packaging.python.org/en/latest/distributing.html
