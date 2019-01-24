@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #!/usr/bin/env python3
 # Copyright 2014 Christian Buia
 # Copyright 2019 plyara Maintainers
@@ -14,6 +15,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """A setuptools based setup module.
+=======
+import codecs
+from os import path
+from setuptools import setup
+>>>>>>> master
 
 See:
 https://packaging.python.org/en/latest/distributing.html
@@ -47,8 +53,11 @@ setup(
         'Programming Language :: Python :: 3.7',
     ],
     keywords='malware analysis yara',
-    packages=find_packages(exclude=['docs', 'examples', 'tests']),
-    install_requires=['ply>=3.11'],
+    py_modules=['plyara'],
+    install_requires=[
+        'ply>=3.11',
+        'enum34;python_version<"3.4"',
+    ],
     entry_points={
         'console_scripts': [
             'plyara=plyara.command_line:main',
