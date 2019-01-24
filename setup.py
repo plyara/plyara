@@ -47,7 +47,7 @@ setup(
         'Programming Language :: Python :: 3.7',
     ],
     keywords='malware analysis yara',
-    py_modules=['plyara'],
+    packages=find_packages(exclude=['docs', 'examples', 'tests']),
     install_requires=[
         'ply>=3.11',
         'enum34;python_version<"3.4"',
