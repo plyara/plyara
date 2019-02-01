@@ -118,3 +118,12 @@ rule WideXor
     condition:
         $xor_string
 }
+
+rule DoubleBackslash
+{
+    strings:
+        $bs = "\"\\\\\\\""
+
+    condition:
+        $bs
+}

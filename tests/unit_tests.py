@@ -1,21 +1,47 @@
-# coding=utf-8
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# Copyright 2014 Christian Buia
+# Copyright 2019 plyara Maintainers
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""plyara unit tests.
+
+This module contains various unit tests for plyara.
+"""
 import ast
-import os
+import pathlib
 import subprocess
 import sys
-import codecs
 import unittest
 
 from plyara import Plyara
-from plyara import ParseTypeError
+from plyara.exceptions import ParseTypeError, ParseValueError
+from plyara.utils import generate_logic_hash
+from plyara.utils import rebuild_yara_rule
+from plyara.utils import detect_imports, detect_dependencies
+from plyara.utils import is_valid_rule_name
 
-UNHANDLED_RULE_MSG = "Unhandled Test Rule: {}"
+UNHANDLED_RULE_MSG = 'Unhandled Test Rule: {}'
 
-class TestStaticMethods(unittest.TestCase):
+tests = pathlib.Path('tests')
+data_dir = tests.joinpath('data')
+
+
+class TestUtilities(unittest.TestCase):
 
     def test_logic_hash_generator(self):
-        with open('tests/data/logic_collision_ruleset.yar', 'r') as f:
-            inputString = f.read()
+        with open(data_dir.joinpath('logic_collision_ruleset.yar'), 'r') as fh:
+            inputString = fh.read()
 
         result = Plyara().parse_string(inputString)
 
@@ -24,7 +50,7 @@ class TestStaticMethods(unittest.TestCase):
         for entry in result:
             rulename = entry['rule_name']
             setname, _ = rulename.split('_')
-            rulehash = Plyara.generate_logic_hash(entry)
+            rulehash = generate_logic_hash(entry)
 
             if setname not in rule_mapping:
                 rule_mapping[setname] = [rulehash]
@@ -34,32 +60,32 @@ class TestStaticMethods(unittest.TestCase):
         for setname, hashvalues in rule_mapping.items():
 
             if not len(set(hashvalues)) == 1:
-                raise AssertionError("Collision detection failure for {}".format(setname))
+                raise AssertionError('Collision detection failure for {}'.format(setname))
 
     def test_is_valid_rule_name(self):
-        self.assertTrue(Plyara.is_valid_rule_name('test'))
-        self.assertTrue(Plyara.is_valid_rule_name('test123'))
-        self.assertTrue(Plyara.is_valid_rule_name('test_test'))
-        self.assertTrue(Plyara.is_valid_rule_name('_test_'))
-        self.assertTrue(Plyara.is_valid_rule_name('include_test'))
-        self.assertFalse(Plyara.is_valid_rule_name('123test'))
-        self.assertFalse(Plyara.is_valid_rule_name('123 test'))
-        self.assertFalse(Plyara.is_valid_rule_name('test 123'))
-        self.assertFalse(Plyara.is_valid_rule_name('test test'))
-        self.assertFalse(Plyara.is_valid_rule_name('test-test'))
-        self.assertFalse(Plyara.is_valid_rule_name('include'))
-        self.assertFalse(Plyara.is_valid_rule_name('test!*@&*!&'))
-        self.assertFalse(Plyara.is_valid_rule_name(''))
+        self.assertTrue(is_valid_rule_name('test'))
+        self.assertTrue(is_valid_rule_name('test123'))
+        self.assertTrue(is_valid_rule_name('test_test'))
+        self.assertTrue(is_valid_rule_name('_test_'))
+        self.assertTrue(is_valid_rule_name('include_test'))
+        self.assertFalse(is_valid_rule_name('123test'))
+        self.assertFalse(is_valid_rule_name('123 test'))
+        self.assertFalse(is_valid_rule_name('test 123'))
+        self.assertFalse(is_valid_rule_name('test test'))
+        self.assertFalse(is_valid_rule_name('test-test'))
+        self.assertFalse(is_valid_rule_name('include'))
+        self.assertFalse(is_valid_rule_name('test!*@&*!&'))
+        self.assertFalse(is_valid_rule_name(''))
 
     def test_rebuild_yara_rule(self):
-        with codecs.open('tests/data/rebuild_ruleset.yar', 'r', encoding='utf-8') as f:
-            inputString = f.read()
+        with open(data_dir.joinpath('rebuild_ruleset.yar'), 'r', encoding='utf-8') as fh:
+            inputString = fh.read()
 
         result = Plyara().parse_string(inputString)
 
-        rebuilt_rules = ""
+        rebuilt_rules = str()
         for rule in result:
-            rebuilt_rules += Plyara.rebuild_yara_rule(rule)
+            rebuilt_rules += rebuild_yara_rule(rule)
 
         self.assertEqual(inputString, rebuilt_rules)
 
@@ -79,39 +105,39 @@ class TestStaticMethods(unittest.TestCase):
         """
         parsed = Plyara().parse_string(test_rule)
         for rule in parsed:
-           unparsed = Plyara.rebuild_yara_rule(rule)
-           self.assertTrue('string_value = "TEST STRING"' in unparsed)
-           self.assertTrue('string_value = "DIFFERENT TEST STRING"' in unparsed)
-           self.assertTrue('bool_value = true' in unparsed)
-           self.assertTrue('bool_value = false' in unparsed)
-           self.assertTrue('digit_value = 5' in unparsed)
-           self.assertTrue('digit_value = 10' in unparsed)
+            unparsed = rebuild_yara_rule(rule)
+            self.assertIn('string_value = "TEST STRING"', unparsed)
+            self.assertIn('string_value = "DIFFERENT TEST STRING"', unparsed)
+            self.assertIn('bool_value = true', unparsed)
+            self.assertIn('bool_value = false', unparsed)
+            self.assertIn('digit_value = 5', unparsed)
+            self.assertIn('digit_value = 10', unparsed)
 
     def test_detect_dependencies(self):
-        with open('tests/data/detect_dependencies_ruleset.yar', 'r') as f:
-            inputString = f.read()
+        with open(data_dir.joinpath('detect_dependencies_ruleset.yar'), 'r') as fh:
+            inputString = fh.read()
 
         result = Plyara().parse_string(inputString)
 
-        self.assertEqual(Plyara.detect_dependencies(result[0]), [])
-        self.assertEqual(Plyara.detect_dependencies(result[1]), [])
-        self.assertEqual(Plyara.detect_dependencies(result[2]), [])
-        self.assertEqual(Plyara.detect_dependencies(result[3]), ['is__osx', 'priv01', 'priv02', 'priv03', 'priv04'])
-        self.assertEqual(Plyara.detect_dependencies(result[4]), ['is__elf', 'priv01', 'priv02', 'priv03', 'priv04'])
-        self.assertEqual(Plyara.detect_dependencies(result[5]), ['is__elf', 'is__osx', 'priv01', 'priv02'])
-        self.assertEqual(Plyara.detect_dependencies(result[6]), ['is__elf', 'is__osx', 'priv01'])
-        self.assertEqual(Plyara.detect_dependencies(result[7]), ['is__elf'])
-        self.assertEqual(Plyara.detect_dependencies(result[8]), ['is__osx', 'is__elf'])
-        self.assertEqual(Plyara.detect_dependencies(result[9]), ['is__osx'])
-        self.assertEqual(Plyara.detect_dependencies(result[10]), ['is__elf', 'is__osx'])
+        self.assertEqual(detect_dependencies(result[0]), list())
+        self.assertEqual(detect_dependencies(result[1]), list())
+        self.assertEqual(detect_dependencies(result[2]), list())
+        self.assertEqual(detect_dependencies(result[3]), ['is__osx', 'priv01', 'priv02', 'priv03', 'priv04'])
+        self.assertEqual(detect_dependencies(result[4]), ['is__elf', 'priv01', 'priv02', 'priv03', 'priv04'])
+        self.assertEqual(detect_dependencies(result[5]), ['is__elf', 'is__osx', 'priv01', 'priv02'])
+        self.assertEqual(detect_dependencies(result[6]), ['is__elf', 'is__osx', 'priv01'])
+        self.assertEqual(detect_dependencies(result[7]), ['is__elf'])
+        self.assertEqual(detect_dependencies(result[8]), ['is__osx', 'is__elf'])
+        self.assertEqual(detect_dependencies(result[9]), ['is__osx'])
+        self.assertEqual(detect_dependencies(result[10]), ['is__elf', 'is__osx'])
 
     def test_detect_imports(self):
         for imp in ('androguard', 'cuckoo', 'dotnet', 'elf', 'hash', 'magic', 'math', 'pe'):
-            with open('tests/data/import_ruleset_{}.yar'.format(imp), 'r') as f:
-                inputString = f.read()
+            with open(data_dir.joinpath('import_ruleset_{}.yar'.format(imp)), 'r') as fh:
+                inputString = fh.read()
             results = Plyara().parse_string(inputString)
             for rule in results:
-                self.assertEqual(Plyara.detect_imports(rule), [imp])
+                self.assertEqual(detect_imports(rule), [imp])
 
 
 class TestRuleParser(unittest.TestCase):
@@ -120,281 +146,251 @@ class TestRuleParser(unittest.TestCase):
         self.parser = Plyara()
 
     def test_import_pe(self):
-        with open('tests/data/import_ruleset_pe.yar', 'r') as f:
-            inputString = f.read()
+        with open(data_dir.joinpath('import_ruleset_pe.yar'), 'r') as fh:
+            inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
 
         for rule in result:
-            self.assertTrue('pe' in rule['imports'])
+            self.assertIn('pe', rule['imports'])
 
     def test_import_elf(self):
-        with open('tests/data/import_ruleset_elf.yar', 'r') as f:
-            inputString = f.read()
+        with open(data_dir.joinpath('import_ruleset_elf.yar'), 'r') as fh:
+            inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
 
         for rule in result:
-            self.assertTrue('elf' in rule['imports'])
+            self.assertIn('elf', rule['imports'])
 
     def test_import_cuckoo(self):
-        with open('tests/data/import_ruleset_cuckoo.yar', 'r') as f:
-            inputString = f.read()
+        with open(data_dir.joinpath('import_ruleset_cuckoo.yar'), 'r') as fh:
+            inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
 
         for rule in result:
-            self.assertTrue('cuckoo' in rule['imports'])
+            self.assertIn('cuckoo', rule['imports'])
 
     def test_import_magic(self):
-        with open('tests/data/import_ruleset_magic.yar', 'r') as f:
-            inputString = f.read()
+        with open(data_dir.joinpath('import_ruleset_magic.yar'), 'r') as fh:
+            inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
 
         for rule in result:
-            self.assertTrue('magic' in rule['imports'])
+            self.assertIn('magic', rule['imports'])
 
     def test_import_hash(self):
-        with open('tests/data/import_ruleset_hash.yar', 'r') as f:
-            inputString = f.read()
+        with open(data_dir.joinpath('import_ruleset_hash.yar'), 'r') as fh:
+            inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
 
         for rule in result:
-            self.assertTrue('hash' in rule['imports'])
+            self.assertIn('hash', rule['imports'])
 
     def test_import_math(self):
-        with open('tests/data/import_ruleset_math.yar', 'r') as f:
-            inputString = f.read()
+        with open(data_dir.joinpath('import_ruleset_math.yar'), 'r') as fh:
+            inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
 
         for rule in result:
-            self.assertTrue('math' in rule['imports'])
+            self.assertIn('math', rule['imports'])
 
     def test_import_dotnet(self):
-        with open('tests/data/import_ruleset_dotnet.yar', 'r') as f:
-            inputString = f.read()
+        with open(data_dir.joinpath('import_ruleset_dotnet.yar'), 'r') as fh:
+            inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
 
         for rule in result:
-            self.assertTrue('dotnet' in rule['imports'])
+            self.assertIn('dotnet', rule['imports'])
 
     def test_import_androguard(self):
-        with open('tests/data/import_ruleset_androguard.yar', 'r') as f:
-            inputString = f.read()
+        with open(data_dir.joinpath('import_ruleset_androguard.yar'), 'r') as fh:
+            inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
 
         for rule in result:
-            self.assertTrue('androguard' in rule['imports'])
+            self.assertIn('androguard', rule['imports'])
 
     def test_scopes(self):
-        with open('tests/data/scope_ruleset.yar', 'r') as f:
-            inputString = f.read()
+        with open(data_dir.joinpath('scope_ruleset.yar'), 'r') as fh:
+            inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
 
         for entry in result:
             rulename = entry['rule_name']
 
-            if rulename == "GlobalScope":
-                self.assertTrue('global' in entry['scopes'])
+            if rulename == 'GlobalScope':
+                self.assertIn('global', entry['scopes'])
 
-            elif rulename == "PrivateScope":
-                self.assertTrue('private' in entry['scopes'])
+            elif rulename == 'PrivateScope':
+                self.assertIn('private', entry['scopes'])
 
-            elif rulename == "PrivateGlobalScope":
-                self.assertTrue('global' in entry['scopes'] and
-                                'private' in entry['scopes'])
+            elif rulename == 'PrivateGlobalScope':
+                self.assertIn('global', entry['scopes'])
+                self.assertIn('private', entry['scopes'])
             else:
                 raise AssertionError(UNHANDLED_RULE_MSG.format(rulename))
 
     def test_tags(self):
-        with open('tests/data/tag_ruleset.yar', 'r') as f:
-            inputString = f.read()
+        with open(data_dir.joinpath('tag_ruleset.yar'), 'r') as fh:
+            inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
 
         for entry in result:
             rulename = entry['rule_name']
 
-            if rulename == "OneTag":
-                self.assertTrue(len(entry['tags']) == 1 and
-                                'tag1' in entry['tags'])
+            if rulename == 'OneTag':
+                self.assertEqual(len(entry['tags']), 1)
+                self.assertIn('tag1', entry['tags'])
 
-            elif rulename == "TwoTags":
-                self.assertTrue(len(entry['tags']) == 2 and
-                                'tag1' in entry['tags'] and
-                                'tag2' in entry['tags'])
+            elif rulename == 'TwoTags':
+                self.assertEqual(len(entry['tags']), 2)
+                self.assertIn('tag1', entry['tags'])
+                self.assertIn('tag2', entry['tags'])
 
-            elif rulename == "ThreeTags":
-                self.assertTrue(len(entry['tags']) == 3 and
-                                'tag1' in entry['tags'] and
-                                'tag2' in entry['tags'] and
-                                'tag3' in entry['tags'])
+            elif rulename == 'ThreeTags':
+                self.assertTrue(len(entry['tags']), 3)
+                self.assertIn('tag1', entry['tags'])
+                self.assertIn('tag2', entry['tags'])
+                self.assertIn('tag3', entry['tags'])
 
             else:
                 raise AssertionError(UNHANDLED_RULE_MSG.format(rulename))
 
     def test_metadata(self):
-        with open('tests/data/metadata_ruleset.yar', 'r') as f:
-            inputString = f.read()
+        with open(data_dir.joinpath('metadata_ruleset.yar'), 'r') as fh:
+            inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
 
         for entry in result:
             rulename = entry['rule_name']
+            kv = entry['metadata']
+            kv_list = [(k,) + (v, ) for dic in kv for k, v in dic.items()]
 
-            if rulename == "StringTypeMetadata":
-                self.assertTrue('string_value' in entry['metadata'] and
-                                entry['metadata']['string_value'] == 'String Metadata')
+            if rulename == 'StringTypeMetadata':
+                self.assertEqual(len(kv), 1)
+                self.assertEqual(kv_list[0][0], 'string_value')
+                self.assertEqual(kv_list[0][1], 'String Metadata')
 
-            elif rulename == "IntegerTypeMetadata":
-                self.assertTrue('integer_value' in entry['metadata'] and
-                                entry['metadata']['integer_value'] == '100')
+            elif rulename == 'IntegerTypeMetadata':
+                self.assertEqual(len(kv), 1)
+                self.assertEqual(kv_list[0][0], 'integer_value')
+                self.assertIs(kv_list[0][1], 100)
 
-            elif rulename == "BooleanTypeMetadata":
-                self.assertTrue('boolean_value' in entry['metadata'] and
-                                entry['metadata']['boolean_value'] == 'true')
+            elif rulename == 'BooleanTypeMetadata':
+                self.assertEqual(len(kv), 1)
+                self.assertEqual(kv_list[0][0], 'boolean_value')
+                self.assertIs(kv_list[0][1], True)
 
-            elif rulename == "AllTypesMetadata":
-                self.assertTrue('string_value' in entry['metadata'] and
-                                'integer_value' in entry['metadata'] and
-                                'boolean_value' in entry['metadata'] and
-                                entry['metadata']['string_value'] == 'Different String Metadata' and
-                                entry['metadata']['integer_value'] == '33' and
-                                entry['metadata']['boolean_value'] == 'false')
-
-            else:
-                raise AssertionError(UNHANDLED_RULE_MSG.format(rulename))
-
-    def test_metadata_pytypes(self):
-        with open('tests/data/metadata_ruleset.yar', 'r') as f:
-            inputString = f.read()
-
-        plyara = Plyara(return_python_types=True)
-        result = plyara.parse_string(inputString)
-
-        for entry in result:
-            rulename = entry['rule_name']
-
-            if rulename == "StringTypeMetadata":
-                self.assertTrue('string_value' in entry['metadata'] and
-                                entry['metadata']['string_value'] == 'String Metadata')
-
-            elif rulename == "IntegerTypeMetadata":
-                self.assertTrue('integer_value' in entry['metadata'] and
-                                isinstance(entry['metadata']['integer_value'], int) and
-                                entry['metadata']['integer_value'] is 100)
-
-            elif rulename == "BooleanTypeMetadata":
-                self.assertTrue('boolean_value' in entry['metadata'] and
-                                isinstance(entry['metadata']['boolean_value'], bool) and
-                                entry['metadata']['boolean_value'] is True)
-
-            elif rulename == "AllTypesMetadata":
-                self.assertTrue('string_value' in entry['metadata'] and
-                                'integer_value' in entry['metadata'] and
-                                'boolean_value' in entry['metadata'] and
-                                entry['metadata']['string_value'] == 'Different String Metadata' and
-                                entry['metadata']['integer_value'] is 33 and
-                                entry['metadata']['boolean_value'] is False)
+            elif rulename == 'AllTypesMetadata':
+                self.assertEqual(len(kv), 3)
+                self.assertEqual(kv_list[0][0], 'string_value')
+                self.assertEqual(kv_list[1][0], 'integer_value')
+                self.assertEqual(kv_list[2][0], 'boolean_value')
+                self.assertEqual(kv_list[0][1], 'Different String Metadata')
+                self.assertIs(kv_list[1][1], 33)
+                self.assertIs(kv_list[2][1], False)
 
             else:
                 raise AssertionError(UNHANDLED_RULE_MSG.format(rulename))
 
     def test_strings(self):
-        with open('tests/data/string_ruleset.yar', 'r') as f:
-            inputString = f.read()
+        with open(data_dir.joinpath('string_ruleset.yar'), 'r') as fh:
+            inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
 
         for entry in result:
             rulename = entry['rule_name']
+            kv = entry['strings']
+            kv_list = [tuple(x.values()) for x in kv]
 
-            if rulename == "Text":
-                self.assertTrue([(s['name'], s['value'])
-                                for s in entry['strings']] ==
-                                [('$text_string', '\"foobar\"')])
+            if rulename == 'Text':
+                self.assertEqual(len(kv), 1)
+                self.assertEqual(kv_list[0], ('$text_string', 'foobar', 'text', ))
 
-            elif rulename == "FullwordText":
-                self.assertTrue([(s['name'], s['value'], s['modifiers'])
-                                for s in entry['strings']] ==
-                                [('$text_string', '\"foobar\"', ['fullword'])])
+            elif rulename == 'FullwordText':
+                self.assertEqual(len(kv), 1)
+                self.assertEqual(kv_list[0], ('$text_string', 'foobar', 'text', ['fullword'], ))
 
-            elif rulename == "CaseInsensitiveText":
-                self.assertTrue([(s['name'], s['value'], s['modifiers'])
-                                for s in entry['strings']] ==
-                                [('$text_string', '\"foobar\"', ['nocase'])])
+            elif rulename == 'CaseInsensitiveText':
+                self.assertEqual(len(kv), 1)
+                self.assertEqual(kv_list[0], ('$text_string', 'foobar', 'text', ['nocase'], ))
 
-            elif rulename == "WideCharText":
-                self.assertTrue([(s['name'], s['value'], s['modifiers'])
-                                for s in entry['strings']] ==
-                                [('$wide_string', '\"Borland\"', ['wide'])])
+            elif rulename == 'WideCharText':
+                self.assertEqual(len(kv), 1)
+                self.assertEqual(kv_list[0], ('$wide_string', 'Borland', 'text', ['wide'], ))
 
-            elif rulename == "WideCharAsciiText":
-                self.assertTrue([(s['name'], s['value'], s['modifiers'])
-                                for s in entry['strings']] ==
-                                [('$wide_and_ascii_string', '\"Borland\"', ['wide', 'ascii'])])
+            elif rulename == 'WideCharAsciiText':
+                self.assertEqual(len(kv), 1)
+                self.assertEqual(kv_list[0], ('$wide_and_ascii_string', 'Borland', 'text', ['wide', 'ascii'], ))
 
-            elif rulename == "HexWildcard":
-                self.assertTrue([(s['name'], s['value'])
-                                for s in entry['strings']] ==
-                                [('$hex_string', '{ E2 34 ?? C8 A? FB }')])
+            elif rulename == 'HexWildcard':
+                self.assertEqual(len(kv), 1)
+                self.assertEqual(kv_list[0], ('$hex_string', '{ E2 34 ?? C8 A? FB }', 'byte', ))
 
-            elif rulename == "HexJump":
-                self.assertTrue([(s['name'], s['value'])
-                                for s in entry['strings']] ==
-                                [('$hex_string', '{ F4 23 [4-6] 62 B4 }')])
+            elif rulename == 'HexJump':
+                self.assertEqual(len(kv), 1)
+                self.assertEqual(kv_list[0], ('$hex_string', '{ F4 23 [4-6] 62 B4 }', 'byte', ))
 
-            elif rulename == "HexAlternatives":
-                self.assertTrue([(s['name'], s['value'])
-                                for s in entry['strings']] ==
-                                [('$hex_string', '{ F4 23 ( 62 B4 | 56 ) 45 }')])
+            elif rulename == 'HexAlternatives':
+                self.assertEqual(len(kv), 1)
+                self.assertEqual(kv_list[0], ('$hex_string', '{ F4 23 ( 62 B4 | 56 ) 45 }', 'byte', ))
 
-            elif rulename == "HexMultipleAlternatives":
-                self.assertTrue([(s['name'], s['value'])
-                                for s in entry['strings']] ==
-                                [('$hex_string', '{ F4 23 ( 62 B4 | 56 | 45 ?? 67 ) 45 }')])
+            elif rulename == 'HexMultipleAlternatives':
+                self.assertEqual(len(kv), 1)
+                self.assertEqual(kv_list[0], ('$hex_string', '{ F4 23 ( 62 B4 | 56 | 45 ?? 67 ) 45 }', 'byte', ))
 
-            elif rulename == "RegExp":
-                self.assertTrue([(s['name'], s['value'])
-                                for s in entry['strings']] ==
-                                [('$re1', r'/md5: [0-9a-fA-F]{32}/'),
-                                 ('$re2', r'/state: (on|off)/i'),
-                                 ('$re3', r'/\x00https?:\/\/[^\x00]{4,500}\x00\x00\x00/')])
+            elif rulename == 'RegExp':
+                self.assertEqual(len(kv), 3)
+                self.assertEqual(kv_list[0][0], '$re1')
+                self.assertEqual(kv_list[0][1], '/md5: [0-9a-fA-F]{32}/')
+                self.assertEqual(kv_list[0][2], 'regex')
+                self.assertEqual(kv_list[1][0], '$re2')
+                self.assertEqual(kv_list[1][1], '/state: (on|off)/i')
+                self.assertEqual(kv_list[1][2], 'regex')
+                self.assertEqual(kv_list[2][0], '$re3')
+                self.assertEqual(kv_list[2][1], r'/\x00https?:\/\/[^\x00]{4,500}\x00\x00\x00/')
+                self.assertEqual(kv_list[2][2], 'regex')
 
-            elif rulename == "Xor":
-                self.assertTrue([(s['name'], s['value'], s['modifiers'])
-                                for s in entry['strings']] ==
-                                [('$xor_string', '\"This program cannot\"', ['xor'])])
+            elif rulename == 'Xor':
+                self.assertEqual(len(kv), 1)
+                self.assertEqual(kv_list[0], ('$xor_string', 'This program cannot', 'text', ['xor'], ))
 
-            elif rulename == "WideXorAscii":
-                self.assertTrue([(s['name'], s['value'], s['modifiers'])
-                                for s in entry['strings']] ==
-                                [('$xor_string', '\"This program cannot\"', ['xor', 'wide', 'ascii'])])
+            elif rulename == 'WideXorAscii':
+                self.assertEqual(len(kv), 1)
+                self.assertEqual(kv_list[0], ('$xor_string', 'This program cannot', 'text', ['xor', 'wide', 'ascii'], ))
 
-            elif rulename == "WideXor":
-                self.assertTrue([(s['name'], s['value'], s['modifiers'])
-                                for s in entry['strings']] ==
-                                [('$xor_string', '\"This program cannot\"', ['xor', 'wide'])])
+            elif rulename == 'WideXor':
+                self.assertEqual(len(kv), 1)
+                self.assertEqual(kv_list[0], ('$xor_string', 'This program cannot', 'text', ['xor', 'wide'], ))
+
+            elif rulename == 'DoubleBackslash':
+                self.assertEqual(len(kv), 1)
+                self.assertEqual(kv_list[0], ('$bs', r'\"\\\\\\\"', 'text', ))
 
             else:
                 raise AssertionError(UNHANDLED_RULE_MSG.format(rulename))
 
     def test_conditions(self):
-        with open('tests/data/condition_ruleset.yar', 'r') as f:
-            inputString = f.read()
+        with open(data_dir.joinpath('condition_ruleset.yar'), 'r') as fh:
+            inputString = fh.read()
 
         # Just checking for parsing errors
         self.parser.parse_string(inputString)
 
     def test_include(self):
-        with open('tests/data/include_ruleset.yar', 'r') as f:
-            inputString = f.read()
+        with open(data_dir.joinpath('include_ruleset.yar'), 'r') as fh:
+            inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
         self.assertEqual(result[0]['includes'], ['string_ruleset.yar'])
@@ -403,13 +399,22 @@ class TestRuleParser(unittest.TestCase):
         self.parser.parse_string('include "file1.yara"\ninclude "file2.yara"\ninclude "file3.yara"')
         self.assertEqual(len(self.parser.includes), 3)
 
+    def test_rules_from_yara_project(self):
+        with open('tests/data/test_rules_from_yara_project.yar', 'r') as fh:
+            inputRules = fh.read()
+
+        plyara = Plyara()
+        output = plyara.parse_string(inputRules)
+
+        self.assertEqual(len(output), 293)
+
 
 class TestYaraRules(unittest.TestCase):
 
-    _PLYARA_SCRIPT_NAME = "plyara.py"
+    _PLYARA_SCRIPT_NAME = 'command_line.py'
 
     def test_multiple_rules(self):
-        inputString = u'''
+        inputString = '''
         rule FirstRule {
             meta:
                 author = "Andrés Iniesta"
@@ -442,9 +447,12 @@ class TestYaraRules(unittest.TestCase):
         result = plyara.parse_string(inputString)
 
         self.assertEqual(len(result), 3)
-        self.assertEqual(result[0]['metadata']['author'], u'Andrés Iniesta')
-        self.assertEqual(result[0]['metadata']['date'], '2015-01-01')
-        self.assertTrue([x["name"] for x in result[0]['strings']] == ['$a', '$b'])
+        kv_list = [(k,) + (v, ) for dic in result[0]['metadata'] for k, v in dic.items()]
+        self.assertEqual(kv_list[0][0], 'author')
+        self.assertEqual(kv_list[0][1], 'Andrés Iniesta')
+        self.assertEqual(kv_list[1][0], 'date')
+        self.assertEqual(kv_list[1][1], '2015-01-01')
+        self.assertEqual([x['name'] for x in result[0]['strings']], ['$a', '$b'])
 
     def disable_test_rule_name_imports_and_scopes(self):
         inputStringNIS = r'''
@@ -473,26 +481,26 @@ class TestYaraRules(unittest.TestCase):
         self.assertEqual(len(result), 7)
 
         for rule in result:
-            rule_name = rule["rule_name"]
+            rule_name = rule['rule_name']
 
             if rule_name == 'four':
-                self.assertTrue('scopes' not in rule)
-                self.assertTrue('imports' in rule)
+                self.assertNotIn('scopes', rule)
+                self.assertIn('imports', rule)
             if rule_name == 'five':
-                self.assertTrue('imports' in rule)
-                self.assertTrue('global' in rule['scopes'])
+                self.assertIn('imports', rule)
+                self.assertIn('global', rule['scopes'])
             if rule_name == 'six':
-                self.assertTrue('imports' in rule)
-                self.assertTrue('private' in rule['scopes'])
+                self.assertIn('imports', rule)
+                self.assertIn('private', rule['scopes'])
             if rule_name == 'seven':
-                self.assertTrue('imports' in rule)
+                self.assertIn('imports', rule)
                 self.assertTrue('private' in rule['scopes'] and 'global' in rule['scopes'])
             if rule_name == 'eight':
-                self.assertTrue('lib1' in rule['imports'])
-                self.assertTrue('scopes' not in rule)
+                self.assertIn('lib1', rule['imports'])
+                self.assertNotIn('scopes', rule)
             if rule_name == 'nine':
                 self.assertTrue('lib1' in rule['imports'] and 'lib2' in rule['imports'])
-                self.assertTrue('scopes' not in rule)
+                self.assertNotIn('scopes', rule)
             if rule_name == 'ten':
                 self.assertTrue('lib1' in rule['imports'] and 'lib2' in rule['imports'])
                 self.assertTrue('global' in rule['scopes'] and 'private' in rule['scopes'])
@@ -520,18 +528,18 @@ class TestYaraRules(unittest.TestCase):
         self.assertEqual(len(result2), 2)
 
         for rule in result1:
-            rule_name = rule["rule_name"]
+            rule_name = rule['rule_name']
 
             if rule_name == 'one':
-                self.assertTrue('scopes' not in rule)
-                self.assertTrue('imports' not in rule)
+                self.assertNotIn('scopes', rule)
+                self.assertNotIn('imports', rule)
 
         for rule in result2:
-            rule_name = rule["rule_name"]
+            rule_name = rule['rule_name']
 
             if rule_name == 'two':
                 self.assertTrue('lib1' in rule['imports'] and 'lib2' in rule['imports'])
-                self.assertTrue('scopes' not in rule)
+                self.assertNotIn('scopes', rule)
             if rule_name == 'three':
                 self.assertTrue('lib1' in rule['imports'] and 'lib2' in rule['imports'])
                 self.assertTrue('global' in rule['scopes'] and 'private' in rule['scopes'])
@@ -557,8 +565,8 @@ class TestYaraRules(unittest.TestCase):
         plyara = Plyara()
         result = plyara.parse_string(inputRule)
 
-        self.assertTrue(len(result) == 1)
-        self.assertTrue(result[0]['rule_name'] == "testName")
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]['rule_name'], 'testName')
 
     def test_store_raw(self):
         inputRule = r'''
@@ -597,22 +605,22 @@ class TestYaraRules(unittest.TestCase):
         plyara = Plyara(store_raw_sections=True)
         result = plyara.parse_string(inputRule)
 
-        self.assertTrue(len(result) == 4)
-        self.assertTrue(result[0].get("raw_meta", False))
-        self.assertTrue(result[0].get("raw_strings", False))
-        self.assertTrue(result[0].get("raw_condition", False))
+        self.assertEqual(len(result), 4)
+        self.assertTrue(result[0].get('raw_meta', False))
+        self.assertTrue(result[0].get('raw_strings', False))
+        self.assertTrue(result[0].get('raw_condition', False))
 
-        self.assertFalse(result[1].get("raw_meta", False))
-        self.assertTrue(result[1].get("raw_strings", False))
-        self.assertTrue(result[1].get("raw_condition", False))
+        self.assertFalse(result[1].get('raw_meta', False))
+        self.assertTrue(result[1].get('raw_strings', False))
+        self.assertTrue(result[1].get('raw_condition', False))
 
-        self.assertFalse(result[2].get("raw_meta", False))
-        self.assertFalse(result[2].get("raw_strings", False))
-        self.assertTrue(result[2].get("raw_condition", False))
+        self.assertFalse(result[2].get('raw_meta', False))
+        self.assertFalse(result[2].get('raw_strings', False))
+        self.assertTrue(result[2].get('raw_condition', False))
 
-        self.assertTrue(result[3].get("raw_meta", False))
-        self.assertTrue(result[3].get("raw_strings", False))
-        self.assertTrue(result[3].get("raw_condition", False))
+        self.assertTrue(result[3].get('raw_meta', False))
+        self.assertTrue(result[3].get('raw_strings', False))
+        self.assertTrue(result[3].get('raw_condition', False))
 
     def test_tags(self):
         inputTags = r'''
@@ -625,12 +633,14 @@ class TestYaraRules(unittest.TestCase):
         result = plyara.parse_string(inputTags)
 
         for rule in result:
-            rule_name = rule["rule_name"]
+            rule_name = rule['rule_name']
             if rule_name == 'eleven':
-                self.assertTrue(len(rule['tags']) == 1 and 'tag1' in rule['tags'])
+                self.assertEqual(len(rule['tags']), 1)
+                self.assertIn('tag1', rule['tags'])
             if rule_name == 'twelve':
-                self.assertTrue(len(rule['tags']) == 2 and
-                        'tag1' in rule['tags'] and 'tag2' in rule['tags'])
+                self.assertEqual(len(rule['tags']), 2)
+                self.assertIn('tag1', rule['tags'])
+                self.assertIn('tag2', rule['tags'])
 
     def test_empty_string(self):
         inputRules = r'''
@@ -654,9 +664,9 @@ class TestYaraRules(unittest.TestCase):
         result = plyara.parse_string(inputRules)
 
         for rule in result:
-            rule_name = rule["rule_name"]
+            rule_name = rule['rule_name']
             if rule_name == 'thirteen':
-                self.assertTrue(len(rule['metadata']) == 3)
+                self.assertEqual(len(rule['metadata']), 3)
 
     def test_bytestring(self):
         inputRules = r'''
@@ -689,7 +699,7 @@ class TestYaraRules(unittest.TestCase):
 
         self.assertEqual(len(result), 1)
         for rule in result:
-            rule_name = rule["rule_name"]
+            rule_name = rule['rule_name']
             if rule_name == 'testName':
                 self.assertEqual(len(rule['strings']), 12)
                 for hex_string in rule['strings']:
@@ -699,9 +709,11 @@ class TestYaraRules(unittest.TestCase):
                 self.assertEqual(rule['strings'][0]['value'], '{ E2 34 A1 C8 23 FB }')
                 self.assertEqual(rule['strings'][4]['value'], '{ E2 34 A1 [4-6] FB }')
                 self.assertEqual(rule['strings'][8]['value'], '{ E2 23 ( 62 B4 | 56 ) 45 FB }')
-                self.assertEqual(rule['strings'][9]['value'], '{ E2 23 62 B4 56 // comment\n                     45 FB }')
+                long_string = '{ E2 23 62 B4 56 // comment\n                     45 FB }'
+                self.assertEqual(rule['strings'][9]['value'], long_string)
                 self.assertEqual(rule['strings'][10]['value'], '{ E2 23 62 B4 56 /* comment */ 45 FB }')
-                self.assertEqual(rule['strings'][11]['value'], '{\n                E2 23 62 B4 56 45 FB // comment\n            }')
+                long_string = '{\n                E2 23 62 B4 56 45 FB // comment\n            }'
+                self.assertEqual(rule['strings'][11]['value'], long_string)
 
     def test_nested_bytestring(self):
         inputRules = r'''
@@ -714,7 +726,7 @@ class TestYaraRules(unittest.TestCase):
         '''
 
         plyara = Plyara()
-        result = plyara.parse_string(inputRules)
+        plyara.parse_string(inputRules)
 
     def test_bytestring_bad_jump(self):
         inputRules = r'''
@@ -729,8 +741,8 @@ class TestYaraRules(unittest.TestCase):
         '''
 
         plyara = Plyara()
-        with self.assertRaises(ValueError):
-            result = plyara.parse_string(inputRules)
+        with self.assertRaises(ParseValueError):
+            plyara.parse_string(inputRules)
 
     def test_bytestring_bad_group(self):
         inputRules = r'''
@@ -743,8 +755,8 @@ class TestYaraRules(unittest.TestCase):
         '''
 
         plyara = Plyara()
-        with self.assertRaises(ValueError):
-            result = plyara.parse_string(inputRules)
+        with self.assertRaises(ParseValueError):
+            plyara.parse_string(inputRules)
 
     def test_rexstring(self):
         inputRules = r'''
@@ -771,7 +783,7 @@ class TestYaraRules(unittest.TestCase):
 
         self.assertEqual(len(result), 1)
         for rule in result:
-            rule_name = rule["rule_name"]
+            rule_name = rule['rule_name']
             if rule_name == 'testName':
                 self.assertEqual(len(rule['strings']), 6)
                 for rex_string in rule['strings']:
@@ -788,7 +800,7 @@ class TestYaraRules(unittest.TestCase):
                         self.assertEqual(rex_string['value'], '/abc123 \\d\\/ afterspace/')
                         self.assertEqual(rex_string['modifiers'], ['nocase'])
                     else:
-                        self.assertFalse("Unknown string name...")
+                        self.assertFalse('Unknown string name...')
 
     def test_string(self):
         inputRules = r'''
@@ -821,32 +833,30 @@ class TestYaraRules(unittest.TestCase):
         self.assertEqual(len(result), 1)
         for rule in result:
             self.assertEqual(len(rule['strings']), 14)
-            self.assertEqual(rule['strings'][0]['value'], '"test string"')
-            self.assertEqual(rule['strings'][1]['value'], '"test string"')
-            self.assertEqual(rule['strings'][2]['value'], '"test string"')
-            self.assertEqual(rule['strings'][3]['value'], '"teststring"')
-            self.assertEqual(rule['strings'][4]['value'], '"test // string"')
-            self.assertEqual(rule['strings'][5]['value'], '"test /* string */ string"')
-            self.assertEqual(rule['strings'][6]['value'], '"teststring"')
-            self.assertEqual(rule['strings'][7]['value'], '"\'test"')
-            self.assertEqual(rule['strings'][8]['value'], '"\'test\' string"')
-            self.assertEqual(rule['strings'][9]['value'], '"\\"test string\\""')
-            self.assertEqual(rule['strings'][10]['value'], '"test \\"string\\""')
-            self.assertEqual(rule['strings'][11]['value'], '"test \\"string\\" test \\\\"')
-            self.assertEqual(rule['strings'][12]['value'], '"test string"')
-            self.assertEqual(rule['strings'][13]['value'], '"test string"')
+            self.assertEqual(rule['strings'][0]['value'], 'test string')
+            self.assertEqual(rule['strings'][1]['value'], 'test string')
+            self.assertEqual(rule['strings'][2]['value'], 'test string')
+            self.assertEqual(rule['strings'][3]['value'], 'teststring')
+            self.assertEqual(rule['strings'][4]['value'], 'test // string')
+            self.assertEqual(rule['strings'][5]['value'], 'test /* string */ string')
+            self.assertEqual(rule['strings'][6]['value'], 'teststring')
+            self.assertEqual(rule['strings'][7]['value'], "'test")
+            self.assertEqual(rule['strings'][8]['value'], "'test' string")
+            self.assertEqual(rule['strings'][9]['value'], '\\"test string\\"')
+            self.assertEqual(rule['strings'][10]['value'], 'test \\"string\\"')
+            self.assertEqual(rule['strings'][11]['value'], 'test \\"string\\" test \\\\')
+            self.assertEqual(rule['strings'][12]['value'], 'test string')
+            self.assertEqual(rule['strings'][13]['value'], 'test string')
 
     def test_plyara_script(self):
-        cwd = os.getcwd()
-        script_path = os.path.join(cwd, self._PLYARA_SCRIPT_NAME)
-        test_file_path = os.path.join(cwd, 'tests', 'data', 'test_file.txt')
+        cwd = pathlib.Path().cwd()
+        script_path = cwd / 'plyara' / self._PLYARA_SCRIPT_NAME
+        test_file_path = cwd / 'tests' / 'data' / 'test_file.txt'
 
-        script_process = subprocess.Popen([sys.executable, script_path, test_file_path],
-                                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.run([sys.executable, script_path, test_file_path], capture_output=True)
 
-        process_stdout, process_stderr = script_process.communicate()
-        rule_list = ast.literal_eval(process_stdout.decode('utf-8'))
-        self.assertTrue(len(rule_list) == 4)
+        rule_list = ast.literal_eval(process.stdout.decode('utf-8'))
+        self.assertEqual(len(rule_list), 4)
 
     def test_raw_condition_contains_all_condition_text(self):
         inputRules = r'''
@@ -889,12 +899,12 @@ class TestYaraRules(unittest.TestCase):
         self.assertEqual(result[0]['raw_meta'], 'meta: author = "Test" ')
 
     def test_parse_file_without_rules_returns_empty_list(self):
-        inputRules = ''
+        inputRules = str()
 
         plyara = Plyara()
         result = plyara.parse_string(inputRules)
 
-        self.assertEqual(result, [])
+        self.assertEqual(result, list())
 
     def test_lineno_incremented_by_newlines_in_bytestring(self):
         inputRules = r'''
@@ -912,25 +922,25 @@ class TestYaraRules(unittest.TestCase):
 
         with self.assertRaises(ParseTypeError):
             try:
-                result = plyara.parse_string(inputRules)
+                plyara.parse_string(inputRules)
             except ParseTypeError as e:
                 self.assertEqual(7, e.lineno)
                 raise e
 
     def test_lineno_incremented_by_windows_newlines_in_bytestring(self):
-        with open('tests/data/windows_newline_ruleset.yar', 'r') as f:
-            inputRules = f.read()
+        with open('tests/data/windows_newline_ruleset.yar', 'r') as fh:
+            inputRules = fh.read()
 
         plyara = Plyara()
 
         with self.assertRaises(ParseTypeError):
             try:
-                result = plyara.parse_string(inputRules)
+                plyara.parse_string(inputRules)
             except ParseTypeError as e:
                 self.assertEqual(6, e.lineno)
                 raise e
 
-    def test_lineno_incremented_by_newlines_in_bytestring(self):
+    def test_anonymous_array_condition(self):
         inputRules = r'''
         rule sample
         {
@@ -945,6 +955,115 @@ class TestYaraRules(unittest.TestCase):
         result = plyara.parse_string(inputRules)
 
         self.assertEqual(result[0].get('condition_terms')[8], '@')
+
+
+class TestDeprecatedMethods(unittest.TestCase):  # REMOVE SOON!!
+
+    def test_logic_hash_generator(self):
+        with open(data_dir.joinpath('logic_collision_ruleset.yar'), 'r') as fh:
+            inputString = fh.read()
+
+        result = Plyara().parse_string(inputString)
+
+        rule_mapping = {}
+
+        for entry in result:
+            rulename = entry['rule_name']
+            setname, _ = rulename.split('_')
+            with self.assertWarns(DeprecationWarning):
+                rulehash = Plyara.generate_logic_hash(entry)
+
+            if setname not in rule_mapping:
+                rule_mapping[setname] = [rulehash]
+            else:
+                rule_mapping[setname].append(rulehash)
+
+        for setname, hashvalues in rule_mapping.items():
+
+            if not len(set(hashvalues)) == 1:
+                raise AssertionError('Collision detection failure for {}'.format(setname))
+
+    def test_is_valid_rule_name(self):
+        with self.assertWarns(DeprecationWarning):
+            self.assertTrue(Plyara.is_valid_rule_name('test'))
+            self.assertTrue(Plyara.is_valid_rule_name('test123'))
+            self.assertTrue(Plyara.is_valid_rule_name('test_test'))
+            self.assertTrue(Plyara.is_valid_rule_name('_test_'))
+            self.assertTrue(Plyara.is_valid_rule_name('include_test'))
+            self.assertFalse(Plyara.is_valid_rule_name('123test'))
+            self.assertFalse(Plyara.is_valid_rule_name('123 test'))
+            self.assertFalse(Plyara.is_valid_rule_name('test 123'))
+            self.assertFalse(Plyara.is_valid_rule_name('test test'))
+            self.assertFalse(Plyara.is_valid_rule_name('test-test'))
+            self.assertFalse(Plyara.is_valid_rule_name('include'))
+            self.assertFalse(Plyara.is_valid_rule_name('test!*@&*!&'))
+            self.assertFalse(Plyara.is_valid_rule_name(''))
+
+    def test_rebuild_yara_rule(self):
+        with open(data_dir.joinpath('rebuild_ruleset.yar'), 'r', encoding='utf-8') as fh:
+            inputString = fh.read()
+
+        result = Plyara().parse_string(inputString)
+
+        rebuilt_rules = str()
+        with self.assertWarns(DeprecationWarning):
+            for rule in result:
+                rebuilt_rules += Plyara.rebuild_yara_rule(rule)
+
+        self.assertEqual(inputString, rebuilt_rules)
+
+    def test_rebuild_yara_rule_metadata(self):
+        test_rule = """
+        rule check_meta {
+            meta:
+                string_value = "TEST STRING"
+                string_value = "DIFFERENT TEST STRING"
+                bool_value = true
+                bool_value = false
+                digit_value = 5
+                digit_value = 10
+            condition:
+                true
+        }
+        """
+        parsed = Plyara().parse_string(test_rule)
+        for rule in parsed:
+            with self.assertWarns(DeprecationWarning):
+                unparsed = Plyara.rebuild_yara_rule(rule)
+            self.assertIn('string_value = "TEST STRING"', unparsed)
+            self.assertIn('string_value = "DIFFERENT TEST STRING"', unparsed)
+            self.assertIn('bool_value = true', unparsed)
+            self.assertIn('bool_value = false', unparsed)
+            self.assertIn('digit_value = 5', unparsed)
+            self.assertIn('digit_value = 10', unparsed)
+
+    def test_detect_dependencies(self):
+        with open(data_dir.joinpath('detect_dependencies_ruleset.yar'), 'r') as fh:
+            inputString = fh.read()
+
+        result = Plyara().parse_string(inputString)
+
+        with self.assertWarns(DeprecationWarning):
+            self.assertEqual(Plyara.detect_dependencies(result[0]), list())
+            self.assertEqual(Plyara.detect_dependencies(result[1]), list())
+            self.assertEqual(Plyara.detect_dependencies(result[2]), list())
+            self.assertEqual(Plyara.detect_dependencies(result[3]), ['is__osx', 'priv01', 'priv02', 'priv03', 'priv04'])
+            self.assertEqual(Plyara.detect_dependencies(result[4]), ['is__elf', 'priv01', 'priv02', 'priv03', 'priv04'])
+            self.assertEqual(Plyara.detect_dependencies(result[5]), ['is__elf', 'is__osx', 'priv01', 'priv02'])
+            self.assertEqual(Plyara.detect_dependencies(result[6]), ['is__elf', 'is__osx', 'priv01'])
+            self.assertEqual(Plyara.detect_dependencies(result[7]), ['is__elf'])
+            self.assertEqual(Plyara.detect_dependencies(result[8]), ['is__osx', 'is__elf'])
+            self.assertEqual(Plyara.detect_dependencies(result[9]), ['is__osx'])
+            self.assertEqual(Plyara.detect_dependencies(result[10]), ['is__elf', 'is__osx'])
+
+    def test_detect_imports(self):
+        for imp in ('androguard', 'cuckoo', 'dotnet', 'elf', 'hash', 'magic', 'math', 'pe'):
+            with open(data_dir.joinpath('import_ruleset_{}.yar'.format(imp)), 'r') as fh:
+                inputString = fh.read()
+            results = Plyara().parse_string(inputString)
+            with self.assertWarns(DeprecationWarning):
+                for rule in results:
+                    self.assertEqual(Plyara.detect_imports(rule), [imp])
 
 
 if __name__ == '__main__':

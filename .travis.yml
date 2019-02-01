@@ -1,29 +1,34 @@
 language: python
 python:
-  - "2.7"
-  - "3.4"
-  - "3.5"
   - "3.6"
   - "3.7"
 sudo: required
 dist: xenial
 install:
   - "pip install nose"
-  - "pip install pycodestyle"
-  - "pip install pydocstyle"
-  - "pip install pyflakes"
+  - "pip install pycodestyle pydocstyle pyflakes"
   - "pip install coverage"
   - "pip install codacy-coverage"
   - "pip install collective.checkdocs Pygments"
   - "python setup.py install"
 script:
   - nosetests --with-coverage --cover-package=plyara --cover-xml
-  - pycodestyle --max-line-length=120 plyara.py
+  - pycodestyle --max-line-length=120 plyara/*.py
   - pycodestyle --max-line-length=120 setup.py
-  - pydocstyle --ignore=D203,D205,D208,D209,D213,D300,D400,D401,D403 plyara.py
-  - pydocstyle --ignore=D100 setup.py
-  - pyflakes plyara.py
+  - pycodestyle --max-line-length=120 tests/unit_tests.py
+  - pydocstyle --ignore=D104 plyara/__init__.py
+  - pydocstyle --ignore=D203,D205,D208,D209,D213,D300,D400,D401,D403,D406,D407,D413 plyara/core.py
+  - pydocstyle --ignore=D203,D213 plyara/exceptions.py
+  - pydocstyle --ignore=D203,D213,D406,D407,D413 plyara/utils.py
+  - pydocstyle --ignore=D101,D102,D203,D213 tests/unit_tests.py
+  - pydocstyle plyara/command_line.py
+  - pydocstyle setup.py
+  - pyflakes plyara/core.py
+  - pyflakes plyara/exceptions.py
+  - pyflakes plyara/command_line.py
+  - pyflakes plyara/utils.py
   - pyflakes setup.py
+  - pyflakes tests/unit_tests.py
   - python setup.py checkdocs
 after_success:
   - python-codacy-coverage
