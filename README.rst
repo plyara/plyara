@@ -53,18 +53,18 @@ Use the plyara Python library in your own applications:
     >>> import pprint
     >>> pprint.pprint(mylist)
     [{'condition_terms': ['false'],
-      'raw_condition': 'condition: false',
-      'raw_strings': 'strings: $a="1" \n',
+      'raw_condition': 'condition: false ',
+      'raw_strings': 'strings: $a="1" \n ',
       'rule_name': 'MyRule',
       'start_line': 1,
       'stop_line': 2,
-      'strings': [{'name': '$a', 'value': '"1"'}]}]
+      'strings': [{'name': '$a', 'type': 'text', 'value': '1'}]}]
     >>>
 
 Or, use the included ``plyara`` script from the command line::
 
     $ plyara -h
-    usage: plyara.py [-h] [--log] FILE
+    usage: plyara [-h] [--log] FILE
 
     Parse YARA rules into a dictionary representation.
 
@@ -102,11 +102,17 @@ The command-line tool will print valid JSON output when parsing rules::
                 "or",
                 "$c"
             ],
-            "metadata": {
-                "description": "This is just an example",
-                "in_the_wild": "true",
-                "thread_level": "3"
-            },
+            "metadata": [
+                {
+                    "description": "This is just an example"
+                },
+                {
+                    "thread_level": 3
+                },
+                {
+                    "in_the_wild": true
+                }
+            ],
             "raw_condition": "condition:\n        $a or $b or $c\n",
             "raw_meta": "meta:\n        description = \"This is just an example\"\n        thread_level = 3\n        in_the_wild = true\n    ",
             "raw_strings": "strings:\n        $a = {6A 40 68 00 30 00 00 6A 14 8D 91}\n        $b = {8D 4D B0 2B C1 83 C0 27 99 6A 4E 59 F7 F9}\n        $c = \"UVODFRYSIHLNWPEJXQZAKCBGMT\"\n    ",
@@ -116,15 +122,18 @@ The command-line tool will print valid JSON output when parsing rules::
             "strings": [
                 {
                     "name": "$a",
+                    "type": "byte",
                     "value": "{6A 40 68 00 30 00 00 6A 14 8D 91}"
                 },
                 {
                     "name": "$b",
+                    "type": "byte",
                     "value": "{8D 4D B0 2B C1 83 C0 27 99 6A 4E 59 F7 F9}"
                 },
                 {
                     "name": "$c",
-                    "value": "\"UVODFRYSIHLNWPEJXQZAKCBGMT\""
+                    "type": "text",
+                    "value": "UVODFRYSIHLNWPEJXQZAKCBGMT"
                 }
             ],
             "tags": [
