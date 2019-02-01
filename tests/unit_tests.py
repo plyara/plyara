@@ -18,11 +18,11 @@
 
 This module contains various unit tests for plyara.
 """
-import ast
 import pathlib
 import subprocess
 import sys
 import unittest
+import json
 
 from plyara import Plyara
 from plyara.exceptions import ParseTypeError, ParseValueError
@@ -853,9 +853,9 @@ class TestYaraRules(unittest.TestCase):
         script_path = cwd / 'plyara' / self._PLYARA_SCRIPT_NAME
         test_file_path = cwd / 'tests' / 'data' / 'test_file.txt'
 
-        process = subprocess.run([sys.executable, script_path, test_file_path], capture_output=True)
+        plyara_output = subprocess.check_output([sys.executable, script_path, test_file_path])
 
-        rule_list = ast.literal_eval(process.stdout.decode('utf-8'))
+        rule_list = json.loads(plyara_output)
         self.assertEqual(len(rule_list), 4)
 
     def test_raw_condition_contains_all_condition_text(self):
