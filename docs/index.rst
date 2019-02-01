@@ -8,13 +8,18 @@
 Module Documentation
 --------------------
 
-.. autoclass:: plyara.Parser
-    :members:
+.. autoclass:: plyara.Plyara
+    :show-inheritance:
+    :member-order: bysource
+
+.. autoclass:: plyara.core.Parser
     :undoc-members:
     :show-inheritance:
     :member-order: bysource
 
-.. autoclass:: plyara.Plyara
+.. automodule:: plyara.utils
+    :members:
+    :undoc-members:
     :show-inheritance:
     :member-order: bysource
 
