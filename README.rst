@@ -33,7 +33,7 @@ is used with permission.
 Installation
 ------------
 
-Plyara requires Python 3.6+.
+Plyara requires Python 3.5+.
 
 Install with pip::
 

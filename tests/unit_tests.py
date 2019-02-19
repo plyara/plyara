@@ -40,7 +40,7 @@ data_dir = tests.joinpath('data')
 class TestUtilities(unittest.TestCase):
 
     def test_logic_hash_generator(self):
-        with open(data_dir.joinpath('logic_collision_ruleset.yar'), 'r') as fh:
+        with data_dir.joinpath('logic_collision_ruleset.yar').open('r') as fh:
             inputString = fh.read()
 
         result = Plyara().parse_string(inputString)
@@ -78,7 +78,7 @@ class TestUtilities(unittest.TestCase):
         self.assertFalse(is_valid_rule_name(''))
 
     def test_rebuild_yara_rule(self):
-        with open(data_dir.joinpath('rebuild_ruleset.yar'), 'r', encoding='utf-8') as fh:
+        with data_dir.joinpath('rebuild_ruleset.yar').open('r', encoding='utf-8') as fh:
             inputString = fh.read()
 
         result = Plyara().parse_string(inputString)
@@ -114,7 +114,7 @@ class TestUtilities(unittest.TestCase):
             self.assertIn('digit_value = 10', unparsed)
 
     def test_detect_dependencies(self):
-        with open(data_dir.joinpath('detect_dependencies_ruleset.yar'), 'r') as fh:
+        with data_dir.joinpath('detect_dependencies_ruleset.yar').open('r') as fh:
             inputString = fh.read()
 
         result = Plyara().parse_string(inputString)
@@ -133,7 +133,7 @@ class TestUtilities(unittest.TestCase):
 
     def test_detect_imports(self):
         for imp in ('androguard', 'cuckoo', 'dotnet', 'elf', 'hash', 'magic', 'math', 'pe'):
-            with open(data_dir.joinpath('import_ruleset_{}.yar'.format(imp)), 'r') as fh:
+            with data_dir.joinpath('import_ruleset_{}.yar'.format(imp)).open('r') as fh:
                 inputString = fh.read()
             results = Plyara().parse_string(inputString)
             for rule in results:
@@ -146,7 +146,7 @@ class TestRuleParser(unittest.TestCase):
         self.parser = Plyara()
 
     def test_import_pe(self):
-        with open(data_dir.joinpath('import_ruleset_pe.yar'), 'r') as fh:
+        with data_dir.joinpath('import_ruleset_pe.yar').open('r') as fh:
             inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
@@ -155,7 +155,7 @@ class TestRuleParser(unittest.TestCase):
             self.assertIn('pe', rule['imports'])
 
     def test_import_elf(self):
-        with open(data_dir.joinpath('import_ruleset_elf.yar'), 'r') as fh:
+        with data_dir.joinpath('import_ruleset_elf.yar').open('r') as fh:
             inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
@@ -164,7 +164,7 @@ class TestRuleParser(unittest.TestCase):
             self.assertIn('elf', rule['imports'])
 
     def test_import_cuckoo(self):
-        with open(data_dir.joinpath('import_ruleset_cuckoo.yar'), 'r') as fh:
+        with data_dir.joinpath('import_ruleset_cuckoo.yar').open('r') as fh:
             inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
@@ -173,7 +173,7 @@ class TestRuleParser(unittest.TestCase):
             self.assertIn('cuckoo', rule['imports'])
 
     def test_import_magic(self):
-        with open(data_dir.joinpath('import_ruleset_magic.yar'), 'r') as fh:
+        with data_dir.joinpath('import_ruleset_magic.yar').open('r') as fh:
             inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
@@ -182,7 +182,7 @@ class TestRuleParser(unittest.TestCase):
             self.assertIn('magic', rule['imports'])
 
     def test_import_hash(self):
-        with open(data_dir.joinpath('import_ruleset_hash.yar'), 'r') as fh:
+        with data_dir.joinpath('import_ruleset_hash.yar').open('r') as fh:
             inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
@@ -191,7 +191,7 @@ class TestRuleParser(unittest.TestCase):
             self.assertIn('hash', rule['imports'])
 
     def test_import_math(self):
-        with open(data_dir.joinpath('import_ruleset_math.yar'), 'r') as fh:
+        with data_dir.joinpath('import_ruleset_math.yar').open('r') as fh:
             inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
@@ -200,7 +200,7 @@ class TestRuleParser(unittest.TestCase):
             self.assertIn('math', rule['imports'])
 
     def test_import_dotnet(self):
-        with open(data_dir.joinpath('import_ruleset_dotnet.yar'), 'r') as fh:
+        with data_dir.joinpath('import_ruleset_dotnet.yar').open('r') as fh:
             inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
@@ -209,7 +209,7 @@ class TestRuleParser(unittest.TestCase):
             self.assertIn('dotnet', rule['imports'])
 
     def test_import_androguard(self):
-        with open(data_dir.joinpath('import_ruleset_androguard.yar'), 'r') as fh:
+        with data_dir.joinpath('import_ruleset_androguard.yar').open('r') as fh:
             inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
@@ -218,7 +218,7 @@ class TestRuleParser(unittest.TestCase):
             self.assertIn('androguard', rule['imports'])
 
     def test_scopes(self):
-        with open(data_dir.joinpath('scope_ruleset.yar'), 'r') as fh:
+        with data_dir.joinpath('scope_ruleset.yar').open('r') as fh:
             inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
@@ -239,7 +239,7 @@ class TestRuleParser(unittest.TestCase):
                 raise AssertionError(UNHANDLED_RULE_MSG.format(rulename))
 
     def test_tags(self):
-        with open(data_dir.joinpath('tag_ruleset.yar'), 'r') as fh:
+        with data_dir.joinpath('tag_ruleset.yar').open('r') as fh:
             inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
@@ -266,7 +266,7 @@ class TestRuleParser(unittest.TestCase):
                 raise AssertionError(UNHANDLED_RULE_MSG.format(rulename))
 
     def test_metadata(self):
-        with open(data_dir.joinpath('metadata_ruleset.yar'), 'r') as fh:
+        with data_dir.joinpath('metadata_ruleset.yar').open('r') as fh:
             inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
@@ -304,7 +304,7 @@ class TestRuleParser(unittest.TestCase):
                 raise AssertionError(UNHANDLED_RULE_MSG.format(rulename))
 
     def test_strings(self):
-        with open(data_dir.joinpath('string_ruleset.yar'), 'r') as fh:
+        with data_dir.joinpath('string_ruleset.yar').open('r') as fh:
             inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
@@ -312,84 +312,101 @@ class TestRuleParser(unittest.TestCase):
         for entry in result:
             rulename = entry['rule_name']
             kv = entry['strings']
-            kv_list = [tuple(x.values()) for x in kv]
 
             if rulename == 'Text':
-                self.assertEqual(len(kv), 1)
-                self.assertEqual(kv_list[0], ('$text_string', 'foobar', 'text', ))
+                self.assertEqual(kv, [{'name': '$text_string', 'value': 'foobar', 'type': 'text'}])
 
             elif rulename == 'FullwordText':
-                self.assertEqual(len(kv), 1)
-                self.assertEqual(kv_list[0], ('$text_string', 'foobar', 'text', ['fullword'], ))
+                self.assertEqual(kv, [{
+                    'name': '$text_string',
+                    'value': 'foobar',
+                    'type': 'text',
+                    'modifiers': ['fullword']}])
 
             elif rulename == 'CaseInsensitiveText':
-                self.assertEqual(len(kv), 1)
-                self.assertEqual(kv_list[0], ('$text_string', 'foobar', 'text', ['nocase'], ))
+                self.assertEqual(kv, [{'name': '$text_string',
+                                       'value': 'foobar',
+                                       'type': 'text',
+                                       'modifiers': ['nocase']}])
 
             elif rulename == 'WideCharText':
-                self.assertEqual(len(kv), 1)
-                self.assertEqual(kv_list[0], ('$wide_string', 'Borland', 'text', ['wide'], ))
+                self.assertEqual(kv, [{'name': '$wide_string',
+                                       'value': 'Borland',
+                                       'type': 'text',
+                                       'modifiers': ['wide']}])
 
             elif rulename == 'WideCharAsciiText':
-                self.assertEqual(len(kv), 1)
-                self.assertEqual(kv_list[0], ('$wide_and_ascii_string', 'Borland', 'text', ['wide', 'ascii'], ))
+                self.assertEqual(kv, [{'name': '$wide_and_ascii_string',
+                                       'value': 'Borland',
+                                       'type': 'text',
+                                       'modifiers': ['wide', 'ascii']}])
 
             elif rulename == 'HexWildcard':
-                self.assertEqual(len(kv), 1)
-                self.assertEqual(kv_list[0], ('$hex_string', '{ E2 34 ?? C8 A? FB }', 'byte', ))
+                self.assertEqual(kv, [{'name': '$hex_string', 'value': '{ E2 34 ?? C8 A? FB }', 'type': 'byte'}])
 
             elif rulename == 'HexJump':
-                self.assertEqual(len(kv), 1)
-                self.assertEqual(kv_list[0], ('$hex_string', '{ F4 23 [4-6] 62 B4 }', 'byte', ))
+                self.assertEqual(kv, [{'name': '$hex_string', 'value': '{ F4 23 [4-6] 62 B4 }', 'type': 'byte'}])
 
             elif rulename == 'HexAlternatives':
-                self.assertEqual(len(kv), 1)
-                self.assertEqual(kv_list[0], ('$hex_string', '{ F4 23 ( 62 B4 | 56 ) 45 }', 'byte', ))
+                self.assertEqual(kv, [{'name': '$hex_string', 'value': '{ F4 23 ( 62 B4 | 56 ) 45 }', 'type': 'byte'}])
 
             elif rulename == 'HexMultipleAlternatives':
-                self.assertEqual(len(kv), 1)
-                self.assertEqual(kv_list[0], ('$hex_string', '{ F4 23 ( 62 B4 | 56 | 45 ?? 67 ) 45 }', 'byte', ))
+                self.assertEqual(kv, [{'name': '$hex_string',
+                                       'value': '{ F4 23 ( 62 B4 | 56 | 45 ?? 67 ) 45 }',
+                                       'type': 'byte'}])
 
             elif rulename == 'RegExp':
-                self.assertEqual(len(kv), 3)
-                self.assertEqual(kv_list[0][0], '$re1')
-                self.assertEqual(kv_list[0][1], '/md5: [0-9a-fA-F]{32}/')
-                self.assertEqual(kv_list[0][2], 'regex')
-                self.assertEqual(kv_list[1][0], '$re2')
-                self.assertEqual(kv_list[1][1], '/state: (on|off)/i')
-                self.assertEqual(kv_list[1][2], 'regex')
-                self.assertEqual(kv_list[2][0], '$re3')
-                self.assertEqual(kv_list[2][1], r'/\x00https?:\/\/[^\x00]{4,500}\x00\x00\x00/')
-                self.assertEqual(kv_list[2][2], 'regex')
+                self.assertEqual(kv, [
+                    {
+                        'name': '$re1',
+                        'value': '/md5: [0-9a-fA-F]{32}/',
+                        'type': 'regex',
+                        'modifiers': ['nocase'],
+                    },
+                    {
+                        'name': '$re2',
+                        'value': '/state: (on|off)/i',
+                        'type': 'regex',
+                    },
+                    {
+                        'name': '$re3',
+                        'value': r'/\x00https?:\/\/[^\x00]{4,500}\x00\x00\x00/',
+                        'type': 'regex',
+                    }])
 
             elif rulename == 'Xor':
-                self.assertEqual(len(kv), 1)
-                self.assertEqual(kv_list[0], ('$xor_string', 'This program cannot', 'text', ['xor'], ))
+                self.assertEqual(kv, [{'name': '$xor_string',
+                                       'value': 'This program cannot',
+                                       'type': 'text',
+                                       'modifiers': ['xor']}])
 
             elif rulename == 'WideXorAscii':
-                self.assertEqual(len(kv), 1)
-                self.assertEqual(kv_list[0], ('$xor_string', 'This program cannot', 'text', ['xor', 'wide', 'ascii'], ))
+                self.assertEqual(kv, [{'name': '$xor_string',
+                                       'value': 'This program cannot',
+                                       'type': 'text',
+                                       'modifiers': ['xor', 'wide', 'ascii']}])
 
             elif rulename == 'WideXor':
-                self.assertEqual(len(kv), 1)
-                self.assertEqual(kv_list[0], ('$xor_string', 'This program cannot', 'text', ['xor', 'wide'], ))
+                self.assertEqual(kv, [{'name': '$xor_string',
+                                       'value': 'This program cannot',
+                                       'type': 'text',
+                                       'modifiers': ['xor', 'wide']}])
 
             elif rulename == 'DoubleBackslash':
-                self.assertEqual(len(kv), 1)
-                self.assertEqual(kv_list[0], ('$bs', r'\"\\\\\\\"', 'text', ))
+                self.assertEqual(kv, [{'name': '$bs', 'value': r'\"\\\\\\\"', 'type': 'text'}])
 
             else:
                 raise AssertionError(UNHANDLED_RULE_MSG.format(rulename))
 
     def test_conditions(self):
-        with open(data_dir.joinpath('condition_ruleset.yar'), 'r') as fh:
+        with data_dir.joinpath('condition_ruleset.yar').open('r') as fh:
             inputString = fh.read()
 
         # Just checking for parsing errors
         self.parser.parse_string(inputString)
 
     def test_include(self):
-        with open(data_dir.joinpath('include_ruleset.yar'), 'r') as fh:
+        with data_dir.joinpath('include_ruleset.yar').open('r') as fh:
             inputString = fh.read()
 
         result = self.parser.parse_string(inputString)
@@ -853,9 +870,9 @@ class TestYaraRules(unittest.TestCase):
         script_path = cwd / 'plyara' / self._PLYARA_SCRIPT_NAME
         test_file_path = cwd / 'tests' / 'data' / 'test_file.txt'
 
-        plyara_output = subprocess.check_output([sys.executable, script_path, test_file_path])
+        plyara_output = subprocess.check_output([sys.executable, str(script_path), str(test_file_path)])
 
-        rule_list = json.loads(plyara_output)
+        rule_list = json.loads(plyara_output.decode('utf-8'))
         self.assertEqual(len(rule_list), 4)
 
     def test_raw_condition_contains_all_condition_text(self):
@@ -960,7 +977,7 @@ class TestYaraRules(unittest.TestCase):
 class TestDeprecatedMethods(unittest.TestCase):  # REMOVE SOON!!
 
     def test_logic_hash_generator(self):
-        with open(data_dir.joinpath('logic_collision_ruleset.yar'), 'r') as fh:
+        with data_dir.joinpath('logic_collision_ruleset.yar').open('r') as fh:
             inputString = fh.read()
 
         result = Plyara().parse_string(inputString)
@@ -1000,7 +1017,7 @@ class TestDeprecatedMethods(unittest.TestCase):  # REMOVE SOON!!
             self.assertFalse(Plyara.is_valid_rule_name(''))
 
     def test_rebuild_yara_rule(self):
-        with open(data_dir.joinpath('rebuild_ruleset.yar'), 'r', encoding='utf-8') as fh:
+        with data_dir.joinpath('rebuild_ruleset.yar').open('r', encoding='utf-8') as fh:
             inputString = fh.read()
 
         result = Plyara().parse_string(inputString)
@@ -1038,7 +1055,7 @@ class TestDeprecatedMethods(unittest.TestCase):  # REMOVE SOON!!
             self.assertIn('digit_value = 10', unparsed)
 
     def test_detect_dependencies(self):
-        with open(data_dir.joinpath('detect_dependencies_ruleset.yar'), 'r') as fh:
+        with data_dir.joinpath('detect_dependencies_ruleset.yar').open('r') as fh:
             inputString = fh.read()
 
         result = Plyara().parse_string(inputString)
@@ -1058,7 +1075,7 @@ class TestDeprecatedMethods(unittest.TestCase):  # REMOVE SOON!!
 
     def test_detect_imports(self):
         for imp in ('androguard', 'cuckoo', 'dotnet', 'elf', 'hash', 'magic', 'math', 'pe'):
-            with open(data_dir.joinpath('import_ruleset_{}.yar'.format(imp)), 'r') as fh:
+            with data_dir.joinpath('import_ruleset_{}.yar'.format(imp)).open('r') as fh:
                 inputString = fh.read()
             results = Plyara().parse_string(inputString)
             with self.assertWarns(DeprecationWarning):
