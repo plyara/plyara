@@ -174,7 +174,7 @@ class Parser:
             else:
                 self.current_rule['metadata'].append({key: value})
                 if self.meta_as_kv:
-                    self.current_rule['metadata_kv'] = {key: value}
+                    self.current_rule['metadata_kv'][key] = value
 
         elif element_type == ElementTypes.STRINGS_KEY_VALUE:
             key, value, string_type = element_value
