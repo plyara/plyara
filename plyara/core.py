@@ -20,7 +20,6 @@ dictionary representation. The goal of this tool is to make it easier to perform
 large sets of YARA rules, such as extracting indicators, updating attributes, and analyzing a corpus. Other applications
 include linters and dependency checkers.
 """
-import collections
 import distutils.util
 import enum
 import logging
