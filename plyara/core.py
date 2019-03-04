@@ -816,7 +816,7 @@ class Plyara(Parser):
         key = p[1]
         value = p[3]
         if re.match(r'".*"', value):
-            match = re.match('"(.+)"', value)
+            match = re.match('"(.*)"', value)
             if match:
                 value = match.group(1)
         elif value == 'true' or value == 'false':
