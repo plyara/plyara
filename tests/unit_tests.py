@@ -1035,6 +1035,7 @@ class TestDeprecatedMethods(unittest.TestCase):  # REMOVE SOON!!
             meta:
                 string_value = "TEST STRING"
                 string_value = "DIFFERENT TEST STRING"
+                string_value = ""
                 bool_value = true
                 bool_value = false
                 digit_value = 5
@@ -1049,6 +1050,7 @@ class TestDeprecatedMethods(unittest.TestCase):  # REMOVE SOON!!
                 unparsed = Plyara.rebuild_yara_rule(rule)
             self.assertIn('string_value = "TEST STRING"', unparsed)
             self.assertIn('string_value = "DIFFERENT TEST STRING"', unparsed)
+            self.assertIn('string_value = ""', unparsed)
             self.assertIn('bool_value = true', unparsed)
             self.assertIn('bool_value = false', unparsed)
             self.assertIn('digit_value = 5', unparsed)
