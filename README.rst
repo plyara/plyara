@@ -37,7 +37,7 @@ Plyara requires Python 3.5+.
 
 Install with pip::
 
-    pip install plyara
+    pip3 install plyara
 
 Usage
 -----
