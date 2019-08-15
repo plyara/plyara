@@ -18,12 +18,12 @@
 
 This module contains various unit tests for plyara.
 """
+import concurrent.futures
+import json
 import pathlib
 import subprocess
 import sys
 import unittest
-import json
-from concurrent import futures
 
 from plyara import Plyara
 from plyara.exceptions import ParseTypeError, ParseValueError
@@ -434,9 +434,9 @@ class TestRuleParser(unittest.TestCase):
             plyara = Plyara()
             return plyara.parse_string(inputRules)
 
-        with futures.ThreadPoolExecutor(max_workers=4) as e:
-            futs = [ e.submit(parse_rules, inputRules) for _ in range(4) ]
-            for fut in futures.as_completed(futs):
+        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as e:
+            futs = [e.submit(parse_rules, inputRules) for _ in range(4)]
+            for fut in concurrent.futures.as_completed(futs):
                 self.assertEqual(len(fut.result()), 293)
 
 
