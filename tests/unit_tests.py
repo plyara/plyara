@@ -23,6 +23,7 @@ import subprocess
 import sys
 import unittest
 import json
+from concurrent import futures
 
 from plyara import Plyara
 from plyara.exceptions import ParseTypeError, ParseValueError
@@ -424,6 +425,19 @@ class TestRuleParser(unittest.TestCase):
         output = plyara.parse_string(inputRules)
 
         self.assertEqual(len(output), 293)
+
+    def test_multiple_threads(self):
+        with open('tests/data/test_rules_from_yara_project.yar', 'r') as fh:
+            inputRules = fh.read()
+
+        def parse_rules(rules):
+            plyara = Plyara()
+            return plyara.parse_string(inputRules)
+
+        with futures.ThreadPoolExecutor(max_workers=4) as e:
+            futs = [ e.submit(parse_rules, inputRules) for _ in range(4) ]
+            for fut in futures.as_completed(futs):
+                self.assertEqual(len(fut.result()), 293)
 
 
 class TestYaraRules(unittest.TestCase):
