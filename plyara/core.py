@@ -241,7 +241,7 @@ class Parser:
             dict: All the parsed components of a YARA rule.
         """
         self._raw_input = input_string
-        yacc.parse(input_string)
+        self.parser.parse(input_string, lexer=self.lexer)
 
         for rule in self.rules:
             if any(self.imports):
