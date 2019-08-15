@@ -49,8 +49,7 @@ setup(
     keywords='malware analysis yara',
     packages=find_packages(exclude=['docs', 'examples', 'tests']),
     install_requires=[
-        'ply>=3.11',
-        'enum34;python_version<"3.4"',
+        'ply>=3.11'
     ],
     entry_points={
         'console_scripts': [
