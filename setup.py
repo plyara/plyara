@@ -30,7 +30,7 @@ with here.joinpath('README.rst').open(encoding='utf-8') as fh:
 
 setup(
     name='plyara',
-    version='2.0.2',
+    version='2.0.3',
     description='Parse YARA rules.',
     long_description=long_description,
     url='https://github.com/plyara/plyara',
