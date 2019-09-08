@@ -122,6 +122,15 @@ class Parser:
         self.lexer = lex.lex(module=self, debug=False)
         self.parser = yacc.yacc(module=self, debug=False, outputdir=tempfile.gettempdir())
 
+    def clear(self):
+        self.rules.clear()
+        #self.imports = set()
+        self.includes.clear()
+        self.terms.clear()
+        self.scopes.clear()
+        self.tags.clear()
+        self.comments.clear()
+
     @staticmethod
     def _set_logging():
         """Set the console logger only if handler(s) aren't already set."""
