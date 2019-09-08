@@ -179,6 +179,10 @@ Contributing
   of the LICENSE_.
 * Writing passing unit tests for your changes, while not required, is highly
   encouraged and appreciated.
+* Please run all code contributions through each of the linters that we use
+  for this project: pycodestyle, pydocstyle, and pyflakes. For more information
+  on these linters, please refer to the Python Code Quality Authority:
+  http://meta.pycqa.org/en/latest/
 
 Discussion
 ------------
