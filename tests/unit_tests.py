@@ -439,6 +439,31 @@ class TestRuleParser(unittest.TestCase):
             for fut in concurrent.futures.as_completed(futs):
                 self.assertEqual(len(fut.result()), 293)
 
+    def test_clear(self):
+        # instantiate parser
+        parser = Plyara()
+
+        # open a ruleset with one or more rules
+        with open('tests/data/test_ruleset_2_rules.yar', 'r') as fh:
+            inputRules = fh.read()
+
+        # parse the rules
+        parser.parse_string(inputRules)
+
+        # clear the parser's state
+        parser.clear()
+
+        # open a ruleset with one rule
+        with open('tests/data/test_ruleset_1_rule.yar', 'r') as fh:
+            inputRules = fh.read()
+
+        # parse the rules
+        result = parser.parse_string(inputRules)
+
+        # does the result contain just the rule from the second parse
+        assert len(result) == 1
+        assert result[0]['rule_name'] == 'rule_one'
+
 
 class TestYaraRules(unittest.TestCase):
 
