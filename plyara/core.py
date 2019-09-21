@@ -122,6 +122,29 @@ class Parser:
         self.lexer = lex.lex(module=self, debug=False)
         self.parser = yacc.yacc(module=self, debug=False, outputdir=tempfile.gettempdir())
 
+    def clear(self):
+        """Clear all information about previously parsed rules"""
+        self.rules.clear()
+
+        self.current_rule.clear()
+
+        self.string_modifiers.clear()
+        self.imports.clear()
+        self.includes.clear()
+        self.terms.clear()
+        self.scopes.clear()
+        self.tags.clear()
+        self.comments.clear()
+
+        self._raw_input = None
+        self._meta_start = None
+        self._meta_end = None
+        self._strings_start = None
+        self._strings_end = None
+        self._condition_start = None
+        self._condition_end = None
+        self._rule_comments.clear()
+
     @staticmethod
     def _set_logging():
         """Set the console logger only if handler(s) aren't already set."""
