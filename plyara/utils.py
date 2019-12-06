@@ -178,7 +178,7 @@ def generate_logic_hash(rule):
         rule: Dict output from a parsed rule.
 
     Returns:
-        str: Hexdigest SHA1.
+        str: Hexdigest SHA-256.
     """
     strings = rule.get('strings', list())
     conditions = rule['condition_terms']
