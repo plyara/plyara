@@ -30,7 +30,7 @@ from plyara.exceptions import ParseTypeError, ParseValueError
 from plyara.utils import generate_logic_hash
 from plyara.utils import rebuild_yara_rule
 from plyara.utils import detect_imports, detect_dependencies
-from plyara.utils import is_valid_rule_name
+from plyara.utils import is_valid_rule_name, is_valid_rule_tag
 
 UNHANDLED_RULE_MSG = 'Unhandled Test Rule: {}'
 
@@ -80,6 +80,23 @@ class TestUtilities(unittest.TestCase):
         self.assertFalse(is_valid_rule_name(''))
         self.assertTrue(is_valid_rule_name('x' * 128))
         self.assertFalse(is_valid_rule_name('x' * 129))
+
+    def test_is_valid_rule_tag(self):
+        self.assertTrue(is_valid_rule_tag('test'))
+        self.assertTrue(is_valid_rule_tag('test123'))
+        self.assertTrue(is_valid_rule_tag('test_test'))
+        self.assertTrue(is_valid_rule_tag('_test_'))
+        self.assertTrue(is_valid_rule_tag('include_test'))
+        self.assertFalse(is_valid_rule_tag('123test'))
+        self.assertFalse(is_valid_rule_tag('123 test'))
+        self.assertFalse(is_valid_rule_tag('test 123'))
+        self.assertFalse(is_valid_rule_tag('test test'))
+        self.assertFalse(is_valid_rule_tag('test-test'))
+        self.assertFalse(is_valid_rule_tag('include'))
+        self.assertFalse(is_valid_rule_tag('test!*@&*!&'))
+        self.assertFalse(is_valid_rule_tag(''))
+        self.assertTrue(is_valid_rule_tag('x' * 128))
+        self.assertFalse(is_valid_rule_tag('x' * 129))
 
     def test_rebuild_yara_rule(self):
         with data_dir.joinpath('rebuild_ruleset.yar').open('r', encoding='utf-8') as fh:
