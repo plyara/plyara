@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # Copyright 2014 Christian Buia
-# Copyright 2019 plyara Maintainers
+# Copyright 2020 plyara Maintainers
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
