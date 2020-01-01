@@ -772,7 +772,8 @@ class TestYaraRules(unittest.TestCase):
                 long_string = '{\n                E2 23 62 B4 56 45 FB // comment\n            }'
                 self.assertEqual(rule['strings'][11]['value'], long_string)
 
-    def test_nested_bytestring(self):
+    @staticmethod
+    def test_nested_bytestring():
         inputRules = r'''
         rule sample {
             strings:
