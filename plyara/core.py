@@ -461,16 +461,19 @@ class Plyara(Parser):
 
         return t
 
-    def t_NEWLINE(self, t):
+    @staticmethod
+    def t_NEWLINE(t):
         r'(\n|\r|\r\n)+'
         t.lexer.lineno += len(t.value)
         t.value = t.value
 
-    def t_COMMENT(self, t):
+    @staticmethod
+    def t_COMMENT(t):
         r'(//.*)(?=\n)'
         return t
 
-    def t_MCOMMENT(self, t):
+    @staticmethod
+    def t_MCOMMENT(t):
         r'/\*(.|\n|\r\n)*?\*/'
         if '\r\n' in t.value:
             t.lexer.lineno += t.value.count('\r\n')
@@ -479,7 +482,8 @@ class Plyara(Parser):
 
         return t
 
-    def t_HEXNUM(self, t):
+    @staticmethod
+    def t_HEXNUM(t):
         r'0x[A-Fa-f0-9]+'
         t.value = t.value
 
@@ -516,13 +520,15 @@ class Plyara(Parser):
         return t
 
     # Text string handling
-    def t_begin_STRING(self, t):
+    @staticmethod
+    def t_begin_STRING(t):
         r'"'
         t.lexer.escape = 0
         t.lexer.string_start = t.lexer.lexpos - 1
         t.lexer.begin('STRING')
 
-    def t_STRING_value(self, t):
+    @staticmethod
+    def t_STRING_value(t):
         r'.'
         if t.lexer.escape == 0 and t.value == '"':
             t.type = 'STRING'
@@ -536,7 +542,8 @@ class Plyara(Parser):
 
     t_STRING_ignore = ' \t\n'
 
-    def t_STRING_error(self, t):
+    @staticmethod
+    def t_STRING_error(t):
         """Raise parsing error for illegal string character.
 
         Args:
@@ -549,7 +556,8 @@ class Plyara(Parser):
                              t.lexer.lineno, t.lexer.lexpos)
 
     # Byte string handling
-    def t_begin_BYTESTRING(self, t):
+    @staticmethod
+    def t_begin_BYTESTRING(t):
         r'\{'
         if hasattr(t.lexer, 'section') and t.lexer.section == 'strings':
             t.lexer.bytestring_start = t.lexer.lexpos - 1
@@ -560,16 +568,20 @@ class Plyara(Parser):
 
             return t
 
-    def t_BYTESTRING_pair(self, t):
+    @staticmethod
+    def t_BYTESTRING_pair(t):
         r'\s*[a-fA-F0-9?]{2}\s*'
 
-    def t_BYTESTRING_comment(self, t):
+    @staticmethod
+    def t_BYTESTRING_comment(t):
         r'\/\/[^\r\n]*'
 
-    def t_BYTESTRING_mcomment(self, t):
+    @staticmethod
+    def t_BYTESTRING_mcomment(t):
         r'/\*(.|\n|\r\n)*?\*/'
 
-    def t_BYTESTRING_jump(self, t):
+    @staticmethod
+    def t_BYTESTRING_jump(t):
         r'\[\s*(\d*)\s*-?\s*(\d*)\s*\]'
         groups = t.lexer.lexmatch.groups()
         index = groups.index(t.value)
@@ -582,18 +594,22 @@ class Plyara(Parser):
                 raise ParseValueError('Illegal bytestring jump bounds: {}, at line: {}'.format(t.value, t.lexer.lineno),
                                       t.lexer.lineno, t.lexer.lexpos)
 
-    def t_BYTESTRING_group_start(self, t):
+    @staticmethod
+    def t_BYTESTRING_group_start(t):
         r'\('
         t.lexer.bytestring_group += 1
 
-    def t_BYTESTRING_group_end(self, t):
+    @staticmethod
+    def t_BYTESTRING_group_end(t):
         r'\)'
         t.lexer.bytestring_group -= 1
 
-    def t_BYTESTRING_group_logical_or(self, t):
+    @staticmethod
+    def t_BYTESTRING_group_logical_or(t):
         r'\|'
 
-    def t_BYTESTRING_end(self, t):
+    @staticmethod
+    def t_BYTESTRING_end(t):
         r'\}'
         t.type = 'BYTESTRING'
         t.value = t.lexer.lexdata[t.lexer.bytestring_start:t.lexer.lexpos]
@@ -614,7 +630,8 @@ class Plyara(Parser):
 
     t_BYTESTRING_ignore = ' \r\n\t'
 
-    def t_BYTESTRING_error(self, t):
+    @staticmethod
+    def t_BYTESTRING_error(t):
         """Raise parsing error for illegal bytestring character.
 
         Args:
@@ -627,7 +644,8 @@ class Plyara(Parser):
                              t.lexer.lineno, t.lexer.lexpos)
 
     # Rexstring Handling
-    def t_begin_REXSTRING(self, t):
+    @staticmethod
+    def t_begin_REXSTRING(t):
         r'/'
         if hasattr(t.lexer, 'section') and t.lexer.section in ('strings', 'condition'):
             t.lexer.rexstring_start = t.lexer.lexpos - 1
@@ -638,7 +656,8 @@ class Plyara(Parser):
 
             return t
 
-    def t_REXSTRING_end(self, t):
+    @staticmethod
+    def t_REXSTRING_end(t):
         r'/(?:[ismx]*)'
         if t.lexer.escape == 0:
             t.type = 'REXSTRING'
@@ -649,14 +668,16 @@ class Plyara(Parser):
         else:
             t.lexer.escape ^= 1
 
-    def t_REXSTRING_value(self, t):
+    @staticmethod
+    def t_REXSTRING_value(t):
         r'.'
         if t.value == '\\' or t.lexer.escape == 1:
             t.lexer.escape ^= 1
 
     t_REXSTRING_ignore = ' \r\n\t'
 
-    def t_REXSTRING_error(self, t):
+    @staticmethod
+    def t_REXSTRING_error(t):
         """Raise parsing error for illegal rexstring character.
 
         Args:
@@ -668,31 +689,36 @@ class Plyara(Parser):
         raise ParseTypeError('Illegal rexstring character : {}, at line: {}'.format(t.value[0], t.lexer.lineno),
                              t.lexer.lineno, t.lexer.lexpos)
 
-    def t_STRINGNAME(self, t):
+    @staticmethod
+    def t_STRINGNAME(t):
         r'\$[0-9a-zA-Z\-_*]*'
         t.value = t.value
 
         return t
 
-    def t_STRINGNAME_ARRAY(self, t):
+    @staticmethod
+    def t_STRINGNAME_ARRAY(t):
         r'@[0-9a-zA-Z\-_*]*'
         t.value = t.value
 
         return t
 
-    def t_STRINGNAME_LENGTH(self, t):
+    @staticmethod
+    def t_STRINGNAME_LENGTH(t):
         r'![0-9a-zA-Z\-_*]+'
         t.value = t.value
 
         return t
 
-    def t_FILESIZE_SIZE(self, t):
+    @staticmethod
+    def t_FILESIZE_SIZE(t):
         r"\d+[KM]B"
         t.value = t.value
 
         return t
 
-    def t_NUM(self, t):
+    @staticmethod
+    def t_NUM(t):
         r'\d+(\.\d+)?|0x\d+'
         t.value = t.value
 
@@ -704,7 +730,8 @@ class Plyara(Parser):
 
         return t
 
-    def t_STRINGCOUNT(self, t):
+    @staticmethod
+    def t_STRINGCOUNT(t):
         r'\#[^\s]*'
         t.value = t.value
 
@@ -714,7 +741,8 @@ class Plyara(Parser):
     t_ignore = ' \t'
 
     # Error handling rule
-    def t_error(self, t):
+    @staticmethod
+    def t_error(t):
         """Raise parsing error.
 
         Args:
@@ -733,13 +761,15 @@ class Plyara(Parser):
         ('right', 'HEXNUM', )
     )
 
-    def p_ruleset(self, p):
+    @staticmethod
+    def p_ruleset(p):
         '''ruleset : rules
                    | imports
                    | includes
                    | ruleset ruleset'''
 
-    def p_rules(self, p):
+    @staticmethod
+    def p_rules(p):
         '''rules : rules rule
                  | rule'''
 
@@ -757,15 +787,18 @@ class Plyara(Parser):
         element_value = (p[3], int(p.lineno(2)), int(p.lineno(7)), )
         self._add_element(ElementTypes.RULE_NAME, element_value)
 
-    def p_imports(self, p):
+    @staticmethod
+    def p_imports(p):
         '''imports : imports import
                    | import'''
 
-    def p_includes(self, p):
+    @staticmethod
+    def p_includes(p):
         '''includes : includes include
                     | include'''
 
-    def p_scopes(self, p):
+    @staticmethod
+    def p_scopes(p):
         '''scopes : scopes scope
                   | scope
                   | '''
@@ -788,11 +821,13 @@ class Plyara(Parser):
         logger.debug('Matched scope identifier: {}'.format(p[1]))
         self._add_element(ElementTypes.SCOPE, p[1])
 
-    def p_tag_section(self, p):
+    @staticmethod
+    def p_tag_section(p):
         '''tag_section : COLON tags
                        | '''
 
-    def p_tags(self, p):
+    @staticmethod
+    def p_tags(p):
         '''tags : tags tag
                 | tag'''
 
@@ -801,31 +836,38 @@ class Plyara(Parser):
         logger.debug('Matched tag: {}'.format(p[1]))
         self._add_element(ElementTypes.TAG, p[1])
 
-    def p_rule_body(self, p):
+    @staticmethod
+    def p_rule_body(p):
         '''rule_body : sections'''
         logger.info('Matched rule body')
 
-    def p_rule_sections(self, p):
+    @staticmethod
+    def p_rule_sections(p):
         '''sections : sections section
                     | section'''
 
-    def p_rule_section(self, p):
+    @staticmethod
+    def p_rule_section(p):
         '''section : meta_section
                    | strings_section
                    | condition_section'''
 
-    def p_meta_section(self, p):
+    @staticmethod
+    def p_meta_section(p):
         '''meta_section : SECTIONMETA meta_kvs'''
         logger.info('Matched meta section')
 
-    def p_strings_section(self, p):
+    @staticmethod
+    def p_strings_section(p):
         '''strings_section : SECTIONSTRINGS strings_kvs'''
 
-    def p_condition_section(self, p):
+    @staticmethod
+    def p_condition_section(p):
         '''condition_section : SECTIONCONDITION expression'''
 
     # Meta elements
-    def p_meta_kvs(self, p):
+    @staticmethod
+    def p_meta_kvs(p):
         '''meta_kvs : meta_kvs meta_kv
                     | meta_kv'''
         logger.info('Matched meta kvs')
@@ -850,7 +892,8 @@ class Plyara(Parser):
         self._add_element(ElementTypes.METADATA_KEY_VALUE, (key, value, ))
 
     # Strings elements
-    def p_strings_kvs(self, p):
+    @staticmethod
+    def p_strings_kvs(p):
         '''strings_kvs : strings_kvs strings_kv
                        | strings_kv'''
         logger.info('Matched strings kvs')
@@ -886,7 +929,8 @@ class Plyara(Parser):
                       | STRINGNAME EQUALS REXSTRING string_modifiers comments'''
         self._parse_string_kv(p, StringTypes.REGEX)
 
-    def p_string_modifers(self, p):
+    @staticmethod
+    def p_string_modifers(p):
         '''string_modifiers : string_modifiers string_modifier
                             | string_modifier'''
 
@@ -899,13 +943,15 @@ class Plyara(Parser):
         logger.debug('Matched a string modifier: {}'.format(p[1]))
         self._add_element(ElementTypes.STRINGS_MODIFIER, p[1])
 
-    def p_comments(self, p):
+    @staticmethod
+    def p_comments(p):
         '''comments : COMMENT
                     | MCOMMENT'''
         logger.debug('Matched a comment: {}'.format(p[1]))
 
     # Condition elements
-    def p_expression(self, p):
+    @staticmethod
+    def p_expression(p):
         '''expression : expression term
                       | term'''
 
