@@ -860,6 +860,7 @@ class Plyara(Parser):
 
         Args:
             p: Parser object.
+            string_type: StringTypes enum.
         """
         key = p[1]
         value = p[3]
