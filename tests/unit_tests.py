@@ -78,6 +78,8 @@ class TestUtilities(unittest.TestCase):
         self.assertFalse(is_valid_rule_name('include'))
         self.assertFalse(is_valid_rule_name('test!*@&*!&'))
         self.assertFalse(is_valid_rule_name(''))
+        self.assertTrue(is_valid_rule_name('x' * 128))
+        self.assertFalse(is_valid_rule_name('x' * 129))
 
     def test_rebuild_yara_rule(self):
         with data_dir.joinpath('rebuild_ruleset.yar').open('r', encoding='utf-8') as fh:
