@@ -439,7 +439,8 @@ class TestRuleParser(unittest.TestCase):
             for fut in concurrent.futures.as_completed(futs):
                 self.assertEqual(len(fut.result()), 293)
 
-    def test_clear(self):
+    @staticmethod
+    def test_clear():
         # instantiate parser
         parser = Plyara()
 
