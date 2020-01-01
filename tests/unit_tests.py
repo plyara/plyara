@@ -40,7 +40,8 @@ data_dir = tests.joinpath('data')
 
 class TestUtilities(unittest.TestCase):
 
-    def test_logic_hash_generator(self):
+    @staticmethod
+    def test_logic_hash_generator():
         with data_dir.joinpath('logic_collision_ruleset.yar').open('r') as fh:
             inputString = fh.read()
 
