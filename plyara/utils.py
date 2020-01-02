@@ -87,14 +87,10 @@ def detect_imports(rule):
     for imp in Parser.IMPORT_OPTIONS:
         imp_module = '{}.'.format(imp)
 
-        if imp in condition_terms and imp not in detected_imports:
-            detected_imports.append(imp)
-
-        elif imp not in detected_imports:
-            for term in condition_terms:
-                if term.startswith(imp_module):
-                    detected_imports.append(imp)
-                    break
+        for term in condition_terms:
+            if term.startswith(imp_module):
+                detected_imports.append(imp)
+                break
 
     return detected_imports
 
