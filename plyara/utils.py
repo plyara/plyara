@@ -247,7 +247,7 @@ def generate_logic_hash(rule):
 
 
 def rebuild_yara_rule(rule):
-    """Take a parsed yararule and rebuild it into a usable one.
+    """Take a parsed yararule and rebuild it into a usable one. DEPRECATED
 
     Args:
         rule: Dict output from a parsed rule.
@@ -255,6 +255,8 @@ def rebuild_yara_rule(rule):
     Returns:
         str: Formatted text string of YARA rule.
     """
+    import warnings
+    warnings.warn('Utility rebuild_yara_rule() is deprecated.', DeprecationWarning)
     rule_format = "{imports}{scopes}rule {rulename}{tags} {{\n{meta}{strings}{condition}\n}}\n"
 
     rule_name = rule['rule_name']
