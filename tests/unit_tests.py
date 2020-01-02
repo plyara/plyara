@@ -20,6 +20,7 @@ This module contains various unit tests for plyara.
 """
 import concurrent.futures
 import contextlib
+import hashlib
 import io
 import pathlib
 import sys
@@ -956,15 +957,14 @@ class TestYaraRules(unittest.TestCase):
 
     def test_plyara_script(self):
         test_file_path = data_dir.joinpath('test_file.txt')
-        with open(data_dir.joinpath('cli_output.txt'), 'r') as fh:
-            reference_output = fh.read()
 
         with captured_output() as (out, err):
             main([str(test_file_path)])
             output = out.getvalue()
             error = err.getvalue()
+        output_hash = hashlib.sha256(output.encode()).hexdigest()
 
-        self.assertMultiLineEqual(output, reference_output)
+        self.assertMultiLineEqual(output_hash, '18569226a33c2f8f0c43dd0e034a6c05ea38f569adc3ca37d3c975be0d654f06')
         self.assertEqual(error, str())
 
     def test_raw_condition_contains_all_condition_text(self):
