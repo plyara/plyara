@@ -63,6 +63,19 @@ class TestUtilities(unittest.TestCase):
             if not len(set(hashvalues)) == 1:
                 raise AssertionError('Collision detection failure for {}'.format(setname))
 
+    def test_logic_hash_generator_output(self):
+        with data_dir.joinpath('rulehashes.txt').open('r') as fh:
+            rule_hashes = fh.read().splitlines()
+
+        with data_dir.joinpath('test_rules_from_yara_project.yar').open('r') as fh:
+            inputString = fh.read()
+
+        results = Plyara().parse_string(inputString)
+
+        for index, result in enumerate(results):
+            rulehash = generate_logic_hash(result)
+            self.assertEqual(rulehash, rule_hashes[index])
+
     def test_is_valid_rule_name(self):
         self.assertTrue(is_valid_rule_name('test'))
         self.assertTrue(is_valid_rule_name('test123'))
