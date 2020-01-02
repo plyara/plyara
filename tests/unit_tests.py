@@ -22,7 +22,6 @@ import concurrent.futures
 import json
 import pathlib
 import subprocess
-import sys
 import unittest
 
 from plyara import Plyara
