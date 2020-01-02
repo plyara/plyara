@@ -247,7 +247,7 @@ def generate_logic_hash(rule):
 
 
 def rebuild_yara_rule(rule):
-    """DEPRECATED: Take a parsed yararule and rebuild it into a usable one.
+    """Take a parsed yararule and rebuild it into a usable one (DEPRECATED).
 
     Args:
         rule: Dict output from a parsed rule.
