@@ -941,8 +941,7 @@ class TestYaraRules(unittest.TestCase):
             self.assertEqual(rule['strings'][13]['value'], 'test string')
 
     def test_plyara_script(self):
-        cwd = pathlib.Path().cwd()
-        test_file_path = cwd / 'tests' / 'data' / 'test_file.txt'
+        test_file_path = data_dir.joinpath('test_file.txt')
 
         plyara_output = subprocess.check_output(['plyara', str(test_file_path)])
 
