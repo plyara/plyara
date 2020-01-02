@@ -960,9 +960,11 @@ class TestYaraRules(unittest.TestCase):
 
         with captured_output() as (out, err):
             main([str(test_file_path)])
-        output = out.getvalue()
+            output = out.getvalue()
+            error = err.getvalue()
 
         self.assertEqual(output, reference_output)
+        self.assertEqual(error, str())
 
     def test_raw_condition_contains_all_condition_text(self):
         inputRules = r'''
