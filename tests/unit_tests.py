@@ -492,8 +492,6 @@ class TestRuleParser(unittest.TestCase):
 
 class TestYaraRules(unittest.TestCase):
 
-    _PLYARA_SCRIPT_NAME = 'command_line.py'
-
     def test_multiple_rules(self):
         inputString = '''
         rule FirstRule {
@@ -932,10 +930,9 @@ class TestYaraRules(unittest.TestCase):
 
     def test_plyara_script(self):
         cwd = pathlib.Path().cwd()
-        script_path = cwd / 'plyara' / self._PLYARA_SCRIPT_NAME
         test_file_path = cwd / 'tests' / 'data' / 'test_file.txt'
 
-        plyara_output = subprocess.check_output([sys.executable, str(script_path), str(test_file_path)])
+        plyara_output = subprocess.check_output(['plyara', str(test_file_path)])
 
         rule_list = json.loads(plyara_output.decode('utf-8'))
         self.assertEqual(len(rule_list), 4)
