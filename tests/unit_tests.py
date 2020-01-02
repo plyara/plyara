@@ -151,6 +151,11 @@ class TestUtilities(unittest.TestCase):
         self.assertEqual(detect_dependencies(result[8]), ['is__osx', 'is__elf'])
         self.assertEqual(detect_dependencies(result[9]), ['is__osx'])
         self.assertEqual(detect_dependencies(result[10]), ['is__elf', 'is__osx'])
+        self.assertEqual(detect_dependencies(result[11]), ['is__osx'])
+        self.assertEqual(detect_dependencies(result[12]), list())
+        self.assertEqual(detect_dependencies(result[13]), list())
+        self.assertEqual(detect_dependencies(result[14]), ['is__osx'])
+        self.assertEqual(detect_dependencies(result[15]), ['is__osx'])
 
     def test_detect_imports(self):
         for imp in ('androguard', 'cuckoo', 'dotnet', 'elf', 'hash', 'magic', 'math', 'pe'):

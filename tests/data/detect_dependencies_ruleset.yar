@@ -107,3 +107,40 @@ rule test_rule_04 {
 condition:
     (is__elf or is__osx)
 }
+
+rule loop1
+{
+    strings:
+        $a = "dummy1"
+        $b = "dummy2"
+
+    condition:
+        is__osx and
+        for all i in (1,2,3) : ( @a[i] + 10 == @b[i] )
+}
+
+rule ExternalVariableExample3
+{
+    condition:
+        string_ext_var contains "text"
+}
+
+rule ExternalVariableExample4
+{
+    condition:
+        string_ext_var matches /[a-z]+/
+}
+
+rule ExternalVariableExample3
+{
+    condition:
+        is__osx and
+        string_ext_var contains "text"
+}
+
+rule ExternalVariableExample4
+{
+    condition:
+        is__osx and
+        string_ext_var matches /[a-z]+/
+}
