@@ -964,7 +964,7 @@ class TestYaraRules(unittest.TestCase):
             error = err.getvalue()
         output_hash = hashlib.sha256(output.encode()).hexdigest()
 
-        self.assertMultiLineEqual(output_hash, '18569226a33c2f8f0c43dd0e034a6c05ea38f569adc3ca37d3c975be0d654f06')
+        self.assertMultiLineEqual(output_hash, '9d1991858f1b48b2485a9cb45692bc33c5228fb5acfa877a0d097b1db60052e3')
         self.assertEqual(error, str())
 
     def test_raw_condition_contains_all_condition_text(self):
