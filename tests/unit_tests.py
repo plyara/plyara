@@ -41,6 +41,7 @@ data_dir = tests.joinpath('data')
 
 @contextlib.contextmanager
 def captured_output():
+    """Capture stdout and stderr from execution."""
     new_out, new_err = io.StringIO(), io.StringIO()
     old_out, old_err = sys.stdout, sys.stderr
     try:
