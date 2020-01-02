@@ -964,7 +964,7 @@ class TestYaraRules(unittest.TestCase):
             output = out.getvalue()
             error = err.getvalue()
 
-        self.assertEqual(output, reference_output)
+        self.assertMultiLineEqual(output, reference_output)
         self.assertEqual(error, str())
 
     def test_raw_condition_contains_all_condition_text(self):
