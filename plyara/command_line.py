@@ -23,19 +23,15 @@ import json
 from plyara.core import Plyara
 
 
-def create_parser():
-    """Parse command line arguments."""
+def main(arguments=None):
+    """Run the command line process to parse a yara rule file and output pretty printed JSON."""
     parser = argparse.ArgumentParser(description='Parse YARA rules into a dictionary representation.')
     parser.add_argument('file', metavar='FILE', help='File containing YARA rules to parse.')
     parser.add_argument('--log', help='Enable debug logging to the console.', action='store_true')
-
-    return parser
-
-
-def main():
-    """Run the command line process to parse a yara rule file and output pretty printed JSON."""
-    parser = create_parser()
-    args = parser.parse_args()
+    if not arguments:
+        args = parser.parse_args()
+    else:
+        args = parser.parse_args(arguments)
 
     with open(args.file, 'r', encoding='utf-8') as fh:
         input_string = fh.read()

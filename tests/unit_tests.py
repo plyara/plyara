@@ -19,9 +19,10 @@
 This module contains various unit tests for plyara.
 """
 import concurrent.futures
-import json
+import contextlib
+import io
 import pathlib
-import subprocess
+import sys
 import unittest
 
 from plyara import Plyara
@@ -30,11 +31,23 @@ from plyara.utils import generate_logic_hash
 from plyara.utils import rebuild_yara_rule
 from plyara.utils import detect_imports, detect_dependencies
 from plyara.utils import is_valid_rule_name, is_valid_rule_tag
+from plyara.command_line import main
 
 UNHANDLED_RULE_MSG = 'Unhandled Test Rule: {}'
 
 tests = pathlib.Path('tests')
 data_dir = tests.joinpath('data')
+
+
+@contextlib.contextmanager
+def captured_output():
+    new_out, new_err = io.StringIO(), io.StringIO()
+    old_out, old_err = sys.stdout, sys.stderr
+    try:
+        sys.stdout, sys.stderr = new_out, new_err
+        yield sys.stdout, sys.stderr
+    finally:
+        sys.stdout, sys.stderr = old_out, old_err
 
 
 class TestUtilities(unittest.TestCase):
@@ -942,11 +955,14 @@ class TestYaraRules(unittest.TestCase):
 
     def test_plyara_script(self):
         test_file_path = data_dir.joinpath('test_file.txt')
+        with open(data_dir.joinpath('cli_output.txt'), 'r') as fh:
+            reference_output = fh.read()
 
-        plyara_output = subprocess.check_output(['plyara', str(test_file_path)])
+        with captured_output() as (out, err):
+            main([str(test_file_path)])
+        output = out.getvalue()
 
-        rule_list = json.loads(plyara_output.decode('utf-8'))
-        self.assertEqual(len(rule_list), 4)
+        self.assertEqual(output, reference_output)
 
     def test_raw_condition_contains_all_condition_text(self):
         inputRules = r'''
