@@ -464,8 +464,7 @@ class TestRuleParser(unittest.TestCase):
             for fut in concurrent.futures.as_completed(futs):
                 self.assertEqual(len(fut.result()), 293)
 
-    @staticmethod
-    def test_clear():
+    def test_clear(self):
         # instantiate parser
         parser = Plyara()
 
@@ -487,8 +486,8 @@ class TestRuleParser(unittest.TestCase):
         result = parser.parse_string(inputRules)
 
         # does the result contain just the rule from the second parse
-        assert len(result) == 1
-        assert result[0]['rule_name'] == 'rule_one'
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]['rule_name'], 'rule_one')
 
 
 class TestYaraRules(unittest.TestCase):
