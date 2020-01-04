@@ -426,6 +426,27 @@ class TestRuleParser(unittest.TestCase):
         self.assertEqual(len(output), 293)
 
 
+class TestRuleParserKVMeta(unittest.TestCase):
+
+    def setUp(self):
+        self.parser = Plyara(meta_as_kv=True)
+
+    def test_meta_kv(self):
+        with data_dir.joinpath('metakv_test.yar').open('r') as fh:
+            inputString = fh.read()
+        reference1 = {'author': 'Malware Utkonos',
+                      'date': '2020-01-04',
+                      'tlp': 'Green'}
+        reference2 = {'author': 'Someone else',
+                      'date': '2020-01-04',
+                      'tlp': 'Green'}
+
+        result = self.parser.parse_string(inputString)
+
+        self.assertEqual(result[0]['metadata_kv'], reference1)
+        self.assertEqual(result[1]['metadata_kv'], reference2)
+
+
 class TestYaraRules(unittest.TestCase):
 
     _PLYARA_SCRIPT_NAME = 'command_line.py'
