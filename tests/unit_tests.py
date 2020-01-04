@@ -19,9 +19,10 @@
 This module contains various unit tests for plyara.
 """
 import concurrent.futures
-import json
+import contextlib
+import hashlib
+import io
 import pathlib
-import subprocess
 import sys
 import unittest
 
@@ -30,7 +31,8 @@ from plyara.exceptions import ParseTypeError, ParseValueError
 from plyara.utils import generate_logic_hash
 from plyara.utils import rebuild_yara_rule
 from plyara.utils import detect_imports, detect_dependencies
-from plyara.utils import is_valid_rule_name
+from plyara.utils import is_valid_rule_name, is_valid_rule_tag
+from plyara.command_line import main
 
 UNHANDLED_RULE_MSG = 'Unhandled Test Rule: {}'
 
@@ -38,9 +40,22 @@ tests = pathlib.Path('tests')
 data_dir = tests.joinpath('data')
 
 
+@contextlib.contextmanager
+def captured_output():
+    """Capture stdout and stderr from execution."""
+    new_out, new_err = io.StringIO(), io.StringIO()
+    old_out, old_err = sys.stdout, sys.stderr
+    try:
+        sys.stdout, sys.stderr = new_out, new_err
+        yield sys.stdout, sys.stderr
+    finally:
+        sys.stdout, sys.stderr = old_out, old_err
+
+
 class TestUtilities(unittest.TestCase):
 
-    def test_logic_hash_generator(self):
+    @staticmethod
+    def test_logic_hash_generator():
         with data_dir.joinpath('logic_collision_ruleset.yar').open('r') as fh:
             inputString = fh.read()
 
@@ -63,6 +78,19 @@ class TestUtilities(unittest.TestCase):
             if not len(set(hashvalues)) == 1:
                 raise AssertionError('Collision detection failure for {}'.format(setname))
 
+    def test_logic_hash_generator_output(self):
+        with data_dir.joinpath('rulehashes.txt').open('r') as fh:
+            rule_hashes = fh.read().splitlines()
+
+        with data_dir.joinpath('test_rules_from_yara_project.yar').open('r') as fh:
+            inputString = fh.read()
+
+        results = Plyara().parse_string(inputString)
+
+        for index, result in enumerate(results):
+            rulehash = generate_logic_hash(result)
+            self.assertEqual(rulehash, rule_hashes[index])
+
     def test_is_valid_rule_name(self):
         self.assertTrue(is_valid_rule_name('test'))
         self.assertTrue(is_valid_rule_name('test123'))
@@ -77,6 +105,25 @@ class TestUtilities(unittest.TestCase):
         self.assertFalse(is_valid_rule_name('include'))
         self.assertFalse(is_valid_rule_name('test!*@&*!&'))
         self.assertFalse(is_valid_rule_name(''))
+        self.assertTrue(is_valid_rule_name('x' * 128))
+        self.assertFalse(is_valid_rule_name('x' * 129))
+
+    def test_is_valid_rule_tag(self):
+        self.assertTrue(is_valid_rule_tag('test'))
+        self.assertTrue(is_valid_rule_tag('test123'))
+        self.assertTrue(is_valid_rule_tag('test_test'))
+        self.assertTrue(is_valid_rule_tag('_test_'))
+        self.assertTrue(is_valid_rule_tag('include_test'))
+        self.assertFalse(is_valid_rule_tag('123test'))
+        self.assertFalse(is_valid_rule_tag('123 test'))
+        self.assertFalse(is_valid_rule_tag('test 123'))
+        self.assertFalse(is_valid_rule_tag('test test'))
+        self.assertFalse(is_valid_rule_tag('test-test'))
+        self.assertFalse(is_valid_rule_tag('include'))
+        self.assertFalse(is_valid_rule_tag('test!*@&*!&'))
+        self.assertFalse(is_valid_rule_tag(''))
+        self.assertTrue(is_valid_rule_tag('x' * 128))
+        self.assertFalse(is_valid_rule_tag('x' * 129))
 
     def test_rebuild_yara_rule(self):
         with data_dir.joinpath('rebuild_ruleset.yar').open('r', encoding='utf-8') as fh:
@@ -131,6 +178,11 @@ class TestUtilities(unittest.TestCase):
         self.assertEqual(detect_dependencies(result[8]), ['is__osx', 'is__elf'])
         self.assertEqual(detect_dependencies(result[9]), ['is__osx'])
         self.assertEqual(detect_dependencies(result[10]), ['is__elf', 'is__osx'])
+        self.assertEqual(detect_dependencies(result[11]), ['is__osx'])
+        self.assertEqual(detect_dependencies(result[12]), list())
+        self.assertEqual(detect_dependencies(result[13]), list())
+        self.assertEqual(detect_dependencies(result[14]), ['is__osx'])
+        self.assertEqual(detect_dependencies(result[15]), ['is__osx'])
 
     def test_detect_imports(self):
         for imp in ('androguard', 'cuckoo', 'dotnet', 'elf', 'hash', 'magic', 'math', 'pe'):
@@ -461,13 +513,11 @@ class TestRuleParser(unittest.TestCase):
         result = parser.parse_string(inputRules)
 
         # does the result contain just the rule from the second parse
-        assert len(result) == 1
-        assert result[0]['rule_name'] == 'rule_one'
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]['rule_name'], 'rule_one')
 
 
 class TestYaraRules(unittest.TestCase):
-
-    _PLYARA_SCRIPT_NAME = 'command_line.py'
 
     def test_multiple_rules(self):
         inputString = '''
@@ -771,7 +821,8 @@ class TestYaraRules(unittest.TestCase):
                 long_string = '{\n                E2 23 62 B4 56 45 FB // comment\n            }'
                 self.assertEqual(rule['strings'][11]['value'], long_string)
 
-    def test_nested_bytestring(self):
+    @staticmethod
+    def test_nested_bytestring():
         inputRules = r'''
         rule sample {
             strings:
@@ -905,14 +956,17 @@ class TestYaraRules(unittest.TestCase):
             self.assertEqual(rule['strings'][13]['value'], 'test string')
 
     def test_plyara_script(self):
-        cwd = pathlib.Path().cwd()
-        script_path = cwd / 'plyara' / self._PLYARA_SCRIPT_NAME
-        test_file_path = cwd / 'tests' / 'data' / 'test_file.txt'
+        test_file_path = data_dir.joinpath('test_file.txt')
 
-        plyara_output = subprocess.check_output([sys.executable, str(script_path), str(test_file_path)])
+        with captured_output() as (out, err):
+            main([str(test_file_path)])
+            output = out.getvalue()
+            error = err.getvalue()
+        output_hash = hashlib.sha256(output.encode()).hexdigest()
 
-        rule_list = json.loads(plyara_output.decode('utf-8'))
-        self.assertEqual(len(rule_list), 4)
+        self.assertTrue(output_hash in ['9d1991858f1b48b2485a9cb45692bc33c5228fb5acfa877a0d097b1db60052e3',
+                                        '18569226a33c2f8f0c43dd0e034a6c05ea38f569adc3ca37d3c975be0d654f06'])
+        self.assertEqual(error, str())
 
     def test_raw_condition_contains_all_condition_text(self):
         inputRules = r'''
@@ -1011,117 +1065,6 @@ class TestYaraRules(unittest.TestCase):
         result = plyara.parse_string(inputRules)
 
         self.assertEqual(result[0].get('condition_terms')[8], '@')
-
-
-class TestDeprecatedMethods(unittest.TestCase):  # REMOVE SOON!!
-
-    def test_logic_hash_generator(self):
-        with data_dir.joinpath('logic_collision_ruleset.yar').open('r') as fh:
-            inputString = fh.read()
-
-        result = Plyara().parse_string(inputString)
-
-        rule_mapping = {}
-
-        for entry in result:
-            rulename = entry['rule_name']
-            setname, _ = rulename.split('_')
-            with self.assertWarns(DeprecationWarning):
-                rulehash = Plyara.generate_logic_hash(entry)
-
-            if setname not in rule_mapping:
-                rule_mapping[setname] = [rulehash]
-            else:
-                rule_mapping[setname].append(rulehash)
-
-        for setname, hashvalues in rule_mapping.items():
-
-            if not len(set(hashvalues)) == 1:
-                raise AssertionError('Collision detection failure for {}'.format(setname))
-
-    def test_is_valid_rule_name(self):
-        with self.assertWarns(DeprecationWarning):
-            self.assertTrue(Plyara.is_valid_rule_name('test'))
-            self.assertTrue(Plyara.is_valid_rule_name('test123'))
-            self.assertTrue(Plyara.is_valid_rule_name('test_test'))
-            self.assertTrue(Plyara.is_valid_rule_name('_test_'))
-            self.assertTrue(Plyara.is_valid_rule_name('include_test'))
-            self.assertFalse(Plyara.is_valid_rule_name('123test'))
-            self.assertFalse(Plyara.is_valid_rule_name('123 test'))
-            self.assertFalse(Plyara.is_valid_rule_name('test 123'))
-            self.assertFalse(Plyara.is_valid_rule_name('test test'))
-            self.assertFalse(Plyara.is_valid_rule_name('test-test'))
-            self.assertFalse(Plyara.is_valid_rule_name('include'))
-            self.assertFalse(Plyara.is_valid_rule_name('test!*@&*!&'))
-            self.assertFalse(Plyara.is_valid_rule_name(''))
-
-    def test_rebuild_yara_rule(self):
-        with data_dir.joinpath('rebuild_ruleset.yar').open('r', encoding='utf-8') as fh:
-            inputString = fh.read()
-
-        result = Plyara().parse_string(inputString)
-
-        rebuilt_rules = str()
-        with self.assertWarns(DeprecationWarning):
-            for rule in result:
-                rebuilt_rules += Plyara.rebuild_yara_rule(rule)
-
-        self.assertEqual(inputString, rebuilt_rules)
-
-    def test_rebuild_yara_rule_metadata(self):
-        test_rule = """
-        rule check_meta {
-            meta:
-                string_value = "TEST STRING"
-                string_value = "DIFFERENT TEST STRING"
-                string_value = ""
-                bool_value = true
-                bool_value = false
-                digit_value = 5
-                digit_value = 10
-            condition:
-                true
-        }
-        """
-        parsed = Plyara().parse_string(test_rule)
-        for rule in parsed:
-            with self.assertWarns(DeprecationWarning):
-                unparsed = Plyara.rebuild_yara_rule(rule)
-            self.assertIn('string_value = "TEST STRING"', unparsed)
-            self.assertIn('string_value = "DIFFERENT TEST STRING"', unparsed)
-            self.assertIn('string_value = ""', unparsed)
-            self.assertIn('bool_value = true', unparsed)
-            self.assertIn('bool_value = false', unparsed)
-            self.assertIn('digit_value = 5', unparsed)
-            self.assertIn('digit_value = 10', unparsed)
-
-    def test_detect_dependencies(self):
-        with data_dir.joinpath('detect_dependencies_ruleset.yar').open('r') as fh:
-            inputString = fh.read()
-
-        result = Plyara().parse_string(inputString)
-
-        with self.assertWarns(DeprecationWarning):
-            self.assertEqual(Plyara.detect_dependencies(result[0]), list())
-            self.assertEqual(Plyara.detect_dependencies(result[1]), list())
-            self.assertEqual(Plyara.detect_dependencies(result[2]), list())
-            self.assertEqual(Plyara.detect_dependencies(result[3]), ['is__osx', 'priv01', 'priv02', 'priv03', 'priv04'])
-            self.assertEqual(Plyara.detect_dependencies(result[4]), ['is__elf', 'priv01', 'priv02', 'priv03', 'priv04'])
-            self.assertEqual(Plyara.detect_dependencies(result[5]), ['is__elf', 'is__osx', 'priv01', 'priv02'])
-            self.assertEqual(Plyara.detect_dependencies(result[6]), ['is__elf', 'is__osx', 'priv01'])
-            self.assertEqual(Plyara.detect_dependencies(result[7]), ['is__elf'])
-            self.assertEqual(Plyara.detect_dependencies(result[8]), ['is__osx', 'is__elf'])
-            self.assertEqual(Plyara.detect_dependencies(result[9]), ['is__osx'])
-            self.assertEqual(Plyara.detect_dependencies(result[10]), ['is__elf', 'is__osx'])
-
-    def test_detect_imports(self):
-        for imp in ('androguard', 'cuckoo', 'dotnet', 'elf', 'hash', 'magic', 'math', 'pe'):
-            with data_dir.joinpath('import_ruleset_{}.yar'.format(imp)).open('r') as fh:
-                inputString = fh.read()
-            results = Plyara().parse_string(inputString)
-            with self.assertWarns(DeprecationWarning):
-                for rule in results:
-                    self.assertEqual(Plyara.detect_imports(rule), [imp])
 
 
 if __name__ == '__main__':
