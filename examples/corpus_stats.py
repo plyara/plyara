@@ -20,8 +20,6 @@ def example():
     print('Analyzing dictionary...')
 
     imps = {}
-    max_strings = []
-    max_string_len = 0
     tags = {}
     rule_count = 0
 
@@ -45,26 +43,12 @@ def example():
                 else:
                     tags[tag] = 1
 
-        # Strings
-        if 'strings' in rule:
-            for strr in rule['strings']:
-                if len(strr['value']) > max_string_len:
-                    max_string_len = len(strr['value'])
-                    max_strings = [(rule['rule_name'], strr['name'], strr['value'])]
-                elif len(strr['value']) == max_string_len:
-                    max_strings.append((rule['rule_name'], strr['key'], strr['value']))
-
     print('\n======================\n')
     print('Number of rules in file: {}'.format(rule_count))
 
     ordered_imps = sorted(imps.items(), key=operator.itemgetter(1), reverse=True)
 
     ordered_tags = sorted(tags.items(), key=operator.itemgetter(1), reverse=True)
-
-    print('\n======================\n')
-    print('Longest string(s):')
-    for s in max_strings:
-        print('String named "{}" in rule "{}" with length {}.'.format(s[1], s[0], max_string_len))
 
     print('\n======================\n')
     print('Top imports:')
