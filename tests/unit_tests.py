@@ -1038,7 +1038,7 @@ class TestYaraRules(unittest.TestCase):
                 raise e
 
     def test_lineno_incremented_by_windows_newlines_in_bytestring(self):
-        with open('tests/data/windows_newline_ruleset.yar', 'r') as fh:
+        with open('tests/data/bad_condition_string.yar', 'r') as fh:
             inputRules = fh.read()
 
         plyara = Plyara()
@@ -1049,6 +1049,25 @@ class TestYaraRules(unittest.TestCase):
             except ParseTypeError as e:
                 self.assertEqual(6, e.lineno)
                 raise e
+
+    def test_windows_CRNL(self):
+        with open('tests/data/windows_newline_ruleset.yar', 'r') as fh:
+            inputRules = fh.read()
+
+        reference = [{'condition_terms': ['all', 'of', 'them'],
+                      'raw_condition': "condition:\nall of them\n",
+                      'raw_strings': "strings:\n$ = { 00\n      00 }\n",
+                      'rule_name': 'sample',
+                      'start_line': 1,
+                      'stop_line': 8,
+                      'strings': [{'name': '$',
+                                   'type': 'byte',
+                                   'value': '{ 00      00 }'}]}]
+
+        plyara = Plyara()
+        result = plyara.parse_string(inputRules)
+
+        self.assertEqual(result, reference)
 
     def test_anonymous_array_condition(self):
         inputRules = r'''
