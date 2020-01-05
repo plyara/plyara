@@ -1067,5 +1067,18 @@ class TestYaraRules(unittest.TestCase):
         self.assertEqual(result[0].get('condition_terms')[8], '@')
 
 
+class TestGithubIssues(unittest.TestCase):
+
+    # Reference: https://github.com/plyara/plyara/issues/63
+    def issue_63(self):
+        with data_dir.joinpath('comment_only.yar').open('r') as fh:
+            inputString = fh.read()
+
+        plyara = Plyara()
+        result = plyara.parse_string(inputString)
+
+        self.assertEqual(result, list())
+
+
 if __name__ == '__main__':
     unittest.main()
