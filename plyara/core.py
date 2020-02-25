@@ -84,12 +84,13 @@ class Parser:
 
     FUNCTION_KEYWORDS = ('uint8', 'uint16', 'uint32', 'uint8be', 'uint16be', 'uint32be', )
 
-    def __init__(self, console_logging=False, store_raw_sections=True):
+    def __init__(self, console_logging=False, store_raw_sections=True, meta_as_kv=False):
         """Initialize the parser object.
 
         Args:
             console_logging: Enable a stream handler if no handlers exist. (default False)
             store_raw_sections: Enable attribute storage of raw section input. (default True)
+            meta_as_kv: Enable alternate structure for meta section as dictionary. (default False)
         """
         self.rules = list()
 
@@ -118,6 +119,9 @@ class Parser:
         self._condition_start = None
         self._condition_end = None
         self._rule_comments = list()
+
+        # Adds a dictionary representation of the meta section of a rule
+        self.meta_as_kv = meta_as_kv
 
         self.lexer = lex.lex(module=self, debug=False)
         self.parser = yacc.yacc(module=self, debug=False, outputdir=tempfile.gettempdir())
@@ -188,8 +192,12 @@ class Parser:
 
             if 'metadata' not in self.current_rule:
                 self.current_rule['metadata'] = [{key: value}]
+                if self.meta_as_kv:
+                    self.current_rule['metadata_kv'] = {key: value}
             else:
                 self.current_rule['metadata'].append({key: value})
+                if self.meta_as_kv:
+                    self.current_rule['metadata_kv'][key] = value
 
         elif element_type == ElementTypes.STRINGS_KEY_VALUE:
             key, value, string_type = element_value
