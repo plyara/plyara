@@ -14,14 +14,14 @@ install:
   - "python setup.py install"
 script:
   - nosetests --with-coverage --cover-package=plyara --cover-xml
-  - pycodestyle --max-line-length=120 plyara/*.py
-  - pycodestyle --max-line-length=120 setup.py
-  - pycodestyle --max-line-length=120 tests/unit_tests.py
-  - pydocstyle --ignore=D104 plyara/__init__.py
-  - pydocstyle --ignore=D203,D205,D208,D209,D213,D300,D400,D401,D403,D406,D407,D413,D415 plyara/core.py
-  - pydocstyle --ignore=D203,D213 plyara/exceptions.py
-  - pydocstyle --ignore=D203,D213,D406,D407,D413 plyara/utils.py
-  - pydocstyle --ignore=D101,D102,D203,D213 tests/unit_tests.py
+  - pycodestyle plyara/*.py
+  - pycodestyle setup.py
+  - pycodestyle tests/unit_tests.py
+  - pydocstyle plyara/__init__.py
+  - pydocstyle plyara/core.py
+  - pydocstyle plyara/exceptions.py
+  - pydocstyle plyara/utils.py
+  - pydocstyle tests/unit_tests.py
   - pydocstyle plyara/command_line.py
   - pydocstyle setup.py
   - pyflakes plyara/core.py
