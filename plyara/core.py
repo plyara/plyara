@@ -62,6 +62,9 @@ class StringTypes(enum.Enum):
 class Parser:
     """Interpret the output of the parser and produce an alternative representation of YARA rules."""
 
+    # TODO - Add target version checking so new/removed features are not inappropriately accepted
+    # YARA_VERSION
+
     COMPARISON_OPERATORS = ('==', '!=', '>', '<', '>=', '<=', )
 
     IMPORT_OPTIONS = ('pe',
@@ -899,9 +902,43 @@ class Plyara(Parser):
                            | ASCII
                            | WIDE
                            | FULLWORD
-                           | XOR_MOD'''
-        logger.debug('Matched a string modifier: {}'.format(p[1]))
-        self._add_element(ElementTypes.STRINGS_MODIFIER, p[1])
+                           | XOR_MOD
+                           | XOR_MOD LPAREN NUM RPAREN
+                           | XOR_MOD LPAREN NUM HYPHEN NUM RPAREN
+                           | XOR_MOD LPAREN HEXNUM RPAREN
+                           | XOR_MOD LPAREN HEXNUM HYPHEN HEXNUM RPAREN
+                           | XOR_MOD LPAREN NUM HYPHEN HEXNUM RPAREN
+                           | XOR_MOD LPAREN HEXNUM HYPHEN NUM RPAREN
+        '''
+        pl = [x for x in p if x]
+        if not pl:
+            return
+        mod_str, mods = pl[0], pl[1:]
+        self._add_element(ElementTypes.STRINGS_MODIFIER, mod_str)
+        logger.debug('Matched a string modifier: {}'.format(mod_str))
+        if mods:
+            mod_int_list = []
+            mod_lineidx = set()
+            for i, x in enumerate(mods):
+                if x in ('(', '-', ')'):
+                    continue
+                mod_int = int(x, 16) if x.startswith('0x') else int(x)
+                if 0 <= mod_int <= 255:
+                    mod_int_list.append(mod_int)
+                    mod_lineidx.add(i)
+                else:
+                    message = 'String modification value {} not between 0-255 on line {}'.format(x, p.lineno(1+i))
+                    raise ParseTypeError(message, p.lineno, p.lexpos)
+            if mod_int_list[0] > mod_int_list[-1]:
+                mod_lineno = list({p.lineno(1+i) for i in mod_lineidx})
+                mod_lineno.sort()
+                line_no = ' and '.join(str(lno) for lno in mod_lineno)
+                message = 'String modification lower bound exceeds upper bound on line {}'.format(line_no)
+                raise ParseTypeError(message, p.lineno, p.lexpos)
+            else:
+                mod_str_mod = {mod_str + "_mod": mod_int_list}
+                logger.debug('Matched string modifier(s): {}'.format(mod_str_mod))
+                self._add_element(ElementTypes.STRINGS_MODIFIER, mod_str_mod)
 
     @staticmethod
     def p_comments(p):

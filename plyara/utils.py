@@ -304,6 +304,7 @@ def rebuild_yara_rule(rule):
         string_container = list()
 
         for rule_string in rule['strings']:
+            # TODO - Recreate rules with modified xor keywords, i.e. xor(1-255)
             if 'modifiers' in rule_string:
                 string_modifiers = ' '.join(rule_string['modifiers'])
                 if rule_string['type'] == 'text':
