@@ -897,8 +897,8 @@ class TestYaraRules(unittest.TestCase):
         strings:
             $a1 = /abc123 \d/i
             $a2 = /abc123 \d+/i // comment
-            $a3 = /abc123 \d\/ afterspace/im // comment
-            $a4 = /abc123 \d\/ afterspace/im nocase // comment
+            $a3 = /abc123 \d\/ afterspace/is // comment
+            $a4 = /abc123 \d\/ afterspace/is nocase // comment
             $a5 = /abc123 \d\/ afterspace/nocase // comment
             $a6 = /abc123 \d\/ afterspace/nocase// comment
 
@@ -924,9 +924,9 @@ class TestYaraRules(unittest.TestCase):
                     elif rex_string['name'] == '$a2':
                         self.assertEqual(rex_string['value'], '/abc123 \\d+/i')
                     elif rex_string['name'] == '$a3':
-                        self.assertEqual(rex_string['value'], '/abc123 \\d\\/ afterspace/im')
+                        self.assertEqual(rex_string['value'], '/abc123 \\d\\/ afterspace/is')
                     elif rex_string['name'] == '$a4':
-                        self.assertEqual(rex_string['value'], '/abc123 \\d\\/ afterspace/im')
+                        self.assertEqual(rex_string['value'], '/abc123 \\d\\/ afterspace/is')
                         self.assertEqual(rex_string['modifiers'], ['nocase'])
                     elif rex_string['name'] in ['$a5', '$a6']:
                         self.assertEqual(rex_string['value'], '/abc123 \\d\\/ afterspace/')
@@ -1097,19 +1097,38 @@ class TestYaraRules(unittest.TestCase):
 
         plyara = Plyara()
         results = plyara.parse_string(inputRules)
-        import json
 
         for res in results:
             yr_mods = res.get('strings')[0]['modifiers']
             yr_xor_mods = [x.get('xor_mod', None) for x in yr_mods if isinstance(x, dict)]
-            self.assertIn('xor', yr_mods)
-            if yr_xor_mods:
-                yr_xor_mod = yr_xor_mods[0]
+            yr_string_mods = [x for x in yr_mods if isinstance(x, str)]
+            self.assertIn('xor', yr_string_mods)
+            for yr_xor_mod in yr_xor_mods:
+                if not yr_xor_mod:
+                    continue
                 self.assertLessEqual(len(yr_xor_mod), 2)
                 if len(yr_xor_mod) == 1:
                     self.assertEqual(yr_xor_mod[0], 16)
                 else:
                     self.assertListEqual(yr_xor_mod, [16, 128])
+
+    def test_base64_modified_condition(self):
+        with data_dir.joinpath('base64_modifier_ruleset.yar').open('r') as fh:
+            inputRules = fh.read()
+
+        plyara = Plyara()
+        results = plyara.parse_string(inputRules)
+
+        for res in results:
+            yr_mods = res.get('strings')[0]['modifiers']
+            yr_base64_mods = [x.get('base64_mod', None) for x in yr_mods if isinstance(x, dict)]
+            yr_base64_mods.extend([x.get('base64wide_mod', None) for x in yr_mods if isinstance(x, dict)])
+            yr_string_mod0 = [x for x in yr_mods if isinstance(x, str) and x.startswith('base64')][0]
+            self.assertEqual('base64', yr_string_mod0[:6])
+            for yr_base64_mod in yr_base64_mods:
+                if not yr_base64_mod:
+                    continue
+                self.assertEqual(yr_base64_mod, r"!@#$%^&*(){}[].,|ABCDEFGHIJ\x09LMNOPQRSTUVWXYZabcdefghijklmnopqrstu")
 
 class TestGithubIssues(unittest.TestCase):
 
