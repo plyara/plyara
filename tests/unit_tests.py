@@ -1100,17 +1100,11 @@ class TestYaraRules(unittest.TestCase):
 
         for res in results:
             yr_mods = res.get('strings')[0]['modifiers']
-            yr_xor_mods = [x.get('xor_mod', None) for x in yr_mods if isinstance(x, dict)]
-            yr_string_mods = [x for x in yr_mods if isinstance(x, str)]
-            self.assertIn('xor', yr_string_mods)
-            for yr_xor_mod in yr_xor_mods:
-                if not yr_xor_mod:
-                    continue
-                self.assertLessEqual(len(yr_xor_mod), 2)
-                if len(yr_xor_mod) == 1:
-                    self.assertEqual(yr_xor_mod[0], 16)
-                else:
-                    self.assertListEqual(yr_xor_mod, [16, 128])
+            xor_string_mod = [x for x in yr_mods if isinstance(x, str) and 'xor' in x].pop()
+
+            self.assertIn('xor', xor_string_mod)
+            if '(' in xor_string_mod:
+                self.assertIn('(0x10', xor_string_mod)
 
     def test_base64_modified_condition(self):
         with data_dir.joinpath('base64_modifier_ruleset.yar').open('r') as fh:

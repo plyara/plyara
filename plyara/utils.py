@@ -251,6 +251,7 @@ def rebuild_yara_rule(rule, condition_indents=False):
 
     Args:
         rule: Dict output from a parsed rule.
+        condition_indents: Use nested indentation for condition
 
     Returns:
         str: Formatted text string of YARA rule.
@@ -304,27 +305,6 @@ def rebuild_yara_rule(rule, condition_indents=False):
         for rule_string in rule['strings']:
             if 'modifiers' in rule_string:
                 string_modifiers = [x for x in rule_string['modifiers'] if isinstance(x, str)]
-                string_modifier_args = [x for x in rule_string['modifiers'] if isinstance(x, dict)]
-
-                for string_modifier_arg in string_modifier_args:
-                    string_modifier_keys = list(string_modifier_arg.keys())
-                    string_modifier_key = string_modifier_keys.pop(0)
-
-                    if not string_modifier_key.endswith('_mod'):
-                        continue
-                    string_modifier = string_modifier_key.split('_')[0]
-
-                    if string_modifier in string_modifiers:
-                        string_modifier_index = string_modifiers.index(string_modifier)
-                        modified_string = None
-                        modifier_args = string_modifier_arg[string_modifier_key]
-                        if string_modifier.startswith('base64') and isinstance(modifier_args, str):
-                            modified_string = '{}("{}")'.format(string_modifier, modifier_args)
-                        elif string_modifier.startswith('xor') and isinstance(modifier_args, list):
-                            hex_args = '-'.join(["{0:#0{1}x}".format(x,4) for x in modifier_args])
-                            modified_string = '{}({})'.format(string_modifier, hex_args)
-                        if modified_string:
-                            string_modifiers[string_modifier_index] = modified_string
 
                 if rule_string['type'] == 'text':
                     string_format = '\n\t\t{} = "{}" {}'
