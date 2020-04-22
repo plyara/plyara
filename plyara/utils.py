@@ -167,15 +167,26 @@ def detect_dependencies(rule):
     return dependencies
 
 
-def generate_logic_hash(rule):
-    """Calculate hash value of rule strings and condition.
+def generate_logic_hash(rule, secure_hash=None):
+    """Calculate a secure hash of the logic in the rule strings and condition.
+    If the resultant hashes are identical, the rules will match on identical content.
+    The reverse it not true, so two rules that match the same content may not generate the same hash.
+    For example, if a rule only contains one string, the logic for 'any of' and 'all of' generate different hashes,
+    but the rules contain the same logic.
 
     Args:
         rule: Dict output from a parsed rule.
+        secure_hash: Alternate hash function, defaults to SHA-256
 
     Returns:
-        str: Hexdigest SHA-256.
+        str: hexdigest
     """
+    condition_string_prefaces = ('$', '!', '#', '@')
+    if secure_hash is None:
+        hf = hashlib.sha256()
+    else:
+        hf = secure_hash
+
     strings = rule.get('strings', list())
     conditions = rule['condition_terms']
 
@@ -187,11 +198,16 @@ def generate_logic_hash(rule):
         name = entry['name']
         modifiers = entry.get('modifiers', list())
 
-        # Handle string modifiers
-        if modifiers:
-            value = '{}<MODIFIED>{}'.format(entry['value'], ' & '.join(sorted(modifiers)))
+        if entry['type'] == 'byte':
+            value = re.sub(r'[^-a-fA-F?0-9\[\]{}]+', '', entry['value'])
+        elif entry['type'] == 'text':
+            value = '{}'.format(entry['value'])
         else:
             value = entry['value']
+
+        # Handle string modifiers
+        if modifiers:
+            value += '<MODIFIED>{}'.format(' & '.join(sorted(modifiers)))
 
         if name == '$':
             # Track anonymous strings
@@ -204,12 +220,16 @@ def generate_logic_hash(rule):
         string_values.append(value)
 
     # Sort all string values
-    sorted_string_values = sorted(string_values)
+    string_values.sort()
 
     for condition in conditions:
         # All string references (sort for consistency)
         if condition == 'them' or condition == '$*':
-            condition_mapping.append('<STRINGVALUE>{}'.format(' | '.join(sorted_string_values)))
+            all_values = '<STRINGVALUE>{}'.format(' | '.join(string_values))
+            if condition == 'them':
+                condition_mapping.extend(['(', all_values, ')'])
+            else:
+                condition_mapping.append(all_values)
 
         elif condition.startswith('$') and condition != '$':
             # Exact Match
@@ -231,19 +251,30 @@ def generate_logic_hash(rule):
                 logger.error('[!] Unhandled String Condition {}'.format(condition))
 
         # Count Match
-        elif condition.startswith('#') and condition != '#':
-            condition = condition.replace('#', '$')
+        elif condition[:1] in condition_string_prefaces and condition not in ('#', '!='):
+            symbol = condition[:1]
+            condition = '${}'.format(condition[1:])
+            if symbol == '#':
+                symbol_type = 'COUNTOFSTRING'
+            elif symbol == '@':
+                symbol_type = 'POSITIONOFSTRING'
+            elif symbol == '!':
+                symbol_type = 'LENGTHOFSTRING'
+            else:
+                symbol_type = 'UNKNOWN'
 
             if condition in string_mapping['named']:
-                condition_mapping.append('<COUNTOFSTRING>{}'.format(string_mapping['named'][condition]))
+                condition_mapping.append('<{}>{}'.format(symbol_type, string_mapping['named'][condition]))
             else:
-                logger.error('[!] Unhandled String Count Condition {}'.format(condition))
+                condition_mapping.append('<{}>{}'.format(symbol_type, condition))
+                logger.error('[!] Unhandled String Condition {}'.format(condition))
 
         else:
             condition_mapping.append(condition)
+    hf.update(''.join(condition_mapping).encode())
+    hexdigest = hf.hexdigest()
 
-    logic_hash = hashlib.sha256(''.join(condition_mapping).encode()).hexdigest()
-    return logic_hash
+    return hexdigest
 
 
 def rebuild_yara_rule(rule, condition_indents=False):

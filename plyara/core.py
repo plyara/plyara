@@ -304,6 +304,7 @@ class Plyara(Parser):
         'EQUALS',
         'STRINGNAME',
         'STRINGNAME_ARRAY',
+        'STRINGNAME_COUNT',
         'STRINGNAME_LENGTH',
         'LPAREN',
         'RPAREN',
@@ -320,7 +321,6 @@ class Plyara(Parser):
         'SECTIONSTRINGS',
         'SECTIONCONDITION',
         'COMMA',
-        'STRINGCOUNT',
         'GREATERTHAN',
         'LESSTHAN',
         'GREATEREQUAL',
@@ -690,21 +690,21 @@ class Plyara(Parser):
 
     @staticmethod
     def t_STRINGNAME(t):
-        r'\$[0-9a-zA-Z\-_*]*'
+        r'\$[0-9a-zA-Z\-_]*[*]?'
         t.value = t.value
 
         return t
 
     @staticmethod
     def t_STRINGNAME_ARRAY(t):
-        r'@[0-9a-zA-Z\-_*]*'
+        r'@[0-9a-zA-Z\-_]*[*]?'
         t.value = t.value
 
         return t
 
     @staticmethod
     def t_STRINGNAME_LENGTH(t):
-        r'![0-9a-zA-Z\-_*]*'
+        r'![0-9a-zA-Z\-_]*[*]?(?!=)'
         t.value = t.value
 
         return t
@@ -730,8 +730,8 @@ class Plyara(Parser):
         return t
 
     @staticmethod
-    def t_STRINGCOUNT(t):
-        r'\#[^\s]*'
+    def t_STRINGNAME_COUNT(t):
+        r'\#([a-z][0-9a-zA-Z\-_]*[*]?)?'
         t.value = t.value
 
         return t
@@ -1156,7 +1156,7 @@ class Plyara(Parser):
                 | STRINGNAME
                 | STRINGNAME_ARRAY
                 | STRINGNAME_LENGTH
-                | STRINGCOUNT
+                | STRINGNAME_COUNT
                 | REXSTRING'''
         logger.debug('Matched a condition term: {}'.format(p[1]))
         if p[1] == '$':
