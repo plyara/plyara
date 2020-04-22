@@ -1105,7 +1105,7 @@ class Plyara(Parser):
             raise ParseTypeError(message, p.lineno, p.lexpos)
 
     @staticmethod
-    def _process_string_with_escapes(self, t, escape_chars=None):
+    def _process_string_with_escapes(t, escape_chars=None):
         if escape_chars is None:
             escape_chars = [t.value]
         if t.lexer.escape == 1 and t.value in escape_chars or t.value == '\\':
