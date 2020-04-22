@@ -1104,6 +1104,7 @@ class Plyara(Parser):
             message = 'Unknown text {} for token of type {} on line {}'.format(p.value, p.type, p.lineno)
             raise ParseTypeError(message, p.lineno, p.lexpos)
 
+    @staticmethod
     def _process_string_with_escapes(self, t, escape_chars=None):
         if escape_chars is None:
             escape_chars = [t.value]
