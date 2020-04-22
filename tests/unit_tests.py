@@ -505,6 +505,9 @@ class TestRuleParser(unittest.TestCase):
         # clear the parser's state
         parser.clear()
 
+        # has lineno been reset
+        self.assertEqual(parser.lexer.lineno, 1)
+
         # open a ruleset with one rule
         with open('tests/data/test_ruleset_1_rule.yar', 'r') as fh:
             inputRules = fh.read()
