@@ -522,7 +522,7 @@ class Plyara(Parser):
                 t.lexer.hex_escape -= 1
             else:
                 raise ParseTypeError('Invalid hex character: {!r}, at line: {}'.format(t.value, t.lexer.lineno),
-                                 t.lexer.lineno, t.lexer.lexpos)
+                                     t.lexer.lineno, t.lexer.lexpos)
         elif t.lexer.escape == 1:
             raise ParseTypeError('Invalid escape sequence: \\{}, at line: {}'.format(t.value, t.lexer.lineno),
                                  t.lexer.lineno, t.lexer.lexpos)
@@ -656,7 +656,8 @@ class Plyara(Parser):
         else:
             t.lexer.escape ^= 1
 
-    def t_REXSTRING_value(self, t):
+    @staticmethod
+    def t_REXSTRING_value(t):
         r'.'
         if t.lexer.escape == 1 or t.value == '\\':
             t.lexer.escape ^= 1
@@ -667,7 +668,7 @@ class Plyara(Parser):
                 t.lexer.hex_escape -= 1
             else:
                 raise ParseTypeError('Invalid hex character: {!r}, at line: {}'.format(t.value, t.lexer.lineno),
-                                 t.lexer.lineno, t.lexer.lexpos)
+                                     t.lexer.lineno, t.lexer.lexpos)
         elif t.lexer.escape == 1:
             raise ParseTypeError('Invalid escape sequence: \\{}, at line: {}'.format(t.value, t.lexer.lineno),
                                  t.lexer.lineno, t.lexer.lexpos)
@@ -1070,7 +1071,7 @@ class Plyara(Parser):
         '''base64_with_args : LPAREN STRING RPAREN'''
         # Remove parens and leading/trailing quotes
         b64_mod = [x for x in p if x not in (None, '(', ')')][0].strip('"')
-        b64_data, raw_len = escape_decode(b64_mod)
+        b64_data, _ = escape_decode(b64_mod)
         if len(b64_data) != 64:
             raise Exception("Base64 dictionary length {}, must be 64 characters".format(len(b64_data)))
         if re.search(rb'(.).*\1', b64_data):
