@@ -512,20 +512,8 @@ class Plyara(Parser):
             t.lexer.begin('INITIAL')
 
             return t
-
-        if t.lexer.escape == 1 and t.value in self.STRING_ESCAPE_CHARS or t.value == '\\':
-            t.lexer.escape ^= 1
-            if t.value == 'x':
-                t.lexer.hex_escape = 2
-        elif t.lexer.hex_escape > 0:
-            if t.value.lower() in hexdigits:
-                t.lexer.hex_escape -= 1
-            else:
-                raise ParseTypeError('Invalid hex character: {!r}, at line: {}'.format(t.value, t.lexer.lineno),
-                                     t.lexer.lineno, t.lexer.lexpos)
-        elif t.lexer.escape == 1:
-            raise ParseTypeError('Invalid escape sequence: \\{}, at line: {}'.format(t.value, t.lexer.lineno),
-                                 t.lexer.lineno, t.lexer.lexpos)
+        else:
+            self._process_string_with_escapes(t, escape_chars=self.STRING_ESCAPE_CHARS)
 
     t_STRING_ignore = ''
 
@@ -656,22 +644,9 @@ class Plyara(Parser):
         else:
             t.lexer.escape ^= 1
 
-    @staticmethod
-    def t_REXSTRING_value(t):
+    def t_REXSTRING_value(self, t):
         r'.'
-        if t.lexer.escape == 1 or t.value == '\\':
-            t.lexer.escape ^= 1
-            if t.value == 'x':
-                t.lexer.hex_escape = 2
-        elif t.lexer.hex_escape > 0:
-            if t.value.lower() in hexdigits:
-                t.lexer.hex_escape -= 1
-            else:
-                raise ParseTypeError('Invalid hex character: {!r}, at line: {}'.format(t.value, t.lexer.lineno),
-                                     t.lexer.lineno, t.lexer.lexpos)
-        elif t.lexer.escape == 1:
-            raise ParseTypeError('Invalid escape sequence: \\{}, at line: {}'.format(t.value, t.lexer.lineno),
-                                 t.lexer.lineno, t.lexer.lexpos)
+        self._process_string_with_escapes(t)
 
     t_REXSTRING_ignore = ''
 
@@ -957,39 +932,7 @@ class Plyara(Parser):
                                 | BASE64 base64_with_args
                                 | BASE64WIDE base64_with_args
                                 | PRIVATE'''
-        mod_str = p[1]
-        has_args = True if len(p) > 2 else False
-        compat_issue = self._check_modifier_compatibility(mod_str, has_args)
-        if compat_issue:
-            message = compat_issue.format(p.lineno(1))
-            raise ParseTypeError(message, p.lineno, p.lexpos)
-
-        if mod_str in self.string_modifiers:
-            message = 'Duplicate string modifier {} on line {}'.format(mod_str, p.lineno(1))
-            raise ParseTypeError(message, p.lineno, p.lexpos)
-
-        if mod_str in self.EXCLUSIVE_TEXT_MODIFIERS:
-            prev_mods = {x for x in self.string_modifiers if isinstance(x, str)}
-            excluded_modifiers = prev_mods & ({mod_str} ^ self.EXCLUSIVE_TEXT_MODIFIERS)
-            if excluded_modifiers:
-                prev_mod_str = excluded_modifiers.pop()
-                message = ('Mutually exclusive string modifier use of {} on line {} after {} usage'
-                           .format(mod_str, p.lineno(1), prev_mod_str))
-                raise ParseTypeError(message, p.lineno, p.lexpos)
-        if self.string_modifiers:
-            # Convert previously created modifiers with args to strings
-            if mod_str.startswith('base64') and isinstance(self.string_modifiers[-1], YaraBase64):
-                if mod_str == 'base64wide':
-                    self.string_modifiers[-1].modifier_name = 'base64wide'
-                    logger.debug('Corrected base64 string modifier to base64wide')
-                self.string_modifiers[-1] = str(self.string_modifiers[-1])
-                return
-            elif mod_str == 'xor' and isinstance(self.string_modifiers[-1], YaraXor):
-                self.string_modifiers[-1] = str(self.string_modifiers[-1])
-                logger.debug('Modified xor string was already added')
-                return
-        self._add_element(ElementTypes.STRINGS_MODIFIER, mod_str)
-        logger.debug('Matched a string modifier: {}'.format(mod_str))
+        self._add_string_modifier(p)
 
     @staticmethod
     def p_regex_text_string_modifiers(p):
@@ -1002,19 +945,7 @@ class Plyara(Parser):
                                 | WIDE
                                 | FULLWORD
                                 | PRIVATE'''
-        mod_str = p[1]
-        has_args = True if len(p) > 2 else False
-        compat_issue = self._check_modifier_compatibility(mod_str, has_args)
-        if compat_issue:
-            message = compat_issue.format(p.lineno(1))
-            raise ParseTypeError(message, p.lineno, p.lexpos)
-
-        if mod_str in self.string_modifiers:
-            message = 'Duplicate string modifier {} on line {}'.format(mod_str, p.lineno(1))
-            raise ParseTypeError(message, p.lineno, p.lexpos)
-
-        self._add_element(ElementTypes.STRINGS_MODIFIER, mod_str)
-        logger.debug('Matched a string modifier: {}'.format(mod_str))
+        self._add_string_modifier(p)
 
     @staticmethod
     def p_byte_string_modifiers(p):
@@ -1023,19 +954,7 @@ class Plyara(Parser):
 
     def p_byte_string_modifer(self, p):
         '''byte_string_modifer : PRIVATE'''
-        mod_str = p[1]
-        has_args = True if len(p) > 2 else False
-        compat_issue = self._check_modifier_compatibility(mod_str, has_args)
-        if compat_issue:
-            message = compat_issue.format(p.lineno(1))
-            raise ParseTypeError(message, p.lineno, p.lexpos)
-
-        if mod_str in self.string_modifiers:
-            message = 'Duplicate string modifier {} on line {}'.format(mod_str, p.lineno(1))
-            raise ParseTypeError(message, p.lineno, p.lexpos)
-
-        self._add_element(ElementTypes.STRINGS_MODIFIER, mod_str)
-        logger.debug('Matched a string modifier: {}'.format(mod_str))
+        self._add_string_modifier(p)
 
     def p_xor_mod_args(self, p):
         '''xor_mod_args : LPAREN NUM RPAREN
@@ -1184,6 +1103,58 @@ class Plyara(Parser):
         else:
             message = 'Unknown text {} for token of type {} on line {}'.format(p.value, p.type, p.lineno)
             raise ParseTypeError(message, p.lineno, p.lexpos)
+
+    def _process_string_with_escapes(self, t, escape_chars=None):
+        if escape_chars is None:
+            escape_chars = [t.value]
+        if t.lexer.escape == 1 and t.value in escape_chars or t.value == '\\':
+            t.lexer.escape ^= 1
+            if t.value == 'x':
+                t.lexer.hex_escape = 2
+        elif t.lexer.hex_escape > 0:
+            if t.value.lower() in hexdigits:
+                t.lexer.hex_escape -= 1
+            else:
+                raise ParseTypeError('Invalid hex character: {!r}, at line: {}'.format(t.value, t.lexer.lineno),
+                                     t.lexer.lineno, t.lexer.lexpos)
+        elif t.lexer.escape == 1:
+            raise ParseTypeError('Invalid escape sequence: \\{}, at line: {}'.format(t.value, t.lexer.lineno),
+                                 t.lexer.lineno, t.lexer.lexpos)
+
+    def _add_string_modifier(self, p):
+        mod_str = p[1]
+        prev_mod_with_args = False
+        has_args = True if len(p) > 2 else False
+        compat_issue = self._check_modifier_compatibility(mod_str, has_args)
+        if compat_issue:
+            message = compat_issue.format(p.lineno(1))
+            raise ParseTypeError(message, p.lineno, p.lexpos)
+        if mod_str in self.string_modifiers:
+            message = 'Duplicate string modifier {} on line {}'.format(mod_str, p.lineno(1))
+            raise ParseTypeError(message, p.lineno, p.lexpos)
+        if mod_str in self.EXCLUSIVE_TEXT_MODIFIERS:
+            prev_mods = {x for x in self.string_modifiers if isinstance(x, str)}
+            excluded_modifiers = prev_mods & ({mod_str} ^ self.EXCLUSIVE_TEXT_MODIFIERS)
+            if excluded_modifiers:
+                prev_mod_str = excluded_modifiers.pop()
+                message = ('Mutually exclusive string modifier use of {} on line {} after {} usage'
+                           .format(mod_str, p.lineno(1), prev_mod_str))
+                raise ParseTypeError(message, p.lineno, p.lexpos)
+        if self.string_modifiers:
+            # Convert previously created modifiers with args to strings
+            if mod_str.startswith('base64') and isinstance(self.string_modifiers[-1], YaraBase64):
+                if mod_str == 'base64wide':
+                    self.string_modifiers[-1].modifier_name = 'base64wide'
+                    logger.debug('Corrected base64 string modifier to base64wide')
+                self.string_modifiers[-1] = str(self.string_modifiers[-1])
+                prev_mod_with_args = True
+            elif mod_str == 'xor' and isinstance(self.string_modifiers[-1], YaraXor):
+                self.string_modifiers[-1] = str(self.string_modifiers[-1])
+                logger.debug('Modified xor string was already added')
+                prev_mod_with_args = True
+        if not prev_mod_with_args:
+            self._add_element(ElementTypes.STRINGS_MODIFIER, mod_str)
+            logger.debug('Matched a string modifier: {}'.format(mod_str))
 
     def _check_modifier_compatibility(self, string_modifier, modifier_has_args):
         if string_modifier == 'xor' and self.YARA_VERSION < StrictVersion('3.8.0'):
