@@ -49,7 +49,7 @@ def is_valid_rule_name(entry):
         return False
 
     # Accept only alphanumeric and underscores
-    if not re.match(r'\w+$', entry):
+    if not re.match(r'[a-zA-Z_][a-zA-Z_0-9]*$', entry):
         return False
 
     # Verify not in keywords
@@ -246,18 +246,17 @@ def generate_logic_hash(rule):
     return logic_hash
 
 
-def rebuild_yara_rule(rule):
-    """Take a parsed yararule and rebuild it into a usable one (DEPRECATED).
+def rebuild_yara_rule(rule, condition_indents=False):
+    """Take a parsed yararule and rebuild it into a usable one.
 
     Args:
         rule: Dict output from a parsed rule.
+        condition_indents: Use nested indentation for condition
 
     Returns:
         str: Formatted text string of YARA rule.
     """
-    import warnings
-    warnings.warn('Utility rebuild_yara_rule() is deprecated.', DeprecationWarning)
-    rule_format = "{imports}{scopes}rule {rulename}{tags} {{\n{meta}{strings}{condition}\n}}\n"
+    rule_format = "{imports}{scopes}rule {rulename}{tags}\n{{{meta}{strings}{condition}\n}}\n"
 
     rule_name = rule['rule_name']
 
@@ -305,12 +304,14 @@ def rebuild_yara_rule(rule):
 
         for rule_string in rule['strings']:
             if 'modifiers' in rule_string:
-                string_modifiers = ' '.join(rule_string['modifiers'])
+                string_modifiers = [x for x in rule_string['modifiers'] if isinstance(x, str)]
+
                 if rule_string['type'] == 'text':
                     string_format = '\n\t\t{} = "{}" {}'
                 else:
                     string_format = '\n\t\t{} = {} {}'
-                fstring = string_format.format(rule_string['name'], rule_string['value'], string_modifiers)
+                fstring = string_format.format(rule_string['name'], rule_string['value'], ' '.join(string_modifiers))
+
             else:
                 if rule_string['type'] == 'text':
                     string_format = '\n\t\t{} = "{}"'
@@ -327,8 +328,14 @@ def rebuild_yara_rule(rule):
     if rule.get('condition_terms'):
         # Format condition with appropriate whitespace between keywords
         cond = list()
-
+        indents = '\n\t\t'
         for term in rule['condition_terms']:
+
+            if condition_indents:
+                if term == '(':
+                    indents = indents + '\t'
+                if term == ')' and len(indents) > 3:
+                    indents = indents[:-1]
 
             if not cond:
 
@@ -344,18 +351,31 @@ def rebuild_yara_rule(rule):
 
             else:
 
-                if cond[-1] == ' ' and term in Parser.FUNCTION_KEYWORDS:
+                if cond[-1][-1] in (' ', '\t') and term in Parser.FUNCTION_KEYWORDS:
                     cond.append(term)
 
-                elif cond and cond[-1] != ' ' and term in Parser.FUNCTION_KEYWORDS:
+                elif cond[-1][-1] not in (' ', '\t') and term in Parser.FUNCTION_KEYWORDS:
                     cond.append(' ')
                     cond.append(term)
 
-                elif cond[-1] == ' ' and term in Parser.KEYWORDS:
+                elif cond[-1][-1] in (' ', '\t') and term in Parser.KEYWORDS:
+                    cond.append(term)
+                    cond.append(' ')
+                    if condition_indents and term in ('and', 'or'):
+                        cond.append(indents)
+
+                elif cond[-1][-1] not in (' ', '\t') and term in Parser.KEYWORDS:
+                    cond.append(' ')
+                    cond.append(term)
+                    cond.append(' ')
+                    if condition_indents and term in ('and', 'or'):
+                        cond.append(indents)
+
+                elif cond[-1][-1] in (' ', '\t') and term == ':':
                     cond.append(term)
                     cond.append(' ')
 
-                elif cond and cond[-1] != ' ' and term in Parser.KEYWORDS:
+                elif cond[-1][-1] not in (' ', '\t') and term == ':':
                     cond.append(' ')
                     cond.append(term)
                     cond.append(' ')
@@ -364,7 +384,7 @@ def rebuild_yara_rule(rule):
                     cond.append(term)
 
         fcondition = ''.join(cond).rstrip(' ')
-        rule_condition = '\n\tcondition:\n\t\t{}'.format(fcondition)
+        rule_condition = '\n\tcondition:{}{}'.format('\n\t\t', fcondition)
     else:
         rule_condition = str()
 

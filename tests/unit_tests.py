@@ -22,7 +22,7 @@ import concurrent.futures
 import contextlib
 import hashlib
 import io
-import pathlib
+from pathlib import Path
 import sys
 import unittest
 
@@ -36,8 +36,11 @@ from plyara.command_line import main
 
 UNHANDLED_RULE_MSG = 'Unhandled Test Rule: {}'
 
-tests = pathlib.Path('tests')
-data_dir = tests.joinpath('data')
+tests = Path('tests')
+if tests.is_dir():
+    data_dir = tests.joinpath('data')
+else:
+    data_dir = Path('data')
 
 
 @contextlib.contextmanager
@@ -83,6 +86,7 @@ class TestUtilities(unittest.TestCase):
             rule_hashes = fh.read().splitlines()
 
         with data_dir.joinpath('test_rules_from_yara_project.yar').open('r') as fh:
+            # Rules containing "(1..#)" or similar iterators cause Unhandled String Count Condition errors
             inputString = fh.read()
 
         results = Plyara().parse_string(inputString)
@@ -470,7 +474,7 @@ class TestRuleParser(unittest.TestCase):
         self.assertEqual(len(self.parser.includes), 3)
 
     def test_rules_from_yara_project(self):
-        with open('tests/data/test_rules_from_yara_project.yar', 'r') as fh:
+        with data_dir.joinpath('test_rules_from_yara_project.yar').open('r') as fh:
             inputRules = fh.read()
 
         plyara = Plyara()
@@ -479,7 +483,7 @@ class TestRuleParser(unittest.TestCase):
         self.assertEqual(len(output), 293)
 
     def test_multiple_threads(self):
-        with open('tests/data/test_rules_from_yara_project.yar', 'r') as fh:
+        with data_dir.joinpath('test_rules_from_yara_project.yar').open('r') as fh:
             inputRules = fh.read()
 
         def parse_rules(rules):
@@ -496,7 +500,7 @@ class TestRuleParser(unittest.TestCase):
         parser = Plyara()
 
         # open a ruleset with one or more rules
-        with open('tests/data/test_ruleset_2_rules.yar', 'r') as fh:
+        with data_dir.joinpath('test_ruleset_2_rules.yar').open('r') as fh:
             inputRules = fh.read()
 
         # parse the rules
@@ -509,7 +513,7 @@ class TestRuleParser(unittest.TestCase):
         self.assertEqual(parser.lexer.lineno, 1)
 
         # open a ruleset with one rule
-        with open('tests/data/test_ruleset_1_rule.yar', 'r') as fh:
+        with data_dir.joinpath('test_ruleset_1_rule.yar').open('r') as fh:
             inputRules = fh.read()
 
         # parse the rules
@@ -896,8 +900,8 @@ class TestYaraRules(unittest.TestCase):
         strings:
             $a1 = /abc123 \d/i
             $a2 = /abc123 \d+/i // comment
-            $a3 = /abc123 \d\/ afterspace/im // comment
-            $a4 = /abc123 \d\/ afterspace/im nocase // comment
+            $a3 = /abc123 \d\/ afterspace/is // comment
+            $a4 = /abc123 \d\/ afterspace/is nocase // comment
             $a5 = /abc123 \d\/ afterspace/nocase // comment
             $a6 = /abc123 \d\/ afterspace/nocase// comment
 
@@ -923,9 +927,9 @@ class TestYaraRules(unittest.TestCase):
                     elif rex_string['name'] == '$a2':
                         self.assertEqual(rex_string['value'], '/abc123 \\d+/i')
                     elif rex_string['name'] == '$a3':
-                        self.assertEqual(rex_string['value'], '/abc123 \\d\\/ afterspace/im')
+                        self.assertEqual(rex_string['value'], '/abc123 \\d\\/ afterspace/is')
                     elif rex_string['name'] == '$a4':
-                        self.assertEqual(rex_string['value'], '/abc123 \\d\\/ afterspace/im')
+                        self.assertEqual(rex_string['value'], '/abc123 \\d\\/ afterspace/is')
                         self.assertEqual(rex_string['modifiers'], ['nocase'])
                     elif rex_string['name'] in ['$a5', '$a6']:
                         self.assertEqual(rex_string['value'], '/abc123 \\d\\/ afterspace/')
@@ -1062,7 +1066,7 @@ class TestYaraRules(unittest.TestCase):
                 raise e
 
     def test_lineno_incremented_by_windows_newlines_in_bytestring(self):
-        with open('tests/data/windows_newline_ruleset.yar', 'r') as fh:
+        with data_dir.joinpath('windows_newline_ruleset.yar').open('r') as fh:
             inputRules = fh.read()
 
         plyara = Plyara()
@@ -1090,6 +1094,38 @@ class TestYaraRules(unittest.TestCase):
 
         self.assertEqual(result[0].get('condition_terms')[8], '@')
 
+    def test_xor_modified_condition(self):
+        with data_dir.joinpath('xor_modifier_ruleset.yar').open('r') as fh:
+            inputRules = fh.read()
+
+        plyara = Plyara()
+        results = plyara.parse_string(inputRules)
+
+        for res in results:
+            yr_mods = res.get('strings')[0]['modifiers']
+            xor_string_mod = [x for x in yr_mods if isinstance(x, str) and 'xor' in x].pop()
+
+            self.assertIn('xor', xor_string_mod)
+            if '(' in xor_string_mod:
+                self.assertIn('(0x10', xor_string_mod)
+
+    def test_base64_modified_condition(self):
+        with data_dir.joinpath('base64_modifier_ruleset.yar').open('r') as fh:
+            inputRules = fh.read()
+
+        plyara = Plyara()
+        results = plyara.parse_string(inputRules)
+
+        for res in results:
+            yr_mods = res.get('strings')[0]['modifiers']
+            yr_base64_mods = [x.get('base64_mod', None) for x in yr_mods if isinstance(x, dict)]
+            yr_base64_mods.extend([x.get('base64wide_mod', None) for x in yr_mods if isinstance(x, dict)])
+            yr_string_mod0 = [x for x in yr_mods if isinstance(x, str) and x.startswith('base64')][0]
+            self.assertEqual('base64', yr_string_mod0[:6])
+            for yr_base64_mod in yr_base64_mods:
+                if not yr_base64_mod:
+                    continue
+                self.assertEqual(yr_base64_mod, r"!@#$%^&*(){}[].,|ABCDEFGHIJ\x09LMNOPQRSTUVWXYZabcdefghijklmnopqrstu")
 
 class TestGithubIssues(unittest.TestCase):
 
