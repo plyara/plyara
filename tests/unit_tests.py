@@ -1127,6 +1127,7 @@ class TestYaraRules(unittest.TestCase):
                     continue
                 self.assertEqual(yr_base64_mod, r"!@#$%^&*(){}[].,|ABCDEFGHIJ\x09LMNOPQRSTUVWXYZabcdefghijklmnopqrstu")
 
+
 class TestGithubIssues(unittest.TestCase):
 
     # Reference: https://github.com/plyara/plyara/issues/63
