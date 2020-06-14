@@ -135,7 +135,7 @@ class Parser:
         self.parser = yacc.yacc(module=self, debug=False, outputdir=tempfile.gettempdir())
 
     def clear(self):
-        """Clear all information about previously parsed rules"""
+        """Clear all information about previously parsed rules."""
         self.rules.clear()
 
         self.current_rule.clear()
