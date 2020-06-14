@@ -37,6 +37,7 @@ from plyara.exceptions import ParseTypeError, ParseValueError
 # Initialize the logger
 logger = logging.getLogger(__name__)
 
+
 class ElementTypes(enum.Enum):
     """An enumeration of the element types emitted by the parser to the interpreter."""
 
@@ -90,7 +91,7 @@ class Parser:
 
     FUNCTION_KEYWORDS = {'uint8', 'uint16', 'uint32', 'uint8be', 'uint16be', 'uint32be', }
 
-    def __init__(self, console_logging=False, store_raw_sections=True, meta_as_kv=False, meta_validator=None):
+    def __init__(self, console_logging=False, store_raw_sections=True, meta_as_kv=False):
         """Initialize the parser object.
 
         Args:
@@ -1173,16 +1174,16 @@ class Plyara(Parser):
 
 
 class YaraXor(str):
-    """
-    YARA xor string modifier
-    """
+    """YARA xor string modifier"""
 
     def __init__(self, xor_range=None):
+        """Create YARA xor str object"""
         str.__init__(self)
         self.modifier_name = 'xor'
         self.modifier_list = xor_range if xor_range is not None else []
 
     def __str__(self):
+        """Get str of YARA xor keyword"""
         if len(self.modifier_list) == 0:
             return self.modifier_name
         return '{}({})'.format(
@@ -1191,6 +1192,7 @@ class YaraXor(str):
             )
 
     def __repr__(self):
+        """Get repr of YARA xor keyword"""
         if len(self.modifier_list) == 0:
             return '{}()'.format(self.__class__.__name__)
         else:
@@ -1198,22 +1200,23 @@ class YaraXor(str):
 
 
 class YaraBase64(str):
-    """
-    YARA base64 string modifier for easier printing.
-    """
+    """YARA base64 string modifier"""
 
     def __init__(self, modifier_alphabet=None, modifier_name='base64'):
+        """Create YARA base64 str object"""
         str.__init__(self)
         self.modifier_name = 'base64' if modifier_name != 'base64wide' else 'base64wide'
         self.modifier_alphabet = modifier_alphabet
 
     def __str__(self):
+        """Get str of YARA base64 keyword"""
         if self.modifier_alphabet is None:
             return '{}'.format(self.modifier_name)
         else:
             return '{}("{}")'.format(self.modifier_name, self.modifier_alphabet)
 
     def __repr__(self):
+        """Get repr of YARA base64 keyword"""
         if self.modifier_alphabet is None:
             return '{}()'.format(self.__class__.__name__)
         else:

@@ -169,7 +169,8 @@ def detect_dependencies(rule):
 
 def generate_logic_hash(rule, secure_hash=None):
     """Calculate a secure hash of the logic in the rule strings and condition.
-    If the resultant hashes are identical, the rules will match on identical content.
+
+    If the resultant hashes are identical for two YARA rules, the rules will match on identical content.
     The reverse it not true, so two rules that match the same content may not generate the same hash.
     For example, if a rule only contains one string, the logic for 'any of' and 'all of' generate different hashes,
     but the rules contain the same logic.
