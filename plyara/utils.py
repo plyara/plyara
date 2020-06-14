@@ -149,11 +149,11 @@ def detect_dependencies(rule):
                 continue
 
             # Check for external string variable dependency
-            if ((next_term in ('matches', 'contains', )) or (previous_term in ('matches', 'contains', ))):
+            if next_term in ('matches', 'contains',) or previous_term in ('matches', 'contains',):
                 continue
 
             # Check for external integer variable dependency
-            if ((next_term in Parser.COMPARISON_OPERATORS) or (previous_term in Parser.COMPARISON_OPERATORS)):
+            if next_term in Parser.COMPARISON_OPERATORS or previous_term in Parser.COMPARISON_OPERATORS:
                 continue
 
             # Check for external boolean dependency may not be possible without stripping out valid rule references
@@ -249,7 +249,7 @@ def generate_logic_hash(rule, secure_hash=None):
                 wildcard_strings.sort()
                 condition_mapping.append('<STRINGVALUE>{}'.format(' | '.join(wildcard_strings)))
             else:
-                logger.error('[!] Unhandled String Condition {}'.format(condition))
+                logger.error('[!] Unhandled String Condition "{}" in "{}"'.format(condition, ' '.join(conditions)))
 
         # Count Match
         elif condition[:1] in condition_string_prefaces and condition not in ('#', '!='):
@@ -261,6 +261,8 @@ def generate_logic_hash(rule, secure_hash=None):
                 symbol_type = 'POSITIONOFSTRING'
             elif symbol == '!':
                 symbol_type = 'LENGTHOFSTRING'
+            elif symbol == condition == '$':
+                symbol_type = 'ANONYMOUSSTRING'
             else:
                 symbol_type = 'UNKNOWN'
 
@@ -268,7 +270,9 @@ def generate_logic_hash(rule, secure_hash=None):
                 condition_mapping.append('<{}>{}'.format(symbol_type, string_mapping['named'][condition]))
             else:
                 condition_mapping.append('<{}>{}'.format(symbol_type, condition))
-                logger.error('[!] Unhandled String Condition {}'.format(condition))
+                logger.error('[!] Unhandled {} Condition "{}" in "{}"'.format(
+                    symbol_type, symbol, ' '.join(conditions))
+                )
 
         else:
             condition_mapping.append(condition)

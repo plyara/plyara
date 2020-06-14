@@ -25,7 +25,6 @@ import logging
 import tempfile
 import re
 
-from codecs import escape_decode
 from distutils.version import StrictVersion
 from string import hexdigits
 
@@ -1002,10 +1001,10 @@ class Plyara(Parser):
         '''base64_with_args : LPAREN STRING RPAREN'''
         # Remove parens and leading/trailing quotes
         b64_mod = [x for x in p if x not in (None, '(', ')')][0].strip('"')
-        b64_data, _ = escape_decode(b64_mod)
+        b64_data = b64_mod.encode('ascii').decode('unicode-escape')
         if len(b64_data) != 64:
             raise Exception("Base64 dictionary length {}, must be 64 characters".format(len(b64_data)))
-        if re.search(rb'(.).*\1', b64_data):
+        if re.search(r'(.).*\1', b64_data):
             raise Exception("Duplicate character in Base64 dictionary")
         mod_str_mod = YaraBase64(b64_mod)
         logger.debug('Matched string modifier(s): {}'.format(b64_mod))
@@ -1185,25 +1184,25 @@ class Plyara(Parser):
 
 
 class YaraXor(str):
-    """YARA xor string modifier"""
+    """YARA xor string modifier."""
 
     def __init__(self, xor_range=None):
-        """Create YARA xor str object"""
+        """Initialize XOR string modifier."""
         str.__init__(self)
         self.modifier_name = 'xor'
         self.modifier_list = xor_range if xor_range is not None else []
 
     def __str__(self):
-        """Get str of YARA xor keyword"""
+        """Return the string representation."""
         if len(self.modifier_list) == 0:
             return self.modifier_name
         return '{}({})'.format(
             self.modifier_name,
             '-'.join(["{0:#0{1}x}".format(x, 4) for x in self.modifier_list])
-            )
+        )
 
     def __repr__(self):
-        """Get repr of YARA xor keyword"""
+        """Return the object representation."""
         if len(self.modifier_list) == 0:
             return '{}()'.format(self.__class__.__name__)
         else:
@@ -1211,23 +1210,23 @@ class YaraXor(str):
 
 
 class YaraBase64(str):
-    """YARA base64 string modifier"""
+    """YARA base64 string modifier for easier printing."""
 
     def __init__(self, modifier_alphabet=None, modifier_name='base64'):
-        """Create YARA base64 str object"""
+        """Initialize base64 string modifier."""
         str.__init__(self)
         self.modifier_name = 'base64' if modifier_name != 'base64wide' else 'base64wide'
         self.modifier_alphabet = modifier_alphabet
 
     def __str__(self):
-        """Get str of YARA base64 keyword"""
+        """Return the string representation."""
         if self.modifier_alphabet is None:
             return '{}'.format(self.modifier_name)
         else:
             return '{}("{}")'.format(self.modifier_name, self.modifier_alphabet)
 
     def __repr__(self):
-        """Get repr of YARA base64 keyword"""
+        """Return the object representation."""
         if self.modifier_alphabet is None:
             return '{}()'.format(self.__class__.__name__)
         else:
