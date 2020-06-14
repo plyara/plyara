@@ -158,6 +158,17 @@ class Parser:
         self._rule_comments.clear()
         self._stringnames.clear()
 
+        if self.lexer.lineno > 1:
+            # Per https://ply.readthedocs.io/en/latest/ply.html#panic-mode-recovery
+            #   This discards the entire parsing stack and resets the parser to its
+            #   initial state.
+            self.parser.restart()
+            # Per https://ply.readthedocs.io/en/latest/ply.html#eof-handling
+            #   Be aware that setting more input with the self.lexer.input() method
+            #   does NOT reset the lexer state or the lineno attribute used for
+            #   position tracking.
+            self.lexer.lineno = 1
+
     @staticmethod
     def _set_logging():
         """Set the console logger only if handler(s) aren't already set."""
