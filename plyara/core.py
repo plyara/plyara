@@ -292,7 +292,6 @@ class Parser:
         Returns:
             dict: All the parsed components of a YARA rule.
         """
-        # norm = input_string.replace('\r\n', '\n')
         self._raw_input = input_string
         self.parser.parse(input_string, lexer=self.lexer)
 
