@@ -284,7 +284,7 @@ rule test {
 
 rule test {
       strings:
-        $a = "ab" xor nocase
+        $a = "ab" xor fullword
       condition:
         #a == 1084
     }

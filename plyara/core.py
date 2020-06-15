@@ -20,11 +20,14 @@ dictionary representation. The goal of this tool is to make it easier to perform
 large sets of YARA rules, such as extracting indicators, updating attributes, and analyzing a corpus. Other applications
 include linters and dependency checkers.
 """
-import distutils.util
 import enum
 import logging
 import tempfile
 import re
+
+from codecs import escape_decode
+from distutils.version import StrictVersion
+from string import hexdigits
 
 import ply.lex as lex
 import ply.yacc as yacc
@@ -62,34 +65,39 @@ class StringTypes(enum.Enum):
 class Parser:
     """Interpret the output of the parser and produce an alternative representation of YARA rules."""
 
-    COMPARISON_OPERATORS = ('==', '!=', '>', '<', '>=', '<=', )
+    YARA_VERSION = StrictVersion('4.0.0')
 
-    IMPORT_OPTIONS = ('pe',
+    EXCLUSIVE_TEXT_MODIFIERS = {'nocase', 'xor', 'base64'}
+
+    COMPARISON_OPERATORS = {'==', '!=', '>', '<', '>=', '<=', }
+
+    IMPORT_OPTIONS = {'pe',
                       'elf',
                       'cuckoo',
                       'magic',
                       'hash',
                       'math',
                       'dotnet',
-                      'androguard', )
+                      'androguard', }
 
-    KEYWORDS = ('all', 'and', 'any', 'ascii', 'at', 'condition',
+    KEYWORDS = {'all', 'and', 'any', 'ascii', 'at', 'condition',
                 'contains', 'entrypoint', 'false', 'filesize',
                 'fullword', 'for', 'global', 'in', 'import',
                 'include', 'int8', 'int16', 'int32', 'int8be',
                 'int16be', 'int32be', 'matches', 'meta', 'nocase',
                 'not', 'or', 'of', 'private', 'rule', 'strings',
                 'them', 'true', 'uint8', 'uint16', 'uint32', 'uint8be',
-                'uint16be', 'uint32be', 'wide', 'xor', )
+                'uint16be', 'uint32be', 'wide', 'xor', 'base64', 'base64wide', }
 
-    FUNCTION_KEYWORDS = ('uint8', 'uint16', 'uint32', 'uint8be', 'uint16be', 'uint32be', )
+    FUNCTION_KEYWORDS = {'uint8', 'uint16', 'uint32', 'uint8be', 'uint16be', 'uint32be', }
 
-    def __init__(self, console_logging=False, store_raw_sections=True):
+    def __init__(self, console_logging=False, store_raw_sections=True, meta_as_kv=False):
         """Initialize the parser object.
 
         Args:
             console_logging: Enable a stream handler if no handlers exist. (default False)
             store_raw_sections: Enable attribute storage of raw section input. (default True)
+            meta_as_kv: Enable alternate structure for meta section as dictionary. (default False)
         """
         self.rules = list()
 
@@ -118,12 +126,16 @@ class Parser:
         self._condition_start = None
         self._condition_end = None
         self._rule_comments = list()
+        self._stringnames = set()
+
+        # Adds a dictionary representation of the meta section of a rule
+        self.meta_as_kv = meta_as_kv
 
         self.lexer = lex.lex(module=self, debug=False)
         self.parser = yacc.yacc(module=self, debug=False, outputdir=tempfile.gettempdir())
 
     def clear(self):
-        """Clear all information about previously parsed rules"""
+        """Clear all information about previously parsed rules."""
         self.rules.clear()
 
         self.current_rule.clear()
@@ -144,6 +156,18 @@ class Parser:
         self._condition_start = None
         self._condition_end = None
         self._rule_comments.clear()
+        self._stringnames.clear()
+
+        if self.lexer.lineno > 1:
+            # Per https://ply.readthedocs.io/en/latest/ply.html#panic-mode-recovery
+            #   This discards the entire parsing stack and resets the parser to its
+            #   initial state.
+            self.parser.restart()
+            # Per https://ply.readthedocs.io/en/latest/ply.html#eof-handling
+            #   Be aware that setting more input with the self.lexer.input() method
+            #   does NOT reset the lexer state or the lineno attribute used for
+            #   position tracking.
+            self.lexer.lineno = 1
 
     @staticmethod
     def _set_logging():
@@ -182,14 +206,19 @@ class Parser:
             self.rules.append(self.current_rule)
             logger.debug('Adding Rule: {}'.format(self.current_rule['rule_name']))
             self.current_rule = dict()
+            self._stringnames.clear()
 
         elif element_type == ElementTypes.METADATA_KEY_VALUE:
             key, value = element_value
 
             if 'metadata' not in self.current_rule:
                 self.current_rule['metadata'] = [{key: value}]
+                if self.meta_as_kv:
+                    self.current_rule['metadata_kv'] = {key: value}
             else:
                 self.current_rule['metadata'].append({key: value})
+                if self.meta_as_kv:
+                    self.current_rule['metadata_kv'][key] = value
 
         elif element_type == ElementTypes.STRINGS_KEY_VALUE:
             key, value, string_type = element_value
@@ -278,6 +307,8 @@ class Parser:
 class Plyara(Parser):
     """Define the lexer and the parser rules."""
 
+    STRING_ESCAPE_CHARS = {'"', '\\', 't', 'n', 'x', }
+
     tokens = [
         'BYTESTRING',
         'STRING',
@@ -323,7 +354,7 @@ class Plyara(Parser):
         'FILESIZE_SIZE',
         'NUM',
         'COMMENT',
-        'MCOMMENT'
+        'MCOMMENT',
     ]
 
     reserved = {
@@ -364,7 +395,9 @@ class Plyara(Parser):
         'uint8be': 'UINT8BE',
         'uint16be': 'UINT16BE',
         'uint32be': 'UINT32BE',
-        'xor': 'XOR_MOD'  # XOR string modifier token (from strings section)
+        'xor': 'XOR_MOD',  # XOR string modifier token (from strings section)
+        'base64': 'BASE64',
+        'base64wide': 'BASE64WIDE',
     }
 
     tokens = tokens + list(reserved.values())
@@ -421,14 +454,16 @@ class Plyara(Parser):
 
     @staticmethod
     def t_COMMENT(t):
-        r'(//.*)(?=\n)'
+        r'(//[^\n]*)'
         return t
 
     @staticmethod
     def t_MCOMMENT(t):
-        r'/\*(.|\n|\r\n)*?\*/'
+        r'/\*(.|\n|\r|\r\n)*?\*/'
         if '\r\n' in t.value:
             t.lexer.lineno += t.value.count('\r\n')
+        elif '\r' in t.value:
+            t.lexer.lineno += t.value.count('\r')
         else:
             t.lexer.lineno += t.value.count('\n')
 
@@ -478,9 +513,10 @@ class Plyara(Parser):
         t.lexer.escape = 0
         t.lexer.string_start = t.lexer.lexpos - 1
         t.lexer.begin('STRING')
+        t.lexer.hex_escape = 0
 
-    @staticmethod
-    def t_STRING_value(t):
+    # @staticmethod
+    def t_STRING_value(self, t):
         r'.'
         if t.lexer.escape == 0 and t.value == '"':
             t.type = 'STRING'
@@ -489,10 +525,21 @@ class Plyara(Parser):
 
             return t
 
-        if t.value == '\\' or t.lexer.escape == 1:
+        if t.lexer.escape == 1 and t.value in self.STRING_ESCAPE_CHARS or t.value == '\\':
             t.lexer.escape ^= 1
+            if t.value == 'x':
+                t.lexer.hex_escape = 2
+        elif t.lexer.hex_escape > 0:
+            if t.value.lower() in hexdigits:
+                t.lexer.hex_escape -= 1
+            else:
+                raise ParseTypeError('Invalid hex character: {!r}, at line: {}'.format(t.value, t.lexer.lineno),
+                                     t.lexer.lineno, t.lexer.lexpos)
+        elif t.lexer.escape == 1:
+            raise ParseTypeError('Invalid escape sequence: \\{}, at line: {}'.format(t.value, t.lexer.lineno),
+                                 t.lexer.lineno, t.lexer.lexpos)
 
-    t_STRING_ignore = ' \t\n'
+    t_STRING_ignore = ''
 
     @staticmethod
     def t_STRING_error(t):
@@ -504,7 +551,7 @@ class Plyara(Parser):
         Raises:
             ParseTypeError
         """
-        raise ParseTypeError('Illegal string character: {}, at line: {}'.format(t.value[0], t.lexer.lineno),
+        raise ParseTypeError('Illegal string character: {!r}, at line: {}'.format(t.value[0], t.lexer.lineno),
                              t.lexer.lineno, t.lexer.lexpos)
 
     # Byte string handling
@@ -603,6 +650,7 @@ class Plyara(Parser):
             t.lexer.rexstring_start = t.lexer.lexpos - 1
             t.lexer.begin('REXSTRING')
             t.lexer.escape = 0
+            t.lexer.hex_escape = 0
         else:
             t.type = 'FORWARDSLASH'
 
@@ -610,7 +658,7 @@ class Plyara(Parser):
 
     @staticmethod
     def t_REXSTRING_end(t):
-        r'/(?:[ismx]*)'
+        r'/(?:i?s?)'
         if t.lexer.escape == 0:
             t.type = 'REXSTRING'
             t.value = t.lexer.lexdata[t.lexer.rexstring_start:t.lexer.lexpos]
@@ -623,10 +671,21 @@ class Plyara(Parser):
     @staticmethod
     def t_REXSTRING_value(t):
         r'.'
-        if t.value == '\\' or t.lexer.escape == 1:
+        if t.lexer.escape == 1 or t.value == '\\':
             t.lexer.escape ^= 1
+            if t.value == 'x':
+                t.lexer.hex_escape = 2
+        elif t.lexer.hex_escape > 0:
+            if t.value.lower() in hexdigits:
+                t.lexer.hex_escape -= 1
+            else:
+                raise ParseTypeError('Invalid hex character: {!r}, at line: {}'.format(t.value, t.lexer.lineno),
+                                     t.lexer.lineno, t.lexer.lexpos)
+        elif t.lexer.escape == 1:
+            raise ParseTypeError('Invalid escape sequence: \\{}, at line: {}'.format(t.value, t.lexer.lineno),
+                                 t.lexer.lineno, t.lexer.lexpos)
 
-    t_REXSTRING_ignore = ' \r\n\t'
+    t_REXSTRING_ignore = ''
 
     @staticmethod
     def t_REXSTRING_error(t):
@@ -638,7 +697,7 @@ class Plyara(Parser):
         Raises:
             ParseTypeError
         """
-        raise ParseTypeError('Illegal rexstring character : {}, at line: {}'.format(t.value[0], t.lexer.lineno),
+        raise ParseTypeError('Illegal rexstring character : {!r}, at line: {}'.format(t.value[0], t.lexer.lineno),
                              t.lexer.lineno, t.lexer.lexpos)
 
     @staticmethod
@@ -657,7 +716,7 @@ class Plyara(Parser):
 
     @staticmethod
     def t_STRINGNAME_LENGTH(t):
-        r'![0-9a-zA-Z\-_*]+'
+        r'![0-9a-zA-Z\-_*]*'
         t.value = t.value
 
         return t
@@ -677,7 +736,7 @@ class Plyara(Parser):
         return t
 
     def t_ID(self, t):
-        r'[a-zA-Z_]{1}[a-zA-Z_0-9.]*'
+        r'[a-zA-Z_][a-zA-Z_0-9.]*'
         t.type = self.reserved.get(t.value, 'ID')  # Check for reserved words
 
         return t
@@ -703,7 +762,7 @@ class Plyara(Parser):
         Raises:
             ParseTypeError
         """
-        raise ParseTypeError('Illegal character {} at line {}'.format(t.value[0], t.lexer.lineno),
+        raise ParseTypeError('Illegal character {!r} at line {}'.format(t.value[0], t.lexer.lineno),
                              t.lexer.lineno, t.lexer.lexpos)
 
     # Parsing rules
@@ -728,6 +787,9 @@ class Plyara(Parser):
     def p_rule(self, p):
         '''rule : scopes RULE ID tag_section LBRACE rule_body RBRACE'''
         logger.info('Matched rule: {}'.format(p[3]))
+        if '.' in p[3]:
+            message = 'Invalid rule name {}, on line {}'.format(p[3], p.lineno(1))
+            raise ParseTypeError(message, p.lineno, p.lexpos)
         logger.debug('Rule start: {}, Rule stop: {}'.format(p.lineno(2), p.lineno(7)))
 
         while self._rule_comments:
@@ -836,8 +898,8 @@ class Plyara(Parser):
             match = re.match('"(.*)"', value)
             if match:
                 value = match.group(1)
-        elif value == 'true' or value == 'false':
-            value = bool(distutils.util.strtobool(value))
+        elif value in ('true', 'false'):
+            value = True if value == 'true' else False
         else:
             value = int(value)
         logger.debug('Matched meta kv: {} equals {}'.format(key, value))
@@ -862,38 +924,173 @@ class Plyara(Parser):
         match = re.match('"(.+)"', value)
         if match:
             value = match.group(1)
+        if key != '$' and key in self._stringnames:
+            message = 'Duplicate string name key {} on line {}'.format(key, p.lineno(1))
+            raise ParseTypeError(message, p.lineno, p.lexpos)
+        self._stringnames.add(key)
         logger.debug('Matched strings kv: {} equals {}'.format(key, value))
         self._add_element(ElementTypes.STRINGS_KEY_VALUE, (key, value, string_type, ))
 
+    def p_byte_strings_kv(self, p):
+        '''strings_kv : STRINGNAME EQUALS BYTESTRING
+                      | STRINGNAME EQUALS BYTESTRING comments
+                      | STRINGNAME EQUALS BYTESTRING byte_string_modifiers
+                      | STRINGNAME EQUALS BYTESTRING byte_string_modifiers comments'''
+        self._parse_string_kv(p, StringTypes.BYTE)
+
     def p_text_strings_kv(self, p):
         '''strings_kv : STRINGNAME EQUALS STRING
-                      | STRINGNAME EQUALS STRING string_modifiers'''
+                      | STRINGNAME EQUALS STRING comments
+                      | STRINGNAME EQUALS STRING text_string_modifiers
+                      | STRINGNAME EQUALS STRING text_string_modifiers comments'''
         self._parse_string_kv(p, StringTypes.TEXT)
-
-    def p_byte_strings_kv(self, p):
-        '''strings_kv : STRINGNAME EQUALS BYTESTRING'''
-        self._parse_string_kv(p, StringTypes.BYTE)
 
     def p_regex_strings_kv(self, p):
         '''strings_kv : STRINGNAME EQUALS REXSTRING
                       | STRINGNAME EQUALS REXSTRING comments
-                      | STRINGNAME EQUALS REXSTRING string_modifiers
-                      | STRINGNAME EQUALS REXSTRING string_modifiers comments'''
+                      | STRINGNAME EQUALS REXSTRING regex_string_modifiers
+                      | STRINGNAME EQUALS REXSTRING regex_string_modifiers comments'''
         self._parse_string_kv(p, StringTypes.REGEX)
 
     @staticmethod
-    def p_string_modifers(p):
-        '''string_modifiers : string_modifiers string_modifier
-                            | string_modifier'''
+    def p_text_string_modifiers(p):
+        '''text_string_modifiers : text_string_modifiers text_string_modifier
+                                 | text_string_modifier'''
 
-    def p_string_modifier(self, p):
-        '''string_modifier : NOCASE
-                           | ASCII
-                           | WIDE
-                           | FULLWORD
-                           | XOR_MOD'''
-        logger.debug('Matched a string modifier: {}'.format(p[1]))
-        self._add_element(ElementTypes.STRINGS_MODIFIER, p[1])
+    def p_text_string_modifier(self, p):
+        '''text_string_modifier : NOCASE
+                                | ASCII
+                                | WIDE
+                                | FULLWORD
+                                | XOR_MOD
+                                | XOR_MOD xor_mod_args
+                                | BASE64
+                                | BASE64WIDE
+                                | BASE64 base64_with_args
+                                | BASE64WIDE base64_with_args
+                                | PRIVATE'''
+        mod_str = p[1]
+        has_args = True if len(p) > 2 else False
+        compat_issue = self._check_modifier_compatibility(mod_str, has_args)
+        if compat_issue:
+            message = compat_issue.format(p.lineno(1))
+            raise ParseTypeError(message, p.lineno, p.lexpos)
+
+        if mod_str in self.string_modifiers:
+            message = 'Duplicate string modifier {} on line {}'.format(mod_str, p.lineno(1))
+            raise ParseTypeError(message, p.lineno, p.lexpos)
+
+        if mod_str in self.EXCLUSIVE_TEXT_MODIFIERS:
+            prev_mods = {x for x in self.string_modifiers if isinstance(x, str)}
+            excluded_modifiers = prev_mods & ({mod_str} ^ self.EXCLUSIVE_TEXT_MODIFIERS)
+            if excluded_modifiers:
+                prev_mod_str = excluded_modifiers.pop()
+                message = ('Mutually exclusive string modifier use of {} on line {} after {} usage'
+                           .format(mod_str, p.lineno(1), prev_mod_str))
+                raise ParseTypeError(message, p.lineno, p.lexpos)
+        if self.string_modifiers:
+            # Convert previously created modifiers with args to strings
+            if mod_str.startswith('base64') and isinstance(self.string_modifiers[-1], YaraBase64):
+                if mod_str == 'base64wide':
+                    self.string_modifiers[-1].modifier_name = 'base64wide'
+                    logger.debug('Corrected base64 string modifier to base64wide')
+                self.string_modifiers[-1] = str(self.string_modifiers[-1])
+                return
+            elif mod_str == 'xor' and isinstance(self.string_modifiers[-1], YaraXor):
+                self.string_modifiers[-1] = str(self.string_modifiers[-1])
+                logger.debug('Modified xor string was already added')
+                return
+        self._add_element(ElementTypes.STRINGS_MODIFIER, mod_str)
+        logger.debug('Matched a string modifier: {}'.format(mod_str))
+
+    @staticmethod
+    def p_regex_text_string_modifiers(p):
+        '''regex_string_modifiers : regex_string_modifiers regex_string_modifer
+                                  | regex_string_modifer'''
+
+    def p_regex_string_modifer(self, p):
+        '''regex_string_modifer : NOCASE
+                                | ASCII
+                                | WIDE
+                                | FULLWORD
+                                | PRIVATE'''
+        mod_str = p[1]
+        has_args = True if len(p) > 2 else False
+        compat_issue = self._check_modifier_compatibility(mod_str, has_args)
+        if compat_issue:
+            message = compat_issue.format(p.lineno(1))
+            raise ParseTypeError(message, p.lineno, p.lexpos)
+
+        if mod_str in self.string_modifiers:
+            message = 'Duplicate string modifier {} on line {}'.format(mod_str, p.lineno(1))
+            raise ParseTypeError(message, p.lineno, p.lexpos)
+
+        self._add_element(ElementTypes.STRINGS_MODIFIER, mod_str)
+        logger.debug('Matched a string modifier: {}'.format(mod_str))
+
+    @staticmethod
+    def p_byte_string_modifiers(p):
+        '''byte_string_modifiers : byte_string_modifiers byte_string_modifer
+                                 | byte_string_modifer'''
+
+    def p_byte_string_modifer(self, p):
+        '''byte_string_modifer : PRIVATE'''
+        mod_str = p[1]
+        has_args = True if len(p) > 2 else False
+        compat_issue = self._check_modifier_compatibility(mod_str, has_args)
+        if compat_issue:
+            message = compat_issue.format(p.lineno(1))
+            raise ParseTypeError(message, p.lineno, p.lexpos)
+
+        if mod_str in self.string_modifiers:
+            message = 'Duplicate string modifier {} on line {}'.format(mod_str, p.lineno(1))
+            raise ParseTypeError(message, p.lineno, p.lexpos)
+
+        self._add_element(ElementTypes.STRINGS_MODIFIER, mod_str)
+        logger.debug('Matched a string modifier: {}'.format(mod_str))
+
+    def p_xor_mod_args(self, p):
+        '''xor_mod_args : LPAREN NUM RPAREN
+                         | LPAREN NUM HYPHEN NUM RPAREN
+                         | LPAREN HEXNUM RPAREN
+                         | LPAREN HEXNUM HYPHEN HEXNUM RPAREN
+                         | LPAREN NUM HYPHEN HEXNUM RPAREN
+                         | LPAREN HEXNUM HYPHEN NUM RPAREN'''
+        logger.debug('Matched an xor arg: {}'.format(''.join(p[1:])))
+        mods = [x for x in p if x not in (None, '(', '-', ')')]
+        mod_int_list = []
+        mod_lineidx = set()
+        for i, x in enumerate(mods):
+            mod_int = int(x, 16) if x.startswith('0x') else int(x)
+            if 0 <= mod_int <= 255:
+                mod_int_list.append(mod_int)
+                mod_lineidx.add(i)
+            else:
+                message = 'String modification value {} not between 0-255 on line {}'.format(x, p.lineno(1 + i))
+                raise ParseTypeError(message, p.lineno, p.lexpos)
+        if mod_int_list[0] > mod_int_list[-1]:
+            mod_lineno = list({p.lineno(1 + i) for i in mod_lineidx})
+            mod_lineno.sort()
+            line_no = ' and '.join(str(lno) for lno in mod_lineno)
+            message = 'String modification lower bound exceeds upper bound on line {}'.format(line_no)
+            raise ParseTypeError(message, p.lineno, p.lexpos)
+        else:
+            mod_str_mod = YaraXor(mod_int_list)
+            logger.debug('Matched string modifier(s): {}'.format(mod_str_mod))
+            self._add_element(ElementTypes.STRINGS_MODIFIER, mod_str_mod)
+
+    def p_base64_with_args(self, p):
+        '''base64_with_args : LPAREN STRING RPAREN'''
+        # Remove parens and leading/trailing quotes
+        b64_mod = [x for x in p if x not in (None, '(', ')')][0].strip('"')
+        b64_data, _ = escape_decode(b64_mod)
+        if len(b64_data) != 64:
+            raise Exception("Base64 dictionary length {}, must be 64 characters".format(len(b64_data)))
+        if re.search(rb'(.).*\1', b64_data):
+            raise Exception("Duplicate character in Base64 dictionary")
+        mod_str_mod = YaraBase64(b64_mod)
+        logger.debug('Matched string modifier(s): {}'.format(b64_mod))
+        self._add_element(ElementTypes.STRINGS_MODIFIER, mod_str_mod)
 
     @staticmethod
     def p_comments(p):
@@ -974,6 +1171,10 @@ class Plyara(Parser):
                 | STRINGCOUNT
                 | REXSTRING'''
         logger.debug('Matched a condition term: {}'.format(p[1]))
+        if p[1] == '$':
+            message = 'Potential wrong use of anonymous string on line {}'.format(p.lineno(1))
+            logger.info(message)
+
         self._add_element(ElementTypes.TERM, p[1])
 
     # Error rule for syntax errors
@@ -995,3 +1196,67 @@ class Plyara(Parser):
         else:
             message = 'Unknown text {} for token of type {} on line {}'.format(p.value, p.type, p.lineno)
             raise ParseTypeError(message, p.lineno, p.lexpos)
+
+    def _check_modifier_compatibility(self, string_modifier, modifier_has_args):
+        if string_modifier == 'xor' and self.YARA_VERSION < StrictVersion('3.8.0'):
+            message = ('{} modifier on line {{}} not available in YARA {}'
+                       .format(string_modifier, self.YARA_VERSION))
+            return message
+        if string_modifier == 'xor' and modifier_has_args and self.YARA_VERSION < StrictVersion('3.11.0'):
+            message = ('{} modifier with args on line {{}} not available in YARA {}'
+                       .format(string_modifier, self.YARA_VERSION))
+            return message
+        if string_modifier.startswith('base64') and self.YARA_VERSION < StrictVersion('3.12.0'):
+            message = ('{} modifier on line {{}} not available in YARA {}'
+                       .format(string_modifier, self.YARA_VERSION))
+            return message
+
+
+class YaraXor(str):
+    """YARA xor string modifier."""
+
+    def __init__(self, xor_range=None):
+        """Initialize XOR string modifier."""
+        str.__init__(self)
+        self.modifier_name = 'xor'
+        self.modifier_list = xor_range if xor_range is not None else []
+
+    def __str__(self):
+        """Return the string representation."""
+        if len(self.modifier_list) == 0:
+            return self.modifier_name
+        return '{}({})'.format(
+            self.modifier_name,
+            '-'.join(["{0:#0{1}x}".format(x, 4) for x in self.modifier_list])
+        )
+
+    def __repr__(self):
+        """Return the object representation."""
+        if len(self.modifier_list) == 0:
+            return '{}()'.format(self.__class__.__name__)
+        else:
+            return '{}({})'.format(self.__class__.__name__, self.modifier_list)
+
+
+class YaraBase64(str):
+    """YARA base64 string modifier for easier printing."""
+
+    def __init__(self, modifier_alphabet=None, modifier_name='base64'):
+        """Initialize base64 string modifier."""
+        str.__init__(self)
+        self.modifier_name = 'base64' if modifier_name != 'base64wide' else 'base64wide'
+        self.modifier_alphabet = modifier_alphabet
+
+    def __str__(self):
+        """Return the string representation."""
+        if self.modifier_alphabet is None:
+            return '{}'.format(self.modifier_name)
+        else:
+            return '{}("{}")'.format(self.modifier_name, self.modifier_alphabet)
+
+    def __repr__(self):
+        """Return the object representation."""
+        if self.modifier_alphabet is None:
+            return '{}()'.format(self.__class__.__name__)
+        else:
+            return '{}({})'.format(self.__class__.__name__, repr(self.modifier_alphabet))
