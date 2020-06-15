@@ -292,6 +292,7 @@ class Parser:
         Returns:
             dict: All the parsed components of a YARA rule.
         """
+        # norm = input_string.replace('\r\n', '\n')
         self._raw_input = input_string
         self.parser.parse(input_string, lexer=self.lexer)
 
@@ -448,7 +449,7 @@ class Plyara(Parser):
 
     @staticmethod
     def t_NEWLINE(t):
-        r'(\n|\r|\r\n)+'
+        r'(\n|\r\n)+'
         t.lexer.lineno += len(t.value)
         t.value = t.value
 
@@ -459,11 +460,9 @@ class Plyara(Parser):
 
     @staticmethod
     def t_MCOMMENT(t):
-        r'/\*(.|\n|\r|\r\n)*?\*/'
+        r'/\*(.|\n|\r\n)*?\*/'
         if '\r\n' in t.value:
             t.lexer.lineno += t.value.count('\r\n')
-        elif '\r' in t.value:
-            t.lexer.lineno += t.value.count('\r')
         else:
             t.lexer.lineno += t.value.count('\n')
 

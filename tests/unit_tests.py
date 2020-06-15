@@ -1066,7 +1066,7 @@ class TestYaraRules(unittest.TestCase):
                 raise e
 
     def test_lineno_incremented_by_windows_newlines_in_bytestring(self):
-        with data_dir.joinpath('windows_newline_ruleset.yar').open('r') as fh:
+        with data_dir.joinpath('windows_newline_ruleset_with_error.yar').open('r') as fh:
             inputRules = fh.read()
 
         plyara = Plyara()
@@ -1090,7 +1090,7 @@ class TestYaraRules(unittest.TestCase):
                       'stop_line': 8,
                       'strings': [{'name': '$',
                                    'type': 'byte',
-                                   'value': '{ 00      00 }'}]}]
+                                   'value': '{ 00\n      00 }'}]}]
 
         plyara = Plyara()
         result = plyara.parse_string(inputRules)
