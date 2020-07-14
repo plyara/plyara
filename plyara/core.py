@@ -27,8 +27,6 @@ import string
 import tempfile
 import re
 
-from distutils.version import StrictVersion
-
 import ply.lex as lex
 import ply.yacc as yacc
 
@@ -64,8 +62,6 @@ class StringTypes(enum.Enum):
 
 class Parser:
     """Interpret the output of the parser and produce an alternative representation of YARA rules."""
-
-    YARA_VERSION = StrictVersion('4.0.0')
 
     EXCLUSIVE_TEXT_MODIFIERS = {'nocase', 'xor', 'base64'}
 
@@ -968,11 +964,6 @@ class Plyara(Parser):
                                 | BASE64WIDE base64_with_args
                                 | PRIVATE'''
         mod_str = p[1]
-        has_args = True if len(p) > 2 else False
-        compat_issue = self._check_modifier_compatibility(mod_str, has_args)
-        if compat_issue:
-            message = compat_issue.format(p.lineno(1))
-            raise ParseTypeError(message, p.lineno, p.lexpos)
 
         if mod_str in self.string_modifiers:
             message = 'Duplicate string modifier {} on line {}'.format(mod_str, p.lineno(1))
@@ -1013,11 +1004,6 @@ class Plyara(Parser):
                                 | FULLWORD
                                 | PRIVATE'''
         mod_str = p[1]
-        has_args = True if len(p) > 2 else False
-        compat_issue = self._check_modifier_compatibility(mod_str, has_args)
-        if compat_issue:
-            message = compat_issue.format(p.lineno(1))
-            raise ParseTypeError(message, p.lineno, p.lexpos)
 
         if mod_str in self.string_modifiers:
             message = 'Duplicate string modifier {} on line {}'.format(mod_str, p.lineno(1))
@@ -1034,11 +1020,6 @@ class Plyara(Parser):
     def p_byte_string_modifer(self, p):
         '''byte_string_modifer : PRIVATE'''
         mod_str = p[1]
-        has_args = True if len(p) > 2 else False
-        compat_issue = self._check_modifier_compatibility(mod_str, has_args)
-        if compat_issue:
-            message = compat_issue.format(p.lineno(1))
-            raise ParseTypeError(message, p.lineno, p.lexpos)
 
         if mod_str in self.string_modifiers:
             message = 'Duplicate string modifier {} on line {}'.format(mod_str, p.lineno(1))
@@ -1194,20 +1175,6 @@ class Plyara(Parser):
         else:
             message = 'Unknown text {} for token of type {} on line {}'.format(p.value, p.type, p.lineno)
             raise ParseTypeError(message, p.lineno, p.lexpos)
-
-    def _check_modifier_compatibility(self, string_modifier, modifier_has_args):
-        if string_modifier == 'xor' and self.YARA_VERSION < StrictVersion('3.8.0'):
-            message = ('{} modifier on line {{}} not available in YARA {}'
-                       .format(string_modifier, self.YARA_VERSION))
-            return message
-        if string_modifier == 'xor' and modifier_has_args and self.YARA_VERSION < StrictVersion('3.11.0'):
-            message = ('{} modifier with args on line {{}} not available in YARA {}'
-                       .format(string_modifier, self.YARA_VERSION))
-            return message
-        if string_modifier.startswith('base64') and self.YARA_VERSION < StrictVersion('3.12.0'):
-            message = ('{} modifier on line {{}} not available in YARA {}'
-                       .format(string_modifier, self.YARA_VERSION))
-            return message
 
 
 class YaraXor(str):
