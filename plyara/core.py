@@ -20,14 +20,14 @@ dictionary representation. The goal of this tool is to make it easier to perform
 large sets of YARA rules, such as extracting indicators, updating attributes, and analyzing a corpus. Other applications
 include linters and dependency checkers.
 """
+import codecs
 import enum
 import logging
+import string
 import tempfile
 import re
 
-from codecs import escape_decode
 from distutils.version import StrictVersion
-from string import hexdigits
 
 import ply.lex as lex
 import ply.yacc as yacc
@@ -528,7 +528,7 @@ class Plyara(Parser):
             if t.value == 'x':
                 t.lexer.hex_escape = 2
         elif t.lexer.hex_escape > 0:
-            if t.value.lower() in hexdigits:
+            if t.value.lower() in string.hexdigits:
                 t.lexer.hex_escape -= 1
             else:
                 raise ParseTypeError('Invalid hex character: {!r}, at line: {}'.format(t.value, t.lexer.lineno),
@@ -674,7 +674,7 @@ class Plyara(Parser):
             if t.value == 'x':
                 t.lexer.hex_escape = 2
         elif t.lexer.hex_escape > 0:
-            if t.value.lower() in hexdigits:
+            if t.value.lower() in string.hexdigits:
                 t.lexer.hex_escape -= 1
             else:
                 raise ParseTypeError('Invalid hex character: {!r}, at line: {}'.format(t.value, t.lexer.lineno),
@@ -1081,7 +1081,7 @@ class Plyara(Parser):
         '''base64_with_args : LPAREN STRING RPAREN'''
         # Remove parens and leading/trailing quotes
         b64_mod = [x for x in p if x not in (None, '(', ')')][0].strip('"')
-        b64_data, _ = escape_decode(b64_mod)
+        b64_data, _ = codecs.escape_decode(b64_mod)
         if len(b64_data) != 64:
             raise Exception("Base64 dictionary length {}, must be 64 characters".format(len(b64_data)))
         if re.search(rb'(.).*\1', b64_data):
