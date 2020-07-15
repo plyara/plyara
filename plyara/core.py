@@ -1064,9 +1064,9 @@ class Plyara(Parser):
         b64_mod = [x for x in p if x not in (None, '(', ')')][0].strip('"')
         b64_data, _ = codecs.escape_decode(b64_mod)
         if len(b64_data) != 64:
-            raise Exception("Base64 dictionary length {}, must be 64 characters".format(len(b64_data)))
+            raise Exception('Base64 dictionary length {}, must be 64 characters'.format(len(b64_data)))
         if re.search(rb'(.).*\1', b64_data):
-            raise Exception("Duplicate character in Base64 dictionary")
+            raise Exception('Duplicate character in Base64 dictionary')
         mod_str_mod = YaraBase64(b64_mod)
         logger.debug('Matched string modifier(s): {}'.format(b64_mod))
         self._add_element(ElementTypes.STRINGS_MODIFIER, mod_str_mod)
@@ -1192,7 +1192,7 @@ class YaraXor(str):
             return self.modifier_name
         return '{}({})'.format(
             self.modifier_name,
-            '-'.join(["{0:#0{1}x}".format(x, 4) for x in self.modifier_list])
+            '-'.join(['{0:#0{1}x}'.format(x, 4) for x in self.modifier_list])
         )
 
     def __repr__(self):
