@@ -30,8 +30,6 @@ Plyara leverages the Python module PLY_ for lexing YARA rules.
 This is a community-maintained fork of the `original plyara`_ by 8u1a_. The "plyara" trademark
 is used with permission.
 
-**NOTE:** YARA rules compatible with YARA version 3.11+ are not yet supported. Specifically the `xor()` string modifier.
-
 Installation
 ------------
 
