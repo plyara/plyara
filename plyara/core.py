@@ -65,7 +65,7 @@ class Parser:
 
     EXCLUSIVE_TEXT_MODIFIERS = {'nocase', 'xor', 'base64'}
 
-    COMPARISON_OPERATORS = {'==', '!=', '>', '<', '>=', '<=', }
+    COMPARISON_OPERATORS = {'==', '!=', '>', '<', '>=', '<='}
 
     IMPORT_OPTIONS = {'pe',
                       'elf',
@@ -74,7 +74,7 @@ class Parser:
                       'hash',
                       'math',
                       'dotnet',
-                      'androguard', }
+                      'androguard'}
 
     KEYWORDS = {'all', 'and', 'any', 'ascii', 'at', 'condition',
                 'contains', 'entrypoint', 'false', 'filesize',
@@ -83,9 +83,9 @@ class Parser:
                 'int16be', 'int32be', 'matches', 'meta', 'nocase',
                 'not', 'or', 'of', 'private', 'rule', 'strings',
                 'them', 'true', 'uint8', 'uint16', 'uint32', 'uint8be',
-                'uint16be', 'uint32be', 'wide', 'xor', 'base64', 'base64wide', }
+                'uint16be', 'uint32be', 'wide', 'xor', 'base64', 'base64wide'}
 
-    FUNCTION_KEYWORDS = {'uint8', 'uint16', 'uint32', 'uint8be', 'uint16be', 'uint32be', }
+    FUNCTION_KEYWORDS = {'uint8', 'uint16', 'uint32', 'uint8be', 'uint16be', 'uint32be'}
 
     def __init__(self, console_logging=False, store_raw_sections=True, meta_as_kv=False):
         """Initialize the parser object.
@@ -303,7 +303,7 @@ class Parser:
 class Plyara(Parser):
     """Define the lexer and the parser rules."""
 
-    STRING_ESCAPE_CHARS = {'"', '\\', 't', 'n', 'x', }
+    STRING_ESCAPE_CHARS = {'"', '\\', 't', 'n', 'x'}
 
     tokens = [
         'BYTESTRING',
@@ -350,7 +350,7 @@ class Plyara(Parser):
         'FILESIZE_SIZE',
         'NUM',
         'COMMENT',
-        'MCOMMENT',
+        'MCOMMENT'
     ]
 
     reserved = {
@@ -393,7 +393,7 @@ class Plyara(Parser):
         'uint32be': 'UINT32BE',
         'xor': 'XOR_MOD',  # XOR string modifier token (from strings section)
         'base64': 'BASE64',
-        'base64wide': 'BASE64WIDE',
+        'base64wide': 'BASE64WIDE'
     }
 
     tokens = tokens + list(reserved.values())
