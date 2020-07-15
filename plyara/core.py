@@ -456,8 +456,8 @@ class Plyara(Parser):
     @staticmethod
     def t_MCOMMENT(t):
         r'/\*(.|\n|\r\n)*?\*/'
-        if '\r\n' in t.value:
-            t.lexer.lineno += t.value.count('\r\n')
+        if '\r' in t.value:
+            t.lexer.lineno += t.value.count('\r')
         else:
             t.lexer.lineno += t.value.count('\n')
 
