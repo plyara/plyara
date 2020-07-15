@@ -1101,6 +1101,19 @@ class TestYaraRules(unittest.TestCase):
                 self.assertEqual(6, e.lineno)
                 raise e
 
+    def test_lineno_incremented_by_windows_newlines_in_comment(self):
+        with data_dir.joinpath('windows_newline_ruleset_comment.yar').open('r') as fh:
+            inputRules = fh.read()
+
+        plyara = Plyara()
+
+        with self.assertRaises(ParseTypeError):
+            try:
+                plyara.parse_string(inputRules)
+            except ParseTypeError as e:
+                self.assertEqual(10, e.lineno)
+                raise e
+
     def test_windows_CRNL(self):
         with open('tests/data/windows_newline_ruleset.yar', 'r') as fh:
             inputRules = fh.read()
