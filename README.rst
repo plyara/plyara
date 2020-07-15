@@ -1,20 +1,16 @@
 plyara
 ======
 
-.. image:: https://api.codacy.com/project/badge/Grade/7bd0be1749804f0a8dd3d57f69888f68
-   :alt: Codacy Badge
-   :target: https://app.codacy.com/gh/plyara/plyara?utm_source=github.com&utm_medium=referral&utm_content=plyara/plyara&utm_campaign=Badge_Grade_Dashboard
-
-.. image:: https://travis-ci.org/plyara/plyara.svg?branch=master
-   :target: https://travis-ci.org/plyara/plyara
+.. image:: https://travis-ci.com/plyara/plyara.svg?branch=master
+   :target: https://travis-ci.com/plyara/plyara
    :alt: Build Status
 .. image:: https://readthedocs.org/projects/plyara/badge/?version=latest
    :target: http://plyara.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
-.. image:: https://api.codacy.com/project/badge/Grade/1c234b3d1ff349fa9dea7b4048dbc115
+.. image:: https://api.codacy.com/project/badge/Grade/7bd0be1749804f0a8dd3d57f69888f68
    :target: https://www.codacy.com/app/plyara/plyara
    :alt: Code Health
-.. image:: https://api.codacy.com/project/badge/Coverage/1c234b3d1ff349fa9dea7b4048dbc115
+.. image:: https://api.codacy.com/project/badge/Coverage/7bd0be1749804f0a8dd3d57f69888f68
    :target: https://app.codacy.com/app/plyara/plyara
    :alt: Test Coverage
 .. image:: http://img.shields.io/pypi/v/plyara.svg
