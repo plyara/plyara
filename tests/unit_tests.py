@@ -889,6 +889,20 @@ class TestYaraRules(unittest.TestCase):
         with self.assertRaises(ParseValueError):
             plyara.parse_string(inputRules)
 
+    def test_bytestring_bad_hexchar(self):
+        inputRules = r'''
+        rule sample {
+            strings:
+                $ = { 4D 5X }
+            condition:
+                all of them
+        }
+        '''
+
+        plyara = Plyara()
+        with self.assertRaises(ParseTypeError):
+            plyara.parse_string(inputRules)
+
     def test_rexstring(self):
         inputRules = r'''
         rule testName
