@@ -22,7 +22,7 @@ import concurrent.futures
 import contextlib
 import hashlib
 import io
-from pathlib import Path
+import pathlib
 import sys
 import unittest
 
@@ -36,11 +36,7 @@ from plyara.command_line import main
 
 UNHANDLED_RULE_MSG = 'Unhandled Test Rule: {}'
 
-tests = Path('tests')
-if tests.is_dir():
-    data_dir = tests.joinpath('data')
-else:
-    data_dir = Path('data')
+data_dir = pathlib.Path('tests').joinpath('data')
 
 
 @contextlib.contextmanager
