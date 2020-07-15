@@ -10,7 +10,7 @@ plyara
 .. image:: https://api.codacy.com/project/badge/Grade/7bd0be1749804f0a8dd3d57f69888f68
    :target: https://www.codacy.com/app/plyara/plyara
    :alt: Code Health
-.. image:: https://api.codacy.com/project/badge/Coverage/7bd0be1749804f0a8dd3d57f69888f68
+.. image:: https://api.codacy.com/project/badge/Coverage/1c234b3d1ff349fa9dea7b4048dbc115
    :target: https://app.codacy.com/app/plyara/plyara
    :alt: Test Coverage
 .. image:: http://img.shields.io/pypi/v/plyara.svg
