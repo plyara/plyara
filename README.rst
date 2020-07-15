@@ -1,6 +1,10 @@
 plyara
 ======
 
+.. image:: https://api.codacy.com/project/badge/Grade/7bd0be1749804f0a8dd3d57f69888f68
+   :alt: Codacy Badge
+   :target: https://app.codacy.com/gh/plyara/plyara?utm_source=github.com&utm_medium=referral&utm_content=plyara/plyara&utm_campaign=Badge_Grade_Dashboard
+
 .. image:: https://travis-ci.org/plyara/plyara.svg?branch=master
    :target: https://travis-ci.org/plyara/plyara
    :alt: Build Status
