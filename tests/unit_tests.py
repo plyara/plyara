@@ -1107,12 +1107,8 @@ class TestYaraRules(unittest.TestCase):
 
         plyara = Plyara()
 
-        with self.assertRaises(ParseTypeError):
-            try:
-                plyara.parse_string(inputRules)
-            except ParseTypeError as e:
-                self.assertEqual(10, e.lineno)
-                raise e
+        plyara.parse_string(inputRules)
+        self.assertEqual(plyara.lexer.lineno, 13)
 
     def test_windows_CRNL(self):
         with open('tests/data/windows_newline_ruleset.yar', 'r') as fh:
