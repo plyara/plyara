@@ -982,6 +982,7 @@ class TestYaraRules(unittest.TestCase):
     def test_plyara_script(self):
         test_file_path = data_dir.joinpath('test_file.txt')
 
+        # Without logging
         with captured_output() as (out, err):
             main([str(test_file_path)])
             output = out.getvalue()
@@ -991,6 +992,18 @@ class TestYaraRules(unittest.TestCase):
         self.assertTrue(output_hash in ['9d1991858f1b48b2485a9cb45692bc33c5228fb5acfa877a0d097b1db60052e3',
                                         '18569226a33c2f8f0c43dd0e034a6c05ea38f569adc3ca37d3c975be0d654f06'])
         self.assertEqual(error, str())
+
+        # With logging
+        with captured_output() as (out, err):
+            main(['--log', str(test_file_path)])
+            output = out.getvalue()
+            error = err.getvalue()
+        output_hash = hashlib.sha256(output.encode()).hexdigest()
+        error_hash = hashlib.sha256(error.encode()).hexdigest()
+
+        self.assertTrue(output_hash in ['9d1991858f1b48b2485a9cb45692bc33c5228fb5acfa877a0d097b1db60052e3',
+                                        '18569226a33c2f8f0c43dd0e034a6c05ea38f569adc3ca37d3c975be0d654f06'])
+        self.assertTrue(error_hash in ['4c303175e30f2257cc11ede86e08329815d2c06ada198e32055f0c88b73dda5a'])
 
     def test_raw_condition_contains_all_condition_text(self):
         inputRules = r'''
