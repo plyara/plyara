@@ -448,6 +448,18 @@ class TestRuleParser(unittest.TestCase):
             elif rulename == 'DoubleBackslash':
                 self.assertEqual(kv, [{'name': '$bs', 'value': r'\"\\\\\\\"', 'type': 'text'}])
 
+            elif rulename == 'DoubleQuote':
+                self.assertEqual(kv, [{'name': '$text_string', 'value': r'foobar\"', 'type': 'text'}])
+
+            elif rulename == 'HorizontalTab':
+                self.assertEqual(kv, [{'name': '$text_string', 'value': r'foo\tbar', 'type': 'text'}])
+
+            elif rulename == 'Newline':
+                self.assertEqual(kv, [{'name': '$text_string', 'value': r'foo\nbar', 'type': 'text'}])
+
+            elif rulename == 'HexEscape':
+                self.assertEqual(kv, [{'name': '$text_string', 'value': r'foo\x00bar', 'type': 'text'}])
+
             else:
                 raise AssertionError(UNHANDLED_RULE_MSG.format(rulename))
 

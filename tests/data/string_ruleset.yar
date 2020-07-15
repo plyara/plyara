@@ -127,3 +127,39 @@ rule DoubleBackslash
     condition:
         $bs
 }
+
+rule DoubleQuote
+{
+    strings:
+        $text_string = "foobar\""
+
+    condition:
+       $text_string
+}
+
+rule HorizontalTab
+{
+    strings:
+        $text_string = "foo\tbar"
+
+    condition:
+       $text_string
+}
+
+rule Newline
+{
+    strings:
+        $text_string = "foo\nbar"
+
+    condition:
+       $text_string
+}
+
+rule HexEscape
+{
+    strings:
+        $text_string = "foo\x00bar"
+
+    condition:
+       $text_string
+}
