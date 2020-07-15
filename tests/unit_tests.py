@@ -463,6 +463,20 @@ class TestRuleParser(unittest.TestCase):
             else:
                 raise AssertionError(UNHANDLED_RULE_MSG.format(rulename))
 
+    def test_string_bad_escaped_hex(self):
+        inputRules = r'''
+        rule sample {
+            strings:
+                $ = "foo\xZZbar"
+            condition:
+                all of them
+        }
+        '''
+
+        plyara = Plyara()
+        with self.assertRaises(ParseTypeError):
+            plyara.parse_string(inputRules)
+
     def test_conditions(self):
         with data_dir.joinpath('condition_ruleset.yar').open('r') as fh:
             inputString = fh.read()
