@@ -477,6 +477,20 @@ class TestRuleParser(unittest.TestCase):
         with self.assertRaises(ParseTypeError):
             plyara.parse_string(inputRules)
 
+    def test_string_invalid_escape(self):
+        inputRules = r'''
+        rule sample {
+            strings:
+                $ = "foo\gbar"
+            condition:
+                all of them
+        }
+        '''
+
+        plyara = Plyara()
+        with self.assertRaises(ParseTypeError):
+            plyara.parse_string(inputRules)
+
     def test_conditions(self):
         with data_dir.joinpath('condition_ruleset.yar').open('r') as fh:
             inputString = fh.read()
