@@ -142,6 +142,27 @@ The command-line tool will print valid JSON output when parsing rules::
         }
     ]
 
+Reusing The Parser
+---------
+
+If you want to reuse a single instance of the parser object for efficiency when
+parsing large quantities of rule or rulesets, the new `clear()` method must be
+used. There are two use cases for this new method:
+
+* Adding rules to a previous parsing session resulting in a single output.
+* Clearing everything between discrete parsing sessions (example below).
+
+.. code-block:: python
+
+    rules = list()
+    parser = plyara.Plyara()
+
+    for file in files:
+        with open(file, 'r') as fh:
+            yararules = parser.parse_string(fh.read())
+            rules += yararules
+        parser.clear()
+
 Migration
 ---------
 
