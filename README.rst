@@ -143,7 +143,7 @@ The command-line tool will print valid JSON output when parsing rules::
     ]
 
 Reusing The Parser
----------
+------------------
 
 If you want to reuse a single instance of the parser object for efficiency when
 parsing large quantities of rule or rulesets, the new clear() method must be
