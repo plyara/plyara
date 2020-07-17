@@ -50,7 +50,7 @@ setup(
         'dev': [
             'pycodestyle'
         ]
-    }
+    },
     entry_points={
         'console_scripts': [
             'plyara=plyara.command_line:main',
