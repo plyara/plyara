@@ -19,7 +19,8 @@ text format.
 """
 from functools import singledispatch
 
-from .model import Statements, Rule, Meta, MetaDeclaration, Condition, Boolean
+from .model import Statements, Rule, RuleTypes, RuleType, Tags, Tag, Meta, MetaDeclaration
+from .model import Strings, StringDeclaration, Condition, Boolean, Variable
 
 
 def to_yara(node):
@@ -28,7 +29,7 @@ def to_yara(node):
 
 @singledispatch
 def _to_yara(node):
-    raise RuntimeError(f'Unrecognized node {node}')
+    raise RuntimeError(f'Unrecognized node: {node}')
 
 
 @_to_yara.register(Statements)
@@ -38,19 +39,38 @@ def _(node):
 
 @_to_yara.register(Rule)
 def _(node):
-    pri = f'{node.private_rtbype} ' if node.private_rtype else ''
-    glo = f'{node.global_rtype} ' if node.global_rtype else ''
+    rule_types = f'{_to_yara(node.rule_types)} ' if node.rule_types else ''
     tags = f' : {_to_yara(node.tags)}' if node.tags else ''
     meta = f'    meta:\n        {_to_yara(node.meta)}\n' if node.meta else ''
     strings = f'    strings:\n        {_to_yara(node.strings)}\n' if node.strings else ''
     condition = f'    condition:\n        {_to_yara(node.condition)}\n' if node.condition else ''
 
-    return f'{pri}{glo}rule {node.name}{tags}\n{{\n{meta}{strings}{condition}}}\n'
+    return f'{rule_types}rule {node.name}{tags}\n{{\n{meta}{strings}{condition}}}\n'
+
+
+@_to_yara.register(RuleTypes)
+def _(node):
+    return ' '.join(_to_yara(rule_type) for rule_type in node.rule_types)
+
+
+@_to_yara.register(RuleType)
+def _(node):
+    return f'{node.value}'
+
+
+@_to_yara.register(Tags)
+def _(node):
+    return ' '.join(_to_yara(tag) for tag in node.tags)
+
+
+@_to_yara.register(Tag)
+def _(node):
+    return f'{node.value}'
 
 
 @_to_yara.register(Meta)
 def _(node):
-    return '        '.join(_to_yara(decl) for decl in node.meta_declarations)
+    return '\n        '.join(_to_yara(decl) for decl in node.meta_declarations)
 
 
 @_to_yara.register(MetaDeclaration)
@@ -61,11 +81,35 @@ def _(node):
     elif node.type == 'number':
         return f'{node.name} = {node.value}'
 
-    else:
+    elif node.type:
         if node.value:
             return f'{node.name} = true'
         else:
             return f'{node.name} = false'
+
+    else:
+        raise RuntimeError(f'Unrecognized meta type: {node.type}')
+
+
+@_to_yara.register(Strings)
+def _(node):
+    return '\n        '.join(_to_yara(decl) for decl in node.strings)
+
+
+@_to_yara.register(StringDeclaration)
+def _(node):
+    name = node.name if node.name else ''
+    if node.type == 'text':
+        return f'${name} = "{node.value}"'
+
+    elif node.type == 'hex':
+        return f'${name} = {{ {node.value} }}'
+
+    elif node.type == 'regex':
+        return f'${name} = /{node.value}/'
+
+    else:
+        raise RuntimeError(f'Unrecognized string type: {node.type}')
 
 
 @_to_yara.register(Condition)
@@ -76,3 +120,21 @@ def _(node):
 @_to_yara.register(Boolean)
 def _(node):
     return 'true' if node.value else 'false'
+
+
+@_to_yara.register(Variable)
+def _(node):
+    if node.type == 'variable':
+        return f'${node.name}'
+
+    elif node.type == 'offset':
+        return f'@{node.name}'
+
+    elif node.type == 'count':
+        return f'#{node.name}'
+
+    elif node.type == 'length':
+        return f'!{node.name}'
+
+    else:
+        raise RuntimeError(f'Unrecognized variable type: {node.type}')

@@ -72,17 +72,15 @@ class Import(Statement):
 class Rule(Statement):
     """Main node for a rule including rule typing and contents."""
 
-    def __init__(self, name, private_rtype, global_rtype, tags, meta, strings, condition):
+    def __init__(self, name, rule_types, tags, meta, strings, condition):
         """Initialize Rule class."""
-        assert private_rtype is None or isinstance(private_rtype, str)
-        assert private_rtype is None or isinstance(global_rtype, str)
         assert isinstance(name, str)
+        assert rule_types is None or isinstance(rule_types, RuleTypes)
         assert tags is None or isinstance(tags, Tags)
         assert meta is None or isinstance(meta, Meta)
         assert strings is None or isinstance(strings, Strings)
         assert isinstance(condition, Condition)
-        self.private_rtype = private_rtype
-        self.global_rtype = global_rtype
+        self.rule_types = rule_types
         self.name = name
         self.tags = tags
         self.meta = meta
@@ -91,7 +89,33 @@ class Rule(Statement):
 
     def __repr__(self):
         """Text representation of Rule class."""
-        return f'Rule({self.name}, {self.private_rtype}, {self.global_rtype}, {self.tags}, {self.meta}, {self.strings}, {self.condition})'
+        return f'Rule({self.name}, {self.rule_types}, {self.tags}, {self.meta}, {self.strings}, {self.condition})'
+
+
+class RuleTypes:
+    """Rule types."""
+
+    def __init__(self, rule_types):
+        """Initialize RuleTypes class."""
+        assert all(isinstance(rule_type, RuleType) for rule_type in rule_types)
+        self.rule_types = rule_types
+
+    def __repr__(self):
+        """Text representation of RuleTypes class."""
+        return f'RuleTypes({self.rule_types})'
+
+
+class RuleType(Node):
+    """Single rule type."""
+
+    def __init__(self, value):
+        """Initialize RuleType class."""
+        assert isinstance(value, str)
+        self.value = value
+
+    def __repr__(self):
+        """Text representation of RuleType class."""
+        return f'RuleType({self.value})'
 
 
 class Tags:
@@ -99,7 +123,7 @@ class Tags:
 
     def __init__(self, tags):
         """Initialize Tags class."""
-        assert all(isinstance(tag, Statement) for tag in tags)
+        assert all(isinstance(tag, Tag) for tag in tags)
         self.tags = tags
 
     def __repr__(self):
@@ -152,7 +176,7 @@ class MetaDeclaration(Declaration):
         """Initialize MetaDeclaration class."""
         assert isinstance(name, str)
         assert isinstance(type, str)
-        assert isinstance(value, str)
+        assert isinstance(value, str) or isinstance(value, int) or isinstance(value, bool)
         self.name = name
         self.type = type
         self.value = value
@@ -213,17 +237,30 @@ class StringDeclaration(Declaration):
         self.name = name
         self.type = type
         self.value = value
-        self.modifier
+        self.modifiers = modifiers
 
     def __repr__(self):
         """Text representation of StringDeclaration class."""
-        return f'StringDeclaration({self.name}, {self.type}, {self.value})'
+        return f'StringDeclaration({self.name}, {self.type}, {self.value}, {self.modifiers})'
 
 
 class Expression(Statement):
     """One condition expression."""
 
     pass
+
+
+class Condition(Section):
+    """Condition section of a rule."""
+
+    def __init__(self, conditions):
+        """Initialize Condition class."""
+        assert all(isinstance(expr, Expression) for expr in conditions)
+        self.conditions = conditions
+
+    def __repr__(self):
+        """Text representation of Condition class."""
+        return f'Condition({self.conditions})'
 
 
 class Boolean(Expression):
@@ -239,14 +276,16 @@ class Boolean(Expression):
         return f'Boolean({self.value})'
 
 
-class Condition(Section):
-    """Condition section of a rule."""
+class Variable(Expression):
+    """Variable expression."""
 
-    def __init__(self, conditions):
-        """Initialize Condition class."""
-        assert all(isinstance(expr, Expression) for expr in conditions)
-        self.conditions = conditions
+    def __init__(self, name, type):
+        """Initialize Variable class."""
+        assert isinstance(name, str)
+        assert isinstance(type, str)
+        self.name = name
+        self.type = type
 
     def __repr__(self):
-        """Text representation of Condition class."""
-        return f'Condition({self.conditions})'
+        """Text representation of Variable class."""
+        return f'Variable({self.name}, {self.type})'
