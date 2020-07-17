@@ -5,6 +5,7 @@ python:
 sudo: required
 dist: focal
 install:
+  - pip install pycodestyle
   - python setup.py install
 script:
   - python -m unittest discover
