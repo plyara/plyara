@@ -489,6 +489,7 @@ class TestModelOutputToYARA(unittest.TestCase):
 }
 """
 
+        alpha = r'!@#$%^&*(){}[].,|ABCDEFGHIJ\x09LMNOPQRSTUVWXYZabcdefghijklmnopqrstu'
         model = Statements([
                            Rule('test', None, None, Meta([
                                                          MetaDefinition('description',
@@ -502,7 +503,7 @@ class TestModelOutputToYARA(unittest.TestCase):
                                                                                    'dummy1',
                                                                                    Modifiers([
                                                                                              Modifier('base64',
-                                                                                                      Alphabet(r'!@#$%^&*(){}[].,|ABCDEFGHIJ\x09LMNOPQRSTUVWXYZabcdefghijklmnopqrstu'))
+                                                                                                      Alphabet(alpha))
                                                                                              ]))
                                                                      ]), Condition([
                                                                                    Variable('a', 'variable')
