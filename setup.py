@@ -23,11 +23,15 @@ from setuptools import find_packages, setup
 
 here = pathlib.Path().cwd()
 
+# Get the long description from the README file
+with here.joinpath('README.md').open(encoding='utf-8') as fh:
+    long_description = fh.read()
+
 setup(
     name='plyara',
     version='3.0.0',
     description='Parse YARA rules.',
-    # long_description=long_description,   Add this back, but markdown.
+    long_description=long_description,
     url='https://github.com/plyara/plyara',
     author='plyara Maintainers',
     license='Apache License 2.0',
