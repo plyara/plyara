@@ -1,6 +1,7 @@
 """Unit test prototypes."""
 from plyara.model import Statements, Rule, RuleTypes, RuleType, Tags, Tag, Meta, MetaDefinition
-from plyara.model import Strings, StrDefinition, Condition, Boolean, Variable
+from plyara.model import Strings, StrDefinition, Modifiers, Modifier, Alphabet, Range, Condition
+from plyara.model import Boolean, Variable
 from plyara.export import to_yara
 
 rule1 = """rule test
@@ -342,3 +343,138 @@ print(rule11)
 print(to_yara(model11))
 
 print(rule11 == to_yara(model11))
+
+rule12 = """rule test
+{
+    meta:
+        description = "This is a YARA rule."
+        threat_level = 5
+        in_the_wild = false
+    strings:
+        $a = "dummy1" nocase
+    condition:
+        $a
+}
+"""
+
+model12 = Statements([
+                     Rule('test', None, None, Meta([
+                                                   MetaDefinition('description', 'string', 'This is a YARA rule.'),
+                                                   MetaDefinition('threat_level', 'number', 5),
+                                                   MetaDefinition('in_the_wild', 'boolean', False)
+                                                   ]), Strings([
+                                                               StrDefinition('a', 'text', 'dummy1', Modifiers([
+                                                                                                              Modifier('nocase', None)
+                                                                                                              ]))
+                                                               ]), Condition([
+                                                                             Variable('a', 'variable')
+                                                                             ]))
+                     ])
+
+print(model12)
+print(rule12)
+print(to_yara(model12))
+
+print(rule12 == to_yara(model12))
+
+modifier_keywords = ['nocase', 'wide', 'ascii', 'xor', 'base64', 'base64wide', 'fullword', 'private']
+
+rule_template = """rule test
+{{
+    meta:
+        description = "This is a YARA rule."
+        threat_level = 5
+        in_the_wild = false
+    strings:
+        $a = "dummy1" {}
+    condition:
+        $a
+}}
+"""
+
+for keyword in modifier_keywords:
+    base_model = Statements([
+                            Rule('test', None, None, Meta([
+                                                          MetaDefinition('description', 'string', 'This is a YARA rule.'),
+                                                          MetaDefinition('threat_level', 'number', 5),
+                                                          MetaDefinition('in_the_wild', 'boolean', False)
+                                                          ]), Strings([
+                                                                      StrDefinition('a', 'text', 'dummy1', Modifiers([
+                                                                                                                     Modifier(keyword, None)
+                                                                                                                     ]))
+                                                                      ]), Condition([
+                                                                                    Variable('a', 'variable')
+                                                                                    ]))
+                            ])
+
+    print(base_model)
+    print(rule_template.format(keyword))
+    print(to_yara(base_model))
+
+    print(f'{keyword}: ', rule_template.format(keyword) == to_yara(base_model))
+
+rule13 = """rule test
+{
+    meta:
+        description = "This is a YARA rule."
+        threat_level = 5
+        in_the_wild = false
+    strings:
+        $a = "dummy1" xor(0x01-0xff)
+    condition:
+        $a
+}
+"""
+
+model13 = Statements([
+                     Rule('test', None, None, Meta([
+                                                   MetaDefinition('description', 'string', 'This is a YARA rule.'),
+                                                   MetaDefinition('threat_level', 'number', 5),
+                                                   MetaDefinition('in_the_wild', 'boolean', False)
+                                                   ]), Strings([
+                                                               StrDefinition('a', 'text', 'dummy1', Modifiers([
+                                                                                                              Modifier('xor', Range('01', 'ff'))
+                                                                                                              ]))
+                                                               ]), Condition([
+                                                                             Variable('a', 'variable')
+                                                                             ]))
+                     ])
+
+print(model13)
+print(rule13)
+print(to_yara(model13))
+
+print(rule13 == to_yara(model13))
+
+rule14 = r"""rule test
+{
+    meta:
+        description = "This is a YARA rule."
+        threat_level = 5
+        in_the_wild = false
+    strings:
+        $a = "dummy1" base64("!@#$%^&*(){}[].,|ABCDEFGHIJ\x09LMNOPQRSTUVWXYZabcdefghijklmnopqrstu")
+    condition:
+        $a
+}
+"""
+
+model14 = Statements([
+                     Rule('test', None, None, Meta([
+                                                   MetaDefinition('description', 'string', 'This is a YARA rule.'),
+                                                   MetaDefinition('threat_level', 'number', 5),
+                                                   MetaDefinition('in_the_wild', 'boolean', False)
+                                                   ]), Strings([
+                                                               StrDefinition('a', 'text', 'dummy1', Modifiers([
+                                                                                                              Modifier('base64', Alphabet(r'!@#$%^&*(){}[].,|ABCDEFGHIJ\x09LMNOPQRSTUVWXYZabcdefghijklmnopqrstu'))
+                                                                                                              ]))
+                                                               ]), Condition([
+                                                                             Variable('a', 'variable')
+                                                                             ]))
+                     ])
+
+print(model14)
+print(rule14)
+print(to_yara(model14))
+
+print(rule14 == to_yara(model14))

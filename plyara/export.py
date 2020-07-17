@@ -20,7 +20,8 @@ text format.
 from functools import singledispatch
 
 from .model import Statements, Rule, RuleTypes, RuleType, Tags, Tag, Meta, MetaDefinition
-from .model import Strings, StrDefinition, Condition, Boolean, Variable
+from .model import Strings, StrDefinition, Modifiers, Modifier, Alphabet, Range, Condition
+from .model import Boolean, Variable
 
 
 def to_yara(node):
@@ -99,17 +100,39 @@ def _(node):
 @_to_yara.register(StrDefinition)
 def _(node):
     identifier = node.identifier if node.identifier else ''
+    modifiers = f' {_to_yara(node.modifiers)}' if node.modifiers else ''
     if node.type == 'text':
-        return f'${identifier} = "{node.value}"'
+        return f'${identifier} = "{node.value}"{modifiers}'
 
     elif node.type == 'hex':
-        return f'${identifier} = {{ {node.value} }}'
+        return f'${identifier} = {{ {node.value} }}{modifiers}'
 
     elif node.type == 'regex':
-        return f'${identifier} = /{node.value}/'
+        return f'${identifier} = /{node.value}/{modifiers}'
 
     else:
         raise RuntimeError(f'Unrecognized string type: {node.type}')
+
+
+@_to_yara.register(Modifiers)
+def _(node):
+    return ' '.join(_to_yara(modifier) for modifier in node.modifiers)
+
+
+@_to_yara.register(Modifier)
+def _(node):
+    parameter = f'{_to_yara(node.parameter)}' if node.parameter else ''
+    return f'{node.modifier}{parameter}'
+
+
+@_to_yara.register(Alphabet)
+def _(node):
+    return f'("{node.value}")'
+
+
+@_to_yara.register(Range)
+def _(node):
+    return f'(0x{node.minimum}-0x{node.maximum})'
 
 
 @_to_yara.register(Condition)

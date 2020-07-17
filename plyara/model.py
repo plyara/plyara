@@ -215,14 +215,50 @@ class Modifiers:
 class Modifier(Node):
     """Single modifier."""
 
-    def __init__(self, value):
+    def __init__(self, modifier, parameter):
         """Initialize Modifier class."""
+        assert isinstance(modifier, str)
+        assert parameter is None or isinstance(parameter, Parameter)
+        self.modifier = modifier
+        self.parameter = parameter
+
+    def __repr__(self):
+        """Text representation of Modifier class."""
+        return f'Modifier({self.modifier}, {self.parameter})'
+
+
+class Parameter(Node):
+    """Parameter of a modifier."""
+
+    pass
+
+
+class Alphabet(Parameter):
+    """Custom alphabet parameter for base64 and base64wide modifiers."""
+
+    def __init__(self, value):
+        """Initialize Alphabet class."""
         assert isinstance(value, str)
         self.value = value
 
     def __repr__(self):
-        """Text representation of Modifier class."""
-        return f'Modifier({self.value})'
+        """Text representation of Alphabet class."""
+        return f'Alphabet({self.value})'
+
+
+class Range(Parameter):
+    """Custom range of bytes used with xor modifier."""
+
+    def __init__(self, minimum, maximum):
+        """Initialize Range class."""
+        assert isinstance(minimum, str)
+        assert isinstance(maximum, str)
+        self.minimum = minimum
+        self.maximum = maximum
+
+    def __repr__(self):
+        """Text representation of Range class."""
+        return f'Range({self.minimum}, {self.maximum})'
 
 
 class StrDefinition(Definition):
