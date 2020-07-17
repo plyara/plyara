@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # Copyright 2014 Christian Buia
 # Copyright 2020 plyara Maintainers
 #
@@ -24,15 +23,11 @@ from setuptools import find_packages, setup
 
 here = pathlib.Path().cwd()
 
-# Get the long description from the README file
-with here.joinpath('README.rst').open(encoding='utf-8') as fh:
-    long_description = fh.read()
-
 setup(
     name='plyara',
-    version='2.0.3',
+    version='3.0.0',
     description='Parse YARA rules.',
-    long_description=long_description,
+    # long_description=long_description,   Add this back, but markdown.
     url='https://github.com/plyara/plyara',
     author='plyara Maintainers',
     license='Apache License 2.0',
@@ -43,14 +38,13 @@ setup(
         'Topic :: Software Development :: Build Tools',
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
     ],
     keywords='malware analysis yara',
     packages=find_packages(exclude=['docs', 'examples', 'tests']),
     install_requires=[
-        'ply>=3.11'
+        'sly'
     ],
     entry_points={
         'console_scripts': [

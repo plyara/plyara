@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright 2014 Christian Buia
 # Copyright 2020 plyara Maintainers
 #
