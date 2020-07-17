@@ -149,11 +149,11 @@ def detect_dependencies(rule):
                 continue
 
             # Check for external string variable dependency
-            if ((next_term in ('matches', 'contains', )) or (previous_term in ('matches', 'contains', ))):
+            if next_term in ('matches', 'contains',) or previous_term in ('matches', 'contains',):
                 continue
 
             # Check for external integer variable dependency
-            if ((next_term in Parser.COMPARISON_OPERATORS) or (previous_term in Parser.COMPARISON_OPERATORS)):
+            if next_term in Parser.COMPARISON_OPERATORS or previous_term in Parser.COMPARISON_OPERATORS:
                 continue
 
             # Check for external boolean dependency may not be possible without stripping out valid rule references
@@ -176,6 +176,11 @@ def generate_logic_hash(rule):
     Returns:
         str: Hexdigest SHA-256.
     """
+    import warnings
+    warnings.warn(
+        'Utility generate_logic_hash() may be deprecated, see generate_hash()',
+        PendingDeprecationWarning
+    )
     strings = rule.get('strings', list())
     conditions = rule['condition_terms']
 
@@ -244,6 +249,121 @@ def generate_logic_hash(rule):
 
     logic_hash = hashlib.sha256(''.join(condition_mapping).encode()).hexdigest()
     return logic_hash
+
+
+def generate_hash(rule, secure_hash=None):
+    """Calculate a secure hash of the logic in the rule strings and condition.
+
+    If the resultant hashes are identical for two YARA rules, the rules will match on identical content.
+    The reverse it not true, so two rules that match the same content may not generate the same hash.
+    For example, if a rule only contains one string, the logic for 'any of' and 'all of' generate different hashes,
+    but the rules contain the same logic.
+
+    Args:
+        rule: Dict output from a parsed rule.
+        secure_hash: Alternate hash function, defaults to SHA-256
+
+    Returns:
+        str: hexdigest
+    """
+    condition_string_prefaces = ('$', '!', '#', '@')
+    if secure_hash is None:
+        hf = hashlib.sha256()
+    else:
+        hf = secure_hash()
+
+    strings = rule.get('strings', list())
+    conditions = rule['condition_terms']
+
+    string_values = list()
+    condition_mapping = list()
+    string_mapping = {'anonymous': list(), 'named': dict()}
+
+    for entry in strings:
+        name = entry['name']
+        modifiers = entry.get('modifiers', list())
+
+        if entry['type'] == 'byte':
+            value = re.sub(r'[^-a-fA-F?0-9\[\]{}]+', '', entry['value'])
+        elif entry['type'] == 'text':
+            value = '{}'.format(entry['value'])
+        else:
+            value = entry['value']
+
+        # Handle string modifiers
+        if modifiers:
+            value += '<MODIFIED>{}'.format(' & '.join(sorted(modifiers)))
+
+        if name == '$':
+            # Track anonymous strings
+            string_mapping['anonymous'].append(value)
+        else:
+            # Track named strings
+            string_mapping['named'][name] = value
+
+        # Track all string values
+        string_values.append(value)
+
+    # Sort all string values
+    string_values.sort()
+
+    for condition in conditions:
+        # All string references (sort for consistency)
+        if condition == 'them' or condition == '$*':
+            all_values = '<STRINGVALUE>{}'.format(' | '.join(string_values))
+            if condition == 'them':
+                condition_mapping.extend(['(', all_values, ')'])
+            else:
+                condition_mapping.append(all_values)
+
+        elif condition.startswith('$') and condition != '$':
+            # Exact Match
+            if condition in string_mapping['named']:
+                condition_mapping.append('<STRINGVALUE>{}'.format(string_mapping['named'][condition]))
+            # Wildcard Match
+            elif '*' in condition:
+                wildcard_strings = list()
+                condition = condition.replace('$', r'\$').replace('*', '.*')
+                pattern = re.compile(condition)
+
+                for name, value in string_mapping['named'].items():
+                    if pattern.match(name):
+                        wildcard_strings.append(value)
+
+                wildcard_strings.sort()
+                condition_mapping.append('<STRINGVALUE>{}'.format(' | '.join(wildcard_strings)))
+            else:
+                logger.error('[!] Unhandled String Condition "{}" in "{}"'.format(condition, ' '.join(conditions)))
+
+        # Count Match
+        elif condition[:1] in condition_string_prefaces and condition not in ('#', '!='):
+            symbol = condition[:1]
+            condition = '${}'.format(condition[1:])
+            if symbol == '#':
+                symbol_type = 'COUNTOFSTRING'
+            elif symbol == '@':
+                symbol_type = 'POSITIONOFSTRING'
+            elif symbol == '!':
+                symbol_type = 'LENGTHOFSTRING'
+            elif symbol == condition == '$':
+                symbol_type = 'ANONYMOUSSTRING'
+            else:
+                symbol_type = 'UNKNOWN'
+
+            if condition in string_mapping['named']:
+                condition_mapping.append('<{}>{}'.format(symbol_type, string_mapping['named'][condition]))
+            else:
+                condition_mapping.append('<{}>{}'.format(symbol_type, condition))
+                logger.error('[!] Unhandled {} Condition "{}" in "{}"'.format(
+                    symbol_type, symbol, ' '.join(conditions))
+                )
+
+        else:
+            condition_mapping.append(condition)
+    hf.update(''.join(condition_mapping).encode())
+    hexdigest = hf.hexdigest()
+
+    return hexdigest
 
 
 def rebuild_yara_rule(rule, condition_indents=False):
