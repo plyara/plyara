@@ -1,4 +1,6 @@
 # Plyara
+[![Build Status](https://travis-ci.com/plyara/plyara.svg?branch=prep-3.0)](https://travis-ci.com/plyara/plyara)
+
 This is the 3.0.0 development branch of Plyara. The goal is to implement `plyara` using SLY and best practices.
 
 To install this package in development mode, please use the following command:
