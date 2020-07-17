@@ -1263,6 +1263,19 @@ class TestGithubIssues(unittest.TestCase):
 
         self.assertEqual(result, list())
 
+    # Reference: https://github.com/plyara/plyara/issues/99
+    def issue_99(self):
+        rules = list()
+        plyara = Plyara()
+
+        for file in data_dir.glob('issue99*.yar'):
+            with open(file, 'r') as fh:
+                yararules = plyara.parse_string(fh.read())
+                self.assertEqual(len(yararules), 1)
+                rules += yararules
+            plyara.clear()
+        self.assertEqual(len(rules), 2)
+
 
 if __name__ == '__main__':
     unittest.main()
