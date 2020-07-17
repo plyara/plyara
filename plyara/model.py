@@ -170,10 +170,10 @@ class Meta(Section):
 
 
 class MetaDefinition(Definition):
-    """Declares one value of metadata."""
+    """Defines one value of metadata."""
 
     def __init__(self, identifier, type, value):
-        """Initialize MetaDeclaration class."""
+        """Initialize MetaDefinition class."""
         assert isinstance(identifier, str)
         assert isinstance(type, str)
         assert isinstance(value, str) or isinstance(value, int) or isinstance(value, bool)
@@ -182,8 +182,8 @@ class MetaDefinition(Definition):
         self.value = value
 
     def __repr__(self):
-        """Text representation of MetaDeclaration class."""
-        return f'MetaDeclaration({self.identifier}, {self.type}, {self.value})'
+        """Text representation of MetaDefinition class."""
+        return f'MetaDefinition({self.identifier}, {self.type}, {self.value})'
 
 
 class Strings(Section):
@@ -262,7 +262,7 @@ class Range(Parameter):
 
 
 class StrDefinition(Definition):
-    """Declares one string."""
+    """Defines one string."""
 
     def __init__(self, identifier, type, value, modifiers):
         """Initialize StrDefinition class."""
