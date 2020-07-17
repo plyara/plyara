@@ -30,10 +30,17 @@ class Statement(Node):
     pass
 
 
-class Expression(Statement):
-    """Used in conditions and evaluates to a number or string."""
+class Statements:
+    """Basically a list of statements making up a ruleset."""
 
-    pass
+    def __init__(self, statements):
+        """Initialize Statements class."""
+        assert all(isinstance(stmt, Statement) for stmt in statements)
+        self.statements = statements
+
+    def __repr__(self):
+        """Text representation of Statements class."""
+        return f'Statements({self.statements})'
 
 
 class Include(Statement):
@@ -65,7 +72,7 @@ class Import(Statement):
 class Rule(Statement):
     """Main node for a rule including rule typing and contents."""
 
-    def __init__(self, private_rtype, global_rtype, name, tags, meta, strings, condition):
+    def __init__(self, name, private_rtype, global_rtype, tags, meta, strings, condition):
         """Initialize Rule class."""
         assert private_rtype is None or isinstance(private_rtype, str)
         assert private_rtype is None or isinstance(global_rtype, str)
@@ -84,7 +91,7 @@ class Rule(Statement):
 
     def __repr__(self):
         """Text representation of Rule class."""
-        return f'Rule({self.private_rtype}, {self.global_rtype}, {self.name}, {self.tags}, {self.meta}, {self.strings}, {self.condition})'
+        return f'Rule({self.name}, {self.private_rtype}, {self.global_rtype}, {self.tags}, {self.meta}, {self.strings}, {self.condition})'
 
 
 class Tags:
@@ -100,7 +107,7 @@ class Tags:
         return f'Tags({self.tags})'
 
 
-class Tag:
+class Tag(Node):
     """Single rule tag."""
 
     def __init__(self, value):
@@ -113,7 +120,7 @@ class Tag:
         return f'Tag({self.value})'
 
 
-class Section(Node):
+class Section:
     """Sections of a rule include meta, strings, and condition. Condition is required."""
 
     pass
@@ -142,6 +149,7 @@ class MetaDeclaration(Declaration):
     """Declares one value of metadata."""
 
     def __init__(self, name, type, value):
+        """Initialize MetaDeclaration class."""
         assert isinstance(name, str)
         assert isinstance(type, str)
         assert isinstance(value, str)
@@ -150,6 +158,7 @@ class MetaDeclaration(Declaration):
         self.value = value
 
     def __repr__(self):
+        """Text representation of MetaDeclaration class."""
         return f'MetaDeclaration({self.name}, {self.type}, {self.value})'
 
 
@@ -166,19 +175,68 @@ class Strings(Section):
         return f'Strings({self.strings})'
 
 
-class StringDeclaration(Declaration):
-    """Declares one string."""
+class Modifiers:
+    """String modifiers."""
 
-    def __init__(self, name, type, value):
-        assert isinstance(name, str)
-        assert isinstance(type, str)
+    def __init__(self, modifiers):
+        """Initialize Modifiers class."""
+        assert all(isinstance(mod, Modifier) for mod in modifiers)
+        self.modifiers = modifiers
+
+    def __repr__(self):
+        """Text representation of Modifiers class."""
+        return f'Modifiers({self.modifiers})'
+
+
+class Modifier(Node):
+    """Single modifier."""
+
+    def __init__(self, value):
+        """Initialize Modifier class."""
         assert isinstance(value, str)
-        self.name = name
-        self.type = type
         self.value = value
 
     def __repr__(self):
+        """Text representation of Modifier class."""
+        return f'Modifier({self.value})'
+
+
+class StringDeclaration(Declaration):
+    """Declares one string."""
+
+    def __init__(self, name, type, value, modifiers):
+        """Initialize StringDeclaration class."""
+        assert isinstance(name, str)
+        assert isinstance(type, str)
+        assert isinstance(value, str)
+        assert modifiers is None or isinstance(modifiers, Modifiers)
+        self.name = name
+        self.type = type
+        self.value = value
+        self.modifier
+
+    def __repr__(self):
+        """Text representation of StringDeclaration class."""
         return f'StringDeclaration({self.name}, {self.type}, {self.value})'
+
+
+class Expression(Statement):
+    """One condition expression."""
+
+    pass
+
+
+class Boolean(Expression):
+    """Boolean expression."""
+
+    def __init__(self, value):
+        """Initialize Boolean class."""
+        assert isinstance(value, bool)
+        self.value = value
+
+    def __repr__(self):
+        """Text representation of Boolean class."""
+        return f'Boolean({self.value})'
 
 
 class Condition(Section):
