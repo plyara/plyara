@@ -1,6 +1,6 @@
 """Unit test prototypes."""
-from plyara.model import Statements, Rule, RuleTypes, RuleType, Tags, Tag, Meta, MetaDeclaration
-from plyara.model import Strings, StringDeclaration, Condition, Boolean, Variable
+from plyara.model import Statements, Rule, RuleTypes, RuleType, Tags, Tag, Meta, MetaDefinition
+from plyara.model import Strings, StrDefinition, Condition, Boolean, Variable
 from plyara.export import to_yara
 
 rule1 = """rule test
@@ -33,7 +33,7 @@ rule2_1 = """rule test
 
 model2_1 = Statements([
                       Rule('test', None, None, Meta([
-                                                    MetaDeclaration('description', 'string', 'This is a YARA rule.')
+                                                    MetaDefinition('description', 'string', 'This is a YARA rule.')
                                                     ]), None, Condition([
                                                                         Boolean(False)
                                                                         ]))
@@ -57,8 +57,8 @@ rule2_2 = """rule test
 
 model2_2 = Statements([
                       Rule('test', None, None, Meta([
-                                                    MetaDeclaration('description', 'string', 'This is a YARA rule.'),
-                                                    MetaDeclaration('threat_level', 'number', 5)
+                                                    MetaDefinition('description', 'string', 'This is a YARA rule.'),
+                                                    MetaDefinition('threat_level', 'number', 5)
                                                     ]), None, Condition([
                                                                         Boolean(False)
                                                                         ]))
@@ -83,9 +83,9 @@ rule2_3 = """rule test
 
 model2_3 = Statements([
                       Rule('test', None, None, Meta([
-                                                    MetaDeclaration('description', 'string', 'This is a YARA rule.'),
-                                                    MetaDeclaration('threat_level', 'number', 5),
-                                                    MetaDeclaration('in_the_wild', 'boolean', False)
+                                                    MetaDefinition('description', 'string', 'This is a YARA rule.'),
+                                                    MetaDefinition('threat_level', 'number', 5),
+                                                    MetaDefinition('in_the_wild', 'boolean', False)
                                                     ]), None, Condition([
                                                                         Boolean(False)
                                                                         ]))
@@ -110,7 +110,7 @@ model3 = Statements([
                     Rule('test', RuleTypes([
                                            RuleType('private')
                                            ]), None, Meta([
-                                                          MetaDeclaration('description', 'string', 'This is a YARA rule.')
+                                                          MetaDefinition('description', 'string', 'This is a YARA rule.')
                                                           ]), None, Condition([
                                                                               Boolean(False)
                                                                               ]))
@@ -135,7 +135,7 @@ model4 = Statements([
                     Rule('test', RuleTypes([
                                            RuleType('global')
                                            ]), None, Meta([
-                                                          MetaDeclaration('description', 'string', 'This is a YARA rule.')
+                                                          MetaDefinition('description', 'string', 'This is a YARA rule.')
                                                           ]), None, Condition([
                                                                               Boolean(False)
                                                                               ]))
@@ -161,7 +161,7 @@ model5 = Statements([
                                            RuleType('private'),
                                            RuleType('global'),
                                            ]), None, Meta([
-                                                          MetaDeclaration('description', 'string', 'This is a YARA rule.')
+                                                          MetaDefinition('description', 'string', 'This is a YARA rule.')
                                                           ]), None, Condition([
                                                                               Boolean(False)
                                                                               ]))
@@ -187,7 +187,7 @@ model6 = Statements([
                                            RuleType('global'),
                                            RuleType('private'),
                                            ]), None, Meta([
-                                                          MetaDeclaration('description', 'string', 'This is a YARA rule.')
+                                                          MetaDefinition('description', 'string', 'This is a YARA rule.')
                                                           ]), None, Condition([
                                                                               Boolean(False)
                                                                               ]))
@@ -212,7 +212,7 @@ model7 = Statements([
                     Rule('test', None, Tags([
                                             Tag('OneTag')
                                             ]), Meta([
-                                                     MetaDeclaration('description', 'string', 'This is a YARA rule.')
+                                                     MetaDefinition('description', 'string', 'This is a YARA rule.')
                                                      ]), None, Condition([
                                                                          Boolean(False)
                                                                          ]))
@@ -238,7 +238,7 @@ model8 = Statements([
                                             Tag('OneTag'),
                                             Tag('TwoTag')
                                             ]), Meta([
-                                                     MetaDeclaration('description', 'string', 'This is a YARA rule.')
+                                                     MetaDefinition('description', 'string', 'This is a YARA rule.')
                                                      ]), None, Condition([
                                                                          Boolean(False)
                                                                          ]))
@@ -265,11 +265,11 @@ rule9 = """rule test
 
 model9 = Statements([
                     Rule('test', None, None, Meta([
-                                                  MetaDeclaration('description', 'string', 'This is a YARA rule.'),
-                                                  MetaDeclaration('threat_level', 'number', 5),
-                                                  MetaDeclaration('in_the_wild', 'boolean', False)
+                                                  MetaDefinition('description', 'string', 'This is a YARA rule.'),
+                                                  MetaDefinition('threat_level', 'number', 5),
+                                                  MetaDefinition('in_the_wild', 'boolean', False)
                                                   ]), Strings([
-                                                              StringDeclaration('a', 'text', 'dummy1', None)
+                                                              StrDefinition('a', 'text', 'dummy1', None)
                                                               ]), Condition([
                                                                             Variable('a', 'variable')
                                                                             ]))
@@ -296,11 +296,11 @@ rule10 = """rule test
 
 model10 = Statements([
                      Rule('test', None, None, Meta([
-                                                   MetaDeclaration('description', 'string', 'This is a YARA rule.'),
-                                                   MetaDeclaration('threat_level', 'number', 5),
-                                                   MetaDeclaration('in_the_wild', 'boolean', False)
+                                                   MetaDefinition('description', 'string', 'This is a YARA rule.'),
+                                                   MetaDefinition('threat_level', 'number', 5),
+                                                   MetaDefinition('in_the_wild', 'boolean', False)
                                                    ]), Strings([
-                                                               StringDeclaration('a', 'hex', '4D 5A', None)
+                                                               StrDefinition('a', 'hex', '4D 5A', None)
                                                                ]), Condition([
                                                                              Variable('a', 'variable')
                                                                              ]))
@@ -327,11 +327,11 @@ rule11 = """rule test
 
 model11 = Statements([
                      Rule('test', None, None, Meta([
-                                                   MetaDeclaration('description', 'string', 'This is a YARA rule.'),
-                                                   MetaDeclaration('threat_level', 'number', 5),
-                                                   MetaDeclaration('in_the_wild', 'boolean', False)
+                                                   MetaDefinition('description', 'string', 'This is a YARA rule.'),
+                                                   MetaDefinition('threat_level', 'number', 5),
+                                                   MetaDefinition('in_the_wild', 'boolean', False)
                                                    ]), Strings([
-                                                               StringDeclaration('a', 'regex', 'md5: [0-9a-fA-F]{32}', None)
+                                                               StrDefinition('a', 'regex', 'md5: [0-9a-fA-F]{32}', None)
                                                                ]), Condition([
                                                                              Variable('a', 'variable')
                                                                              ]))

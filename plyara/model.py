@@ -72,16 +72,16 @@ class Import(Statement):
 class Rule(Statement):
     """Main node for a rule including rule typing and contents."""
 
-    def __init__(self, name, rule_types, tags, meta, strings, condition):
+    def __init__(self, identifier, rule_types, tags, meta, strings, condition):
         """Initialize Rule class."""
-        assert isinstance(name, str)
+        assert isinstance(identifier, str)
         assert rule_types is None or isinstance(rule_types, RuleTypes)
         assert tags is None or isinstance(tags, Tags)
         assert meta is None or isinstance(meta, Meta)
         assert strings is None or isinstance(strings, Strings)
         assert isinstance(condition, Condition)
         self.rule_types = rule_types
-        self.name = name
+        self.identifier = identifier
         self.tags = tags
         self.meta = meta
         self.strings = strings
@@ -89,7 +89,7 @@ class Rule(Statement):
 
     def __repr__(self):
         """Text representation of Rule class."""
-        return f'Rule({self.name}, {self.rule_types}, {self.tags}, {self.meta}, {self.strings}, {self.condition})'
+        return f'Rule({self.identifier}, {self.rule_types}, {self.tags}, {self.meta}, {self.strings}, {self.condition})'
 
 
 class RuleTypes:
@@ -150,7 +150,7 @@ class Section:
     pass
 
 
-class Declaration(Statement):
+class Definition(Statement):
     """Used in both meta and string sections of a rule."""
 
     pass
@@ -159,31 +159,31 @@ class Declaration(Statement):
 class Meta(Section):
     """Meta section of a rule."""
 
-    def __init__(self, meta_declarations):
+    def __init__(self, definitions):
         """Initialize Meta class."""
-        assert all(isinstance(decl, Declaration) for decl in meta_declarations)
-        self.meta_declarations = meta_declarations
+        assert all(isinstance(definition, Definition) for definition in definitions)
+        self.definitions = definitions
 
     def __repr__(self):
         """Text representation of Meta class."""
-        return f'Meta({self.meta_declarations})'
+        return f'Meta({self.definitions})'
 
 
-class MetaDeclaration(Declaration):
+class MetaDefinition(Definition):
     """Declares one value of metadata."""
 
-    def __init__(self, name, type, value):
+    def __init__(self, identifier, type, value):
         """Initialize MetaDeclaration class."""
-        assert isinstance(name, str)
+        assert isinstance(identifier, str)
         assert isinstance(type, str)
         assert isinstance(value, str) or isinstance(value, int) or isinstance(value, bool)
-        self.name = name
+        self.identifier = identifier
         self.type = type
         self.value = value
 
     def __repr__(self):
         """Text representation of MetaDeclaration class."""
-        return f'MetaDeclaration({self.name}, {self.type}, {self.value})'
+        return f'MetaDeclaration({self.identifier}, {self.type}, {self.value})'
 
 
 class Strings(Section):
@@ -191,7 +191,7 @@ class Strings(Section):
 
     def __init__(self, strings):
         """Initialize Strings class."""
-        assert all(isinstance(decl, Declaration) for decl in strings)
+        assert all(isinstance(definition, Definition) for definition in strings)
         self.strings = strings
 
     def __repr__(self):
@@ -225,23 +225,23 @@ class Modifier(Node):
         return f'Modifier({self.value})'
 
 
-class StringDeclaration(Declaration):
+class StrDefinition(Definition):
     """Declares one string."""
 
-    def __init__(self, name, type, value, modifiers):
-        """Initialize StringDeclaration class."""
-        assert isinstance(name, str)
+    def __init__(self, identifier, type, value, modifiers):
+        """Initialize StrDefinition class."""
+        assert isinstance(identifier, str)
         assert isinstance(type, str)
         assert isinstance(value, str)
         assert modifiers is None or isinstance(modifiers, Modifiers)
-        self.name = name
+        self.identifier = identifier
         self.type = type
         self.value = value
         self.modifiers = modifiers
 
     def __repr__(self):
-        """Text representation of StringDeclaration class."""
-        return f'StringDeclaration({self.name}, {self.type}, {self.value}, {self.modifiers})'
+        """Text representation of StrDefinition class."""
+        return f'StrDefinition({self.identifier}, {self.type}, {self.value}, {self.modifiers})'
 
 
 class Expression(Statement):
@@ -279,13 +279,13 @@ class Boolean(Expression):
 class Variable(Expression):
     """Variable expression."""
 
-    def __init__(self, name, type):
+    def __init__(self, identifier, type):
         """Initialize Variable class."""
-        assert isinstance(name, str)
+        assert isinstance(identifier, str)
         assert isinstance(type, str)
-        self.name = name
+        self.identifier = identifier
         self.type = type
 
     def __repr__(self):
         """Text representation of Variable class."""
-        return f'Variable({self.name}, {self.type})'
+        return f'Variable({self.identifier}, {self.type})'
