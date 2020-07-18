@@ -66,6 +66,7 @@ class TestDocStyle(BaseTest):
 
     def test_plyara_docstrings(self):
         """Test that plyara docstrings conforms to PEP-257."""
+        # Only checks in the first directory. If submodules added, add a new check for that directory.
         for file in self.package_dir.joinpath('plyara').glob('*.py'):
             if file.name == '__init__.py':
                 process = subprocess.run(['pydocstyle', '--ignore=D104', file], capture_output=True)
