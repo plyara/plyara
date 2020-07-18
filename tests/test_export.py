@@ -849,7 +849,9 @@ class TestErrorsOutputToYARA(unittest.TestCase):
         class Unknown:
             """Completely unknown class."""
 
-            pass
+            def __init__(self):
+                """Initialize empty class."""
+                pass
 
         model = Unknown()
 
