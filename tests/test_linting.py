@@ -2,7 +2,7 @@
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+# You may obtain a copy of the License atlinter
 #
 #     http://www.apache.org/licenses/LICENSE-2.0
 #
@@ -13,16 +13,17 @@
 # limitations under the License.
 """Unit tests for code style and errors."""
 import pathlib
+import subprocess
 import unittest
 
 import pycodestyle
 
 
-class TestCodeFormat(unittest.TestCase):
-    """Test formatting of code using pycodestyle linter."""
+class BaseTest(unittest.TestCase):
+    """Bass class for all unit tests that check files in package directories."""
 
     def setUp(self):
-        """Setup the test fixture."""
+        """Initialize the test fixture."""
         self.style = pycodestyle.StyleGuide(max_line_length=120)
 
         # Find the current working directory and set path object to package directory.
@@ -34,11 +35,44 @@ class TestCodeFormat(unittest.TestCase):
         else:
             raise FileNotFoundError('Unable to locate package directory')
 
+
+class TestCodeStyle(BaseTest):
+    """Test formatting of code using pycodestyle linter."""
+
     def test_tests_conformance(self):
         """Test that unit test code conforms to PEP-8."""
         result = self.style.check_files(self.package_dir.joinpath('tests').glob('*.py'))
 
         self.assertEqual(result.total_errors, 0, 'Found code style errors (and warnings).')
+
+    def test_plyara_conformance(self):
+        """Test that plyara code conforms to PEP-8."""
+        self.assertEqual(self.style.input_dir(str(self.package_dir.joinpath('plyara'))),
+                         None, 'Found code style errors (and warnings).')
+
+
+class TestDocStyle(BaseTest):
+    """Test documentation string style."""
+
+    def test_tests_docstrings(self):
+        """Test that unit test docstrings conforms to PEP-257."""
+        for file in self.package_dir.joinpath('tests').glob('*.py'):
+            if file.name == '__init__.py':
+                process = subprocess.run(['pydocstyle', '--ignore=D104', file], capture_output=True)
+            else:
+                process = subprocess.run(['pydocstyle', file], capture_output=True)
+
+            self.assertFalse(process.returncode, process.stdout)
+
+    def test_plyara_docstrings(self):
+        """Test that plyara docstrings conforms to PEP-257."""
+        for file in self.package_dir.joinpath('plyara').glob('*.py'):
+            if file.name == '__init__.py':
+                process = subprocess.run(['pydocstyle', '--ignore=D104', file], capture_output=True)
+            else:
+                process = subprocess.run(['pydocstyle', file], capture_output=True)
+
+            self.assertFalse(process.returncode, process.stdout)
 
 
 if __name__ == '__main__':

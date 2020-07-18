@@ -25,6 +25,7 @@ from .model import Boolean, Variable
 
 
 def to_yara(node):
+    """Convert data model to valid YARA rules."""
     return _to_yara(node)
 
 

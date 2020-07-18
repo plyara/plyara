@@ -52,7 +52,8 @@ setup(
     ],
     extras_require={
         'dev': [
-            'pycodestyle'
+            'pycodestyle',
+            'pydocstyle'
         ]
     },
     entry_points={
