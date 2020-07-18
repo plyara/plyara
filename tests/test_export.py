@@ -755,5 +755,61 @@ rule test
         self.assertEqual(rule, to_yara(model))
 
 
+class TestErrorsOutputToYARA(unittest.TestCase):
+    """Tests error conditions in the output to valid YARA rules."""
+
+    def test_unknown_obj(self):
+        """Test single dispatch of completely unknown class."""
+
+        class Unknown:
+            """Completely unknown class."""
+
+            pass
+
+        model = Unknown()
+
+        with self.assertRaises(RuntimeError):
+            to_yara(model)
+
+    def test_unknown_meta_type(self):
+        """Test a meta section entry of unknown type."""
+        model = Ruleset([
+                        Rule('test', None, None, Meta([
+                                                      MetaDefinition('description', 'foo', 'This is a YARA rule.')
+                                                      ]), None, Condition([
+                                                                          Boolean(False)
+                                                                          ]))
+                        ])
+
+        with self.assertRaises(RuntimeError):
+            to_yara(model)
+
+    def test_unknown_string_type(self):
+        """Test a strings section entry of unknown type."""
+        model = Ruleset([
+                        Rule('test', None, None, None, Strings([
+                                                               StrDefinition('a', 'foo', 'dummy1', None)
+                                                               ]), Condition([
+                                                                             Boolean(False)
+                                                                             ]))
+                        ])
+
+        with self.assertRaises(RuntimeError):
+            to_yara(model)
+
+    def test_unknown_variable_type(self):
+        """Test a condition section variable of unknown type."""
+        model = Ruleset([
+                        Rule('test', None, None, None, Strings([
+                                                               StrDefinition('a', 'text', 'dummy1', None)
+                                                               ]), Condition([
+                                                                             Variable('a', 'foo')
+                                                                             ]))
+                        ])
+
+        with self.assertRaises(RuntimeError):
+            to_yara(model)
+
+
 if __name__ == '__main__':
     unittest.main(exit=False, verbosity=2)
