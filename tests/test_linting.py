@@ -76,5 +76,24 @@ class TestDocStyle(BaseTest):
             self.assertFalse(process.returncode, process.stdout)
 
 
+class TestPyflakes(BaseTest):
+    """Test pyflakes."""
+
+    def test_tests_pyflakes(self):
+        """Test unit test pyflakes."""
+        for file in self.package_dir.joinpath('tests').glob('*.py'):
+            process = subprocess.run(['pyflakes', file], capture_output=True)
+
+            self.assertFalse(process.returncode, process.stdout)
+
+    def test_plyara_pyflakes(self):
+        """Test plyara pyflakes."""
+        # Only checks in the first directory. If submodules added, add a new check for that directory.
+        for file in self.package_dir.joinpath('plyara').glob('*.py'):
+            process = subprocess.run(['pyflakes', file], capture_output=True)
+
+            self.assertFalse(process.returncode, process.stdout)
+
+
 if __name__ == '__main__':
     unittest.main(exit=False, verbosity=2)
