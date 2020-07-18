@@ -21,21 +21,22 @@ import pycodestyle
 class TestCodeFormat(unittest.TestCase):
     """Test formatting of code using pycodestyle linter."""
 
-    def test_conformance(self):
-        """Test that code conforms to PEP-8."""
-        style = pycodestyle.StyleGuide(quiet=True, max_line_length=120)
+    def setUp(self):
+        """Setup the test fixture."""
+        self.style = pycodestyle.StyleGuide(max_line_length=120)
 
         # Find the current working directory and set path object to package directory.
         cwd = pathlib.Path().cwd()
         if cwd.name == 'tests':
-            package_dir = cwd.parent
+            self.package_dir = cwd.parent
         elif cwd.name == 'plyara':
-            package_dir = cwd
+            self.package_dir = cwd
         else:
             raise FileNotFoundError('Unable to locate package directory')
 
-        # Test all unit test python files.
-        result = style.check_files(package_dir.joinpath('tests').glob('*.py'))
+    def test_tests_conformance(self):
+        """Test that unit test code conforms to PEP-8."""
+        result = self.style.check_files(self.package_dir.joinpath('tests').glob('*.py'))
 
         self.assertEqual(result.total_errors, 0, 'Found code style errors (and warnings).')
 
