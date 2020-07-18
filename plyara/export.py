@@ -98,7 +98,7 @@ def _(node):
     elif node.type == 'number':
         return f'{node.identifier} = {node.value}'
 
-    elif node.type:
+    elif node.type == 'boolean':
         if node.value:
             return f'{node.identifier} = true'
         else:
