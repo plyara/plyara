@@ -163,7 +163,7 @@ def _(node):
 
 @_to_yara.register(Variable)
 def _(node):
-    if node.type == 'variable':
+    if node.type == 'boolean':
         return f'${node.identifier}'
 
     elif node.type == 'offset':

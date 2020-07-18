@@ -217,8 +217,8 @@ rule test
 
         self.assertEqual(rule, to_yara(model))
 
-    def test_meta_boolean_type(self):
-        """Test a meta section entry of boolean type."""
+    def test_meta_boolean_type_false(self):
+        """Test a meta section entry of false boolean type."""
         rule = """rule test
 {
     meta:
@@ -237,6 +237,33 @@ rule test
                                                                      'This is a YARA rule.'),
                                                       MetaDefinition('threat_level', 'number', 5),
                                                       MetaDefinition('in_the_wild', 'boolean', False)
+                                                      ]), None, Condition([
+                                                                          Boolean(False)
+                                                                          ]))
+                        ])
+
+        self.assertEqual(rule, to_yara(model))
+
+    def test_meta_boolean_type_true(self):
+        """Test a meta section entry of true boolean type."""
+        rule = """rule test
+{
+    meta:
+        description = "This is a YARA rule."
+        threat_level = 5
+        in_the_wild = true
+    condition:
+        false
+}
+"""
+
+        model = Ruleset([
+                        Rule('test', None, None, Meta([
+                                                      MetaDefinition('description',
+                                                                     'string',
+                                                                     'This is a YARA rule.'),
+                                                      MetaDefinition('threat_level', 'number', 5),
+                                                      MetaDefinition('in_the_wild', 'boolean', True)
                                                       ]), None, Condition([
                                                                           Boolean(False)
                                                                           ]))
@@ -421,7 +448,7 @@ rule test
                                                       ]), Strings([
                                                                   StrDefinition('a', 'text', 'dummy1', None)
                                                                   ]), Condition([
-                                                                                Variable('a', 'variable')
+                                                                                Variable('a', 'boolean')
                                                                                 ]))
                         ])
 
@@ -452,7 +479,7 @@ rule test
                                                       ]), Strings([
                                                                   StrDefinition('a', 'hex', '4D 5A', None)
                                                                   ]), Condition([
-                                                                                Variable('a', 'variable')
+                                                                                Variable('a', 'boolean')
                                                                                 ]))
                         ])
 
@@ -486,7 +513,7 @@ rule test
                                                                                 'md5: [0-9a-fA-F]{32}',
                                                                                 None)
                                                                   ]), Condition([
-                                                                                Variable('a', 'variable')
+                                                                                Variable('a', 'boolean')
                                                                                 ]))
                         ])
 
@@ -522,7 +549,7 @@ rule test
                                                                                           Modifier('nocase', None)
                                                                                           ]))
                                                                   ]), Condition([
-                                                                                Variable('a', 'variable')
+                                                                                Variable('a', 'boolean')
                                                                                 ]))
                         ])
 
@@ -562,7 +589,7 @@ rule test
                                                                                                             None)
                                                                                                    ]))
                                                                            ]), Condition([
-                                                                                         Variable('a', 'variable')
+                                                                                         Variable('a', 'boolean')
                                                                                          ]))
                                  ])
 
@@ -599,7 +626,7 @@ rule test
                                                                                                    Range('01', 'ff'))
                                                                                           ]))
                                                                   ]), Condition([
-                                                                                Variable('a', 'variable')
+                                                                                Variable('a', 'boolean')
                                                                                 ]))
                         ])
 
@@ -637,8 +664,92 @@ rule test
                                                                                                    Alphabet(alpha))
                                                                                           ]))
                                                                   ]), Condition([
-                                                                                Variable('a', 'variable')
+                                                                                Variable('a', 'boolean')
                                                                                 ]))
+                        ])
+
+        self.assertEqual(rule, to_yara(model))
+
+    def test_boolean_variable(self):
+        """Test condition with one boolean variable."""
+        rule = """rule test
+{
+    strings:
+        $a = "dummy1"
+    condition:
+        $a
+}
+"""
+
+        model = Ruleset([
+                        Rule('test', None, None, None, Strings([
+                                                               StrDefinition('a', 'text', 'dummy1', None)
+                                                               ]), Condition([
+                                                                             Variable('a', 'boolean')
+                                                                             ]))
+                        ])
+
+        self.assertEqual(rule, to_yara(model))
+
+    def test_offset_variable(self):
+        """Test condition with one offset variable."""
+        rule = """rule test
+{
+    strings:
+        $a = "dummy1"
+    condition:
+        @a
+}
+"""
+
+        model = Ruleset([
+                        Rule('test', None, None, None, Strings([
+                                                               StrDefinition('a', 'text', 'dummy1', None)
+                                                               ]), Condition([
+                                                                             Variable('a', 'offset')
+                                                                             ]))
+                        ])
+
+        self.assertEqual(rule, to_yara(model))
+
+    def test_count_variable(self):
+        """Test condition with one count variable."""
+        rule = """rule test
+{
+    strings:
+        $a = "dummy1"
+    condition:
+        #a
+}
+"""
+
+        model = Ruleset([
+                        Rule('test', None, None, None, Strings([
+                                                               StrDefinition('a', 'text', 'dummy1', None)
+                                                               ]), Condition([
+                                                                             Variable('a', 'count')
+                                                                             ]))
+                        ])
+
+        self.assertEqual(rule, to_yara(model))
+
+    def test_length_variable(self):
+        """Test condition with one length variable."""
+        rule = """rule test
+{
+    strings:
+        $a = "dummy1"
+    condition:
+        !a
+}
+"""
+
+        model = Ruleset([
+                        Rule('test', None, None, None, Strings([
+                                                               StrDefinition('a', 'text', 'dummy1', None)
+                                                               ]), Condition([
+                                                                             Variable('a', 'length')
+                                                                             ]))
                         ])
 
         self.assertEqual(rule, to_yara(model))
