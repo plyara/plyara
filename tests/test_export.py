@@ -14,7 +14,7 @@
 """Unit tests for exporting model to valid YARA rules."""
 import unittest
 
-from plyara.model import Statements, Rule, RuleTypes, RuleType, Tags, Tag, Meta, MetaDefinition
+from plyara.model import Ruleset, Rule, RuleTypes, RuleType, Tags, Tag, Meta, MetaDefinition
 from plyara.model import Strings, StrDefinition, Modifiers, Modifier, Alphabet, Range, Condition
 from plyara.model import Boolean, Variable
 from plyara.export import to_yara
@@ -32,11 +32,11 @@ class TestModelOutputToYARA(unittest.TestCase):
 }
 """
 
-        model = Statements([
-                           Rule('test', None, None, None, None, Condition([
-                                                                          Boolean(True)
-                                                                          ]))
-                           ])
+        model = Ruleset([
+                        Rule('test', None, None, None, None, Condition([
+                                                                       Boolean(True)
+                                                                       ]))
+                        ])
 
         self.assertEqual(rule, to_yara(model))
 
@@ -51,13 +51,13 @@ class TestModelOutputToYARA(unittest.TestCase):
 }
 """
 
-        model = Statements([
-                           Rule('test', None, None, Meta([
-                                                         MetaDefinition('description', 'string', 'This is a YARA rule.')
-                                                         ]), None, Condition([
-                                                                             Boolean(False)
-                                                                             ]))
-                           ])
+        model = Ruleset([
+                        Rule('test', None, None, Meta([
+                                                      MetaDefinition('description', 'string', 'This is a YARA rule.')
+                                                      ]), None, Condition([
+                                                                          Boolean(False)
+                                                                          ]))
+                        ])
 
         self.assertEqual(rule, to_yara(model))
 
@@ -73,16 +73,16 @@ class TestModelOutputToYARA(unittest.TestCase):
 }
 """
 
-        model = Statements([
-                           Rule('test', None, None, Meta([
-                                                         MetaDefinition('description',
-                                                                        'string',
-                                                                        'This is a YARA rule.'),
-                                                         MetaDefinition('threat_level', 'number', 5)
-                                                         ]), None, Condition([
-                                                                             Boolean(False)
-                                                                             ]))
-                           ])
+        model = Ruleset([
+                        Rule('test', None, None, Meta([
+                                                      MetaDefinition('description',
+                                                                     'string',
+                                                                     'This is a YARA rule.'),
+                                                      MetaDefinition('threat_level', 'number', 5)
+                                                      ]), None, Condition([
+                                                                          Boolean(False)
+                                                                          ]))
+                        ])
 
         self.assertEqual(rule, to_yara(model))
 
@@ -99,17 +99,17 @@ class TestModelOutputToYARA(unittest.TestCase):
 }
 """
 
-        model = Statements([
-                           Rule('test', None, None, Meta([
-                                                         MetaDefinition('description',
-                                                                        'string',
-                                                                        'This is a YARA rule.'),
-                                                         MetaDefinition('threat_level', 'number', 5),
-                                                         MetaDefinition('in_the_wild', 'boolean', False)
-                                                         ]), None, Condition([
-                                                                             Boolean(False)
-                                                                             ]))
-                           ])
+        model = Ruleset([
+                        Rule('test', None, None, Meta([
+                                                      MetaDefinition('description',
+                                                                     'string',
+                                                                     'This is a YARA rule.'),
+                                                      MetaDefinition('threat_level', 'number', 5),
+                                                      MetaDefinition('in_the_wild', 'boolean', False)
+                                                      ]), None, Condition([
+                                                                          Boolean(False)
+                                                                          ]))
+                        ])
 
         self.assertEqual(rule, to_yara(model))
 
@@ -124,17 +124,17 @@ class TestModelOutputToYARA(unittest.TestCase):
 }
 """
 
-        model = Statements([
-                           Rule('test', RuleTypes([
-                                                  RuleType('private')
-                                                  ]), None, Meta([
-                                                                 MetaDefinition('description',
-                                                                                'string',
-                                                                                'This is a YARA rule.')
-                                                                 ]), None, Condition([
-                                                                                     Boolean(False)
-                                                                                     ]))
-                           ])
+        model = Ruleset([
+                        Rule('test', RuleTypes([
+                                               RuleType('private')
+                                               ]), None, Meta([
+                                                              MetaDefinition('description',
+                                                                             'string',
+                                                                             'This is a YARA rule.')
+                                                              ]), None, Condition([
+                                                                                  Boolean(False)
+                                                                                  ]))
+                        ])
         self.assertEqual(rule, to_yara(model))
 
     def test_global_rule_keyword(self):
@@ -148,17 +148,17 @@ class TestModelOutputToYARA(unittest.TestCase):
 }
 """
 
-        model = Statements([
-                           Rule('test', RuleTypes([
-                                                  RuleType('global')
-                                                  ]), None, Meta([
-                                                                 MetaDefinition('description',
-                                                                                'string',
-                                                                                'This is a YARA rule.')
-                                                                 ]), None, Condition([
-                                                                                     Boolean(False)
-                                                                                     ]))
-                           ])
+        model = Ruleset([
+                        Rule('test', RuleTypes([
+                                               RuleType('global')
+                                               ]), None, Meta([
+                                                              MetaDefinition('description',
+                                                                             'string',
+                                                                             'This is a YARA rule.')
+                                                              ]), None, Condition([
+                                                                                  Boolean(False)
+                                                                                  ]))
+                        ])
 
         self.assertEqual(rule, to_yara(model))
 
@@ -173,18 +173,18 @@ class TestModelOutputToYARA(unittest.TestCase):
 }
 """
 
-        model = Statements([
-                           Rule('test', RuleTypes([
-                                                  RuleType('private'),
-                                                  RuleType('global'),
-                                                  ]), None, Meta([
-                                                                 MetaDefinition('description',
-                                                                                'string',
-                                                                                'This is a YARA rule.')
-                                                                 ]), None, Condition([
-                                                                                     Boolean(False)
-                                                                                     ]))
-                           ])
+        model = Ruleset([
+                        Rule('test', RuleTypes([
+                                               RuleType('private'),
+                                               RuleType('global'),
+                                               ]), None, Meta([
+                                                              MetaDefinition('description',
+                                                                             'string',
+                                                                             'This is a YARA rule.')
+                                                              ]), None, Condition([
+                                                                                  Boolean(False)
+                                                                                  ]))
+                        ])
 
         self.assertEqual(rule, to_yara(model))
 
@@ -199,18 +199,18 @@ class TestModelOutputToYARA(unittest.TestCase):
 }
 """
 
-        model = Statements([
-                           Rule('test', RuleTypes([
-                                                  RuleType('global'),
-                                                  RuleType('private'),
-                                                  ]), None, Meta([
-                                                                 MetaDefinition('description',
-                                                                                'string',
-                                                                                'This is a YARA rule.')
-                                                                 ]), None, Condition([
-                                                                                     Boolean(False)
-                                                                                     ]))
-                           ])
+        model = Ruleset([
+                        Rule('test', RuleTypes([
+                                               RuleType('global'),
+                                               RuleType('private'),
+                                               ]), None, Meta([
+                                                              MetaDefinition('description',
+                                                                             'string',
+                                                                             'This is a YARA rule.')
+                                                              ]), None, Condition([
+                                                                                  Boolean(False)
+                                                                                  ]))
+                        ])
 
         self.assertEqual(rule, to_yara(model))
 
@@ -225,17 +225,17 @@ class TestModelOutputToYARA(unittest.TestCase):
 }
 """
 
-        model = Statements([
-                           Rule('test', None, Tags([
-                                                   Tag('OneTag')
-                                                   ]), Meta([
-                                                            MetaDefinition('description',
-                                                                           'string',
-                                                                           'This is a YARA rule.')
-                                                            ]), None, Condition([
-                                                                                Boolean(False)
-                                                                                ]))
-                           ])
+        model = Ruleset([
+                        Rule('test', None, Tags([
+                                                Tag('OneTag')
+                                                ]), Meta([
+                                                         MetaDefinition('description',
+                                                                        'string',
+                                                                        'This is a YARA rule.')
+                                                         ]), None, Condition([
+                                                                             Boolean(False)
+                                                                             ]))
+                        ])
 
         self.assertEqual(rule, to_yara(model))
 
@@ -250,18 +250,18 @@ class TestModelOutputToYARA(unittest.TestCase):
 }
 """
 
-        model = Statements([
-                           Rule('test', None, Tags([
-                                                   Tag('OneTag'),
-                                                   Tag('TwoTag')
-                                                   ]), Meta([
-                                                            MetaDefinition('description',
-                                                                           'string',
-                                                                           'This is a YARA rule.')
-                                                            ]), None, Condition([
-                                                                                Boolean(False)
-                                                                                ]))
-                           ])
+        model = Ruleset([
+                        Rule('test', None, Tags([
+                                                Tag('OneTag'),
+                                                Tag('TwoTag')
+                                                ]), Meta([
+                                                         MetaDefinition('description',
+                                                                        'string',
+                                                                        'This is a YARA rule.')
+                                                         ]), None, Condition([
+                                                                             Boolean(False)
+                                                                             ]))
+                        ])
 
         self.assertEqual(rule, to_yara(model))
 
@@ -280,19 +280,19 @@ class TestModelOutputToYARA(unittest.TestCase):
 }
 """
 
-        model = Statements([
-                           Rule('test', None, None, Meta([
-                                                         MetaDefinition('description',
-                                                                        'string',
-                                                                        'This is a YARA rule.'),
-                                                         MetaDefinition('threat_level', 'number', 5),
-                                                         MetaDefinition('in_the_wild', 'boolean', False)
-                                                         ]), Strings([
-                                                                     StrDefinition('a', 'text', 'dummy1', None)
-                                                                     ]), Condition([
-                                                                                   Variable('a', 'variable')
-                                                                                   ]))
-                           ])
+        model = Ruleset([
+                        Rule('test', None, None, Meta([
+                                                      MetaDefinition('description',
+                                                                     'string',
+                                                                     'This is a YARA rule.'),
+                                                      MetaDefinition('threat_level', 'number', 5),
+                                                      MetaDefinition('in_the_wild', 'boolean', False)
+                                                      ]), Strings([
+                                                                  StrDefinition('a', 'text', 'dummy1', None)
+                                                                  ]), Condition([
+                                                                                Variable('a', 'variable')
+                                                                                ]))
+                        ])
 
         self.assertEqual(rule, to_yara(model))
 
@@ -311,19 +311,19 @@ class TestModelOutputToYARA(unittest.TestCase):
 }
 """
 
-        model = Statements([
-                           Rule('test', None, None, Meta([
-                                                         MetaDefinition('description',
-                                                                        'string',
-                                                                        'This is a YARA rule.'),
-                                                         MetaDefinition('threat_level', 'number', 5),
-                                                         MetaDefinition('in_the_wild', 'boolean', False)
-                                                         ]), Strings([
-                                                                     StrDefinition('a', 'hex', '4D 5A', None)
-                                                                     ]), Condition([
-                                                                                   Variable('a', 'variable')
-                                                                                   ]))
-                           ])
+        model = Ruleset([
+                        Rule('test', None, None, Meta([
+                                                      MetaDefinition('description',
+                                                                     'string',
+                                                                     'This is a YARA rule.'),
+                                                      MetaDefinition('threat_level', 'number', 5),
+                                                      MetaDefinition('in_the_wild', 'boolean', False)
+                                                      ]), Strings([
+                                                                  StrDefinition('a', 'hex', '4D 5A', None)
+                                                                  ]), Condition([
+                                                                                Variable('a', 'variable')
+                                                                                ]))
+                        ])
 
         self.assertEqual(rule, to_yara(model))
 
@@ -342,22 +342,22 @@ class TestModelOutputToYARA(unittest.TestCase):
 }
 """
 
-        model = Statements([
-                           Rule('test', None, None, Meta([
-                                                         MetaDefinition('description',
-                                                                        'string',
-                                                                        'This is a YARA rule.'),
-                                                         MetaDefinition('threat_level', 'number', 5),
-                                                         MetaDefinition('in_the_wild', 'boolean', False)
-                                                         ]), Strings([
-                                                                     StrDefinition('a',
-                                                                                   'regex',
-                                                                                   'md5: [0-9a-fA-F]{32}',
-                                                                                   None)
-                                                                     ]), Condition([
-                                                                                   Variable('a', 'variable')
-                                                                                   ]))
-                           ])
+        model = Ruleset([
+                        Rule('test', None, None, Meta([
+                                                      MetaDefinition('description',
+                                                                     'string',
+                                                                     'This is a YARA rule.'),
+                                                      MetaDefinition('threat_level', 'number', 5),
+                                                      MetaDefinition('in_the_wild', 'boolean', False)
+                                                      ]), Strings([
+                                                                  StrDefinition('a',
+                                                                                'regex',
+                                                                                'md5: [0-9a-fA-F]{32}',
+                                                                                None)
+                                                                  ]), Condition([
+                                                                                Variable('a', 'variable')
+                                                                                ]))
+                        ])
 
         self.assertEqual(rule, to_yara(model))
 
@@ -376,24 +376,24 @@ class TestModelOutputToYARA(unittest.TestCase):
 }
 """
 
-        model = Statements([
-                           Rule('test', None, None, Meta([
-                                                         MetaDefinition('description',
-                                                                        'string',
-                                                                        'This is a YARA rule.'),
-                                                         MetaDefinition('threat_level', 'number', 5),
-                                                         MetaDefinition('in_the_wild', 'boolean', False)
-                                                         ]), Strings([
-                                                                     StrDefinition('a',
-                                                                                   'text',
-                                                                                   'dummy1',
-                                                                                   Modifiers([
-                                                                                             Modifier('nocase', None)
-                                                                                             ]))
-                                                                     ]), Condition([
-                                                                                   Variable('a', 'variable')
-                                                                                   ]))
-                           ])
+        model = Ruleset([
+                        Rule('test', None, None, Meta([
+                                                      MetaDefinition('description',
+                                                                     'string',
+                                                                     'This is a YARA rule.'),
+                                                      MetaDefinition('threat_level', 'number', 5),
+                                                      MetaDefinition('in_the_wild', 'boolean', False)
+                                                      ]), Strings([
+                                                                  StrDefinition('a',
+                                                                                'text',
+                                                                                'dummy1',
+                                                                                Modifiers([
+                                                                                          Modifier('nocase', None)
+                                                                                          ]))
+                                                                  ]), Condition([
+                                                                                Variable('a', 'variable')
+                                                                                ]))
+                        ])
 
         self.assertEqual(rule, to_yara(model))
 
@@ -415,25 +415,25 @@ class TestModelOutputToYARA(unittest.TestCase):
 """
 
         for keyword in modifier_keywords:
-            base_model = Statements([
-                                    Rule('test', None, None, Meta([
-                                                                  MetaDefinition('description',
-                                                                                 'string',
-                                                                                 'This is a YARA rule.'),
-                                                                  MetaDefinition('threat_level', 'number', 5),
-                                                                  MetaDefinition('in_the_wild', 'boolean', False)
-                                                                  ]), Strings([
-                                                                              StrDefinition('a',
-                                                                                            'text',
-                                                                                            'dummy1',
-                                                                                            Modifiers([
-                                                                                                      Modifier(keyword,
-                                                                                                               None)
-                                                                                                      ]))
-                                                                              ]), Condition([
-                                                                                            Variable('a', 'variable')
-                                                                                            ]))
-                                    ])
+            base_model = Ruleset([
+                                 Rule('test', None, None, Meta([
+                                                               MetaDefinition('description',
+                                                                              'string',
+                                                                              'This is a YARA rule.'),
+                                                               MetaDefinition('threat_level', 'number', 5),
+                                                               MetaDefinition('in_the_wild', 'boolean', False)
+                                                               ]), Strings([
+                                                                           StrDefinition('a',
+                                                                                         'text',
+                                                                                         'dummy1',
+                                                                                         Modifiers([
+                                                                                                   Modifier(keyword,
+                                                                                                            None)
+                                                                                                   ]))
+                                                                           ]), Condition([
+                                                                                         Variable('a', 'variable')
+                                                                                         ]))
+                                 ])
 
             self.assertEqual(rule_template.format(keyword), to_yara(base_model))
 
@@ -452,25 +452,25 @@ class TestModelOutputToYARA(unittest.TestCase):
 }
 """
 
-        model = Statements([
-                           Rule('test', None, None, Meta([
-                                                         MetaDefinition('description',
-                                                                        'string',
-                                                                        'This is a YARA rule.'),
-                                                         MetaDefinition('threat_level', 'number', 5),
-                                                         MetaDefinition('in_the_wild', 'boolean', False)
-                                                         ]), Strings([
-                                                                     StrDefinition('a',
-                                                                                   'text',
-                                                                                   'dummy1',
-                                                                                   Modifiers([
-                                                                                             Modifier('xor',
-                                                                                                      Range('01', 'ff'))
-                                                                                             ]))
-                                                                     ]), Condition([
-                                                                                   Variable('a', 'variable')
-                                                                                   ]))
-                           ])
+        model = Ruleset([
+                        Rule('test', None, None, Meta([
+                                                      MetaDefinition('description',
+                                                                     'string',
+                                                                     'This is a YARA rule.'),
+                                                      MetaDefinition('threat_level', 'number', 5),
+                                                      MetaDefinition('in_the_wild', 'boolean', False)
+                                                      ]), Strings([
+                                                                  StrDefinition('a',
+                                                                                'text',
+                                                                                'dummy1',
+                                                                                Modifiers([
+                                                                                          Modifier('xor',
+                                                                                                   Range('01', 'ff'))
+                                                                                          ]))
+                                                                  ]), Condition([
+                                                                                Variable('a', 'variable')
+                                                                                ]))
+                        ])
 
         self.assertEqual(rule, to_yara(model))
 
@@ -490,25 +490,25 @@ class TestModelOutputToYARA(unittest.TestCase):
 """
 
         alpha = r'!@#$%^&*(){}[].,|ABCDEFGHIJ\x09LMNOPQRSTUVWXYZabcdefghijklmnopqrstu'
-        model = Statements([
-                           Rule('test', None, None, Meta([
-                                                         MetaDefinition('description',
-                                                                        'string',
-                                                                        'This is a YARA rule.'),
-                                                         MetaDefinition('threat_level', 'number', 5),
-                                                         MetaDefinition('in_the_wild', 'boolean', False)
-                                                         ]), Strings([
-                                                                     StrDefinition('a',
-                                                                                   'text',
-                                                                                   'dummy1',
-                                                                                   Modifiers([
-                                                                                             Modifier('base64',
-                                                                                                      Alphabet(alpha))
-                                                                                             ]))
-                                                                     ]), Condition([
-                                                                                   Variable('a', 'variable')
-                                                                                   ]))
-                           ])
+        model = Ruleset([
+                        Rule('test', None, None, Meta([
+                                                      MetaDefinition('description',
+                                                                     'string',
+                                                                     'This is a YARA rule.'),
+                                                      MetaDefinition('threat_level', 'number', 5),
+                                                      MetaDefinition('in_the_wild', 'boolean', False)
+                                                      ]), Strings([
+                                                                  StrDefinition('a',
+                                                                                'text',
+                                                                                'dummy1',
+                                                                                Modifiers([
+                                                                                          Modifier('base64',
+                                                                                                   Alphabet(alpha))
+                                                                                          ]))
+                                                                  ]), Condition([
+                                                                                Variable('a', 'variable')
+                                                                                ]))
+                        ])
 
         self.assertEqual(rule, to_yara(model))
 

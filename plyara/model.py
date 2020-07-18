@@ -30,17 +30,17 @@ class Statement(Node):
     pass
 
 
-class Statements:
+class Ruleset:
     """Basically a list of statements making up a ruleset."""
 
     def __init__(self, statements):
-        """Initialize Statements class."""
+        """Initialize Ruleset class."""
         assert all(isinstance(stmt, Statement) for stmt in statements)
         self.statements = statements
 
     def __repr__(self):
-        """Text representation of Statements class."""
-        return f'Statements({self.statements})'
+        """Text representation of Ruleset class."""
+        return f'Ruleset({self.statements})'
 
 
 class Include(Statement):

@@ -19,7 +19,7 @@ text format.
 """
 from functools import singledispatch
 
-from .model import Statements, Rule, RuleTypes, RuleType, Tags, Tag, Meta, MetaDefinition
+from .model import Ruleset, Rule, RuleTypes, RuleType, Tags, Tag, Meta, MetaDefinition
 from .model import Strings, StrDefinition, Modifiers, Modifier, Alphabet, Range, Condition
 from .model import Boolean, Variable
 
@@ -34,7 +34,7 @@ def _to_yara(node):
     raise RuntimeError(f'Unrecognized node: {node}')
 
 
-@_to_yara.register(Statements)
+@_to_yara.register(Ruleset)
 def _(node):
     return ''.join(_to_yara(stmt) for stmt in node.statements)
 
