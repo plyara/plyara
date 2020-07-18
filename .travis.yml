@@ -8,3 +8,4 @@ install:
   - pip install .[dev]
 script:
   - python -m unittest discover
+  - coverage run --source plyara -m unittest discover
