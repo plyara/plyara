@@ -21,7 +21,7 @@ from functools import singledispatch
 
 from .model import Ruleset, Grouping, Import, Include, Rule, RuleTypes, RuleType, Tags, Tag, Meta, MetaDefinition
 from .model import Strings, StrDefinition, Modifiers, Modifier, Alphabet, Range, Condition
-from .model import Boolean, Variable
+from .model import Basic, Hexadecimal, Boolean, Variable
 
 
 def to_yara(node):
@@ -154,6 +154,16 @@ def _(node):
 @_to_yara.register(Condition)
 def _(node):
     return '        '.join(_to_yara(expr) for expr in node.conditions)
+
+
+@_to_yara.register(Basic)
+def _(node):
+    return node.value
+
+
+@_to_yara.register(Hexadecimal)
+def _(node):
+    return f'0x{node.value}'
 
 
 @_to_yara.register(Boolean)

@@ -16,7 +16,7 @@ import unittest
 
 from plyara.model import Ruleset, Grouping, Import, Include, Rule, RuleTypes, RuleType, Tags, Tag, Meta, MetaDefinition
 from plyara.model import Strings, StrDefinition, Modifiers, Modifier, Alphabet, Range, Condition
-from plyara.model import Boolean, Variable
+from plyara.model import Integer, Float, Hexadecimal, Boolean, Variable
 from plyara.export import to_yara
 
 
@@ -750,6 +750,91 @@ rule test
                                                                ]), Condition([
                                                                              Variable('a', 'length')
                                                                              ]))
+                        ])
+
+        self.assertEqual(rule, to_yara(model))
+
+    def test_true_condition(self):
+        """Test rule with true condition."""
+        rule = """rule test
+{
+    condition:
+        true
+}
+"""
+
+        model = Ruleset([
+                        Rule('test', None, None, None, None, Condition([
+                                                                       Boolean(True)
+                                                                       ]))
+                        ])
+
+        self.assertEqual(rule, to_yara(model))
+
+    def test_false_condition(self):
+        """Test rule with false condition."""
+        rule = """rule test
+{
+    condition:
+        false
+}
+"""
+
+        model = Ruleset([
+                        Rule('test', None, None, None, None, Condition([
+                                                                       Boolean(False)
+                                                                       ]))
+                        ])
+
+        self.assertEqual(rule, to_yara(model))
+
+    def test_integer_condition(self):
+        """Test rule with integer condition."""
+        rule = """rule test
+{
+    condition:
+        1
+}
+"""
+
+        model = Ruleset([
+                        Rule('test', None, None, None, None, Condition([
+                                                                       Integer('1')
+                                                                       ]))
+                        ])
+
+        self.assertEqual(rule, to_yara(model))
+
+    def test_float_condition(self):
+        """Test rule with float condition."""
+        rule = """rule test
+{
+    condition:
+        1.0
+}
+"""
+
+        model = Ruleset([
+                        Rule('test', None, None, None, None, Condition([
+                                                                       Float('1.0')
+                                                                       ]))
+                        ])
+
+        self.assertEqual(rule, to_yara(model))
+
+    def test_hexadecimal_condition(self):
+        """Test rule with hexadecimal condition."""
+        rule = """rule test
+{
+    condition:
+        0x01
+}
+"""
+
+        model = Ruleset([
+                        Rule('test', None, None, None, None, Condition([
+                                                                       Hexadecimal('01')
+                                                                       ]))
                         ])
 
         self.assertEqual(rule, to_yara(model))

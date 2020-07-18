@@ -40,7 +40,7 @@ class Ruleset:
 
     def __repr__(self):
         """Text representation of Ruleset class."""
-        return f'Ruleset({self.statements})'
+        return f'Ruleset({self.statements})'  # Make sure to add unit tests for repr when ready.
 
 
 class Grouping(Statement):
@@ -310,6 +310,51 @@ class Condition(Section):
     def __repr__(self):
         """Text representation of Condition class."""
         return f'Condition({self.conditions})'
+
+
+class Basic(Expression):
+    """General expression class for basic expressions so single dispatch works."""
+
+    pass
+
+
+class Integer(Basic):
+    """Integer expression."""
+
+    def __init__(self, value):
+        """Initialize Integer class."""
+        assert isinstance(value, str)
+        self.value = value
+
+    def __repr__(self):
+        """Text representation of Integer class."""
+        return f'Integer({self.value})'
+
+
+class Float(Basic):
+    """Float expression."""
+
+    def __init__(self, value):
+        """Initialize Float class."""
+        assert isinstance(value, str)
+        self.value = value
+
+    def __repr__(self):
+        """Text representation of Float class."""
+        return f'Float({self.value})'
+
+
+class Hexadecimal(Expression):
+    """Hexadecimal expression."""
+
+    def __init__(self, value):
+        """Initialize Hexadecimal class."""
+        assert isinstance(value, str)
+        self.value = value
+
+    def __repr__(self):
+        """Text representation of Hexadecimal class."""
+        return f'Hexadecimal({self.value})'
 
 
 class Boolean(Expression):
