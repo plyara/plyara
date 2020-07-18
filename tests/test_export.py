@@ -14,7 +14,7 @@
 """Unit tests for exporting model to valid YARA rules."""
 import unittest
 
-from plyara.model import Ruleset, Rule, RuleTypes, RuleType, Tags, Tag, Meta, MetaDefinition
+from plyara.model import Ruleset, Grouping, Import, Include, Rule, RuleTypes, RuleType, Tags, Tag, Meta, MetaDefinition
 from plyara.model import Strings, StrDefinition, Modifiers, Modifier, Alphabet, Range, Condition
 from plyara.model import Boolean, Variable
 from plyara.export import to_yara
@@ -33,6 +33,137 @@ class TestModelOutputToYARA(unittest.TestCase):
 """
 
         model = Ruleset([
+                        Rule('test', None, None, None, None, Condition([
+                                                                       Boolean(True)
+                                                                       ]))
+                        ])
+
+        self.assertEqual(rule, to_yara(model))
+
+    def test_import(self):
+        """Test import statement."""
+        rule = """import "pe"
+
+rule test
+{
+    condition:
+        true
+}
+"""
+
+        model = Ruleset([
+                        Grouping([
+                                 Import('pe')
+                                 ]),
+                        Rule('test', None, None, None, None, Condition([
+                                                                       Boolean(True)
+                                                                       ]))
+                        ])
+
+        self.assertEqual(rule, to_yara(model))
+
+    def test_include(self):
+        """Test include statement."""
+        rule = """include "other.yar"
+
+rule test
+{
+    condition:
+        true
+}
+"""
+
+        model = Ruleset([
+                        Grouping([
+                                 Include('other.yar')
+                                 ]),
+                        Rule('test', None, None, None, None, Condition([
+                                                                       Boolean(True)
+                                                                       ]))
+                        ])
+
+        self.assertEqual(rule, to_yara(model))
+
+    def test_import_groupings(self):
+        """Test grouping of import statements."""
+        rule = """import "magic"
+import "math"
+import "pe"
+
+rule test
+{
+    condition:
+        true
+}
+"""
+
+        model = Ruleset([
+                        Grouping([
+                                 Import('magic'),
+                                 Import('math'),
+                                 Import('pe')
+                                 ]),
+                        Rule('test', None, None, None, None, Condition([
+                                                                       Boolean(True)
+                                                                       ]))
+                        ])
+
+        self.assertEqual(rule, to_yara(model))
+
+    def test_include_groupings(self):
+        """Test grouping of include statements."""
+        rule = """include "foo.yar"
+include "bar.yar"
+include "baz.yar"
+
+rule test
+{
+    condition:
+        true
+}
+"""
+
+        model = Ruleset([
+                        Grouping([
+                                 Include('foo.yar'),
+                                 Include('bar.yar'),
+                                 Include('baz.yar')
+                                 ]),
+                        Rule('test', None, None, None, None, Condition([
+                                                                       Boolean(True)
+                                                                       ]))
+                        ])
+
+        self.assertEqual(rule, to_yara(model))
+
+    def test_multiple_groupings(self):
+        """Test grouping of include statements."""
+        rule = """include "foo.yar"
+include "bar.yar"
+include "baz.yar"
+
+import "magic"
+import "math"
+import "pe"
+
+rule test
+{
+    condition:
+        true
+}
+"""
+
+        model = Ruleset([
+                        Grouping([
+                                 Include('foo.yar'),
+                                 Include('bar.yar'),
+                                 Include('baz.yar')
+                                 ]),
+                        Grouping([
+                                 Import('magic'),
+                                 Import('math'),
+                                 Import('pe')
+                                 ]),
                         Rule('test', None, None, None, None, Condition([
                                                                        Boolean(True)
                                                                        ]))

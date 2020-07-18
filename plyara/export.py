@@ -19,7 +19,7 @@ text format.
 """
 from functools import singledispatch
 
-from .model import Ruleset, Rule, RuleTypes, RuleType, Tags, Tag, Meta, MetaDefinition
+from .model import Ruleset, Grouping, Import, Include, Rule, RuleTypes, RuleType, Tags, Tag, Meta, MetaDefinition
 from .model import Strings, StrDefinition, Modifiers, Modifier, Alphabet, Range, Condition
 from .model import Boolean, Variable
 
@@ -37,6 +37,21 @@ def _to_yara(node):
 @_to_yara.register(Ruleset)
 def _(node):
     return ''.join(_to_yara(stmt) for stmt in node.statements)
+
+
+@_to_yara.register(Grouping)
+def _(node):
+    return '\n'.join(_to_yara(stmt) for stmt in node.statements) + '\n\n'
+
+
+@_to_yara.register(Import)
+def _(node):
+    return f'import "{node.module}"'
+
+
+@_to_yara.register(Include)
+def _(node):
+    return f'include "{node.path}"'
 
 
 @_to_yara.register(Rule)

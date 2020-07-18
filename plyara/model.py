@@ -43,17 +43,17 @@ class Ruleset:
         return f'Ruleset({self.statements})'
 
 
-class Include(Statement):
-    """Includes rules from a different ruleset file."""
+class Grouping(Statement):
+    """Compound class for imports and includes to maintain grouping for formatting purposes."""
 
-    def __init__(self, path):
-        """Initialize Include class."""
-        assert isinstance(path, str)
-        self.path = path
+    def __init__(self, statements):
+        """Initialize Grouping class."""
+        assert all(isinstance(stmt, Statement) for stmt in statements)
+        self.statements = statements
 
     def __repr__(self):
-        """Text representation of Include class."""
-        return f'Include({self.path})'
+        """Text representation of Grouping class."""
+        return f'Grouping({self.statements})'
 
 
 class Import(Statement):
@@ -67,6 +67,19 @@ class Import(Statement):
     def __repr__(self):
         """Text representation of Import class."""
         return f'Import({self.module})'
+
+
+class Include(Statement):
+    """Includes rules from a different ruleset file."""
+
+    def __init__(self, path):
+        """Initialize Include class."""
+        assert isinstance(path, str)
+        self.path = path
+
+    def __repr__(self):
+        """Text representation of Include class."""
+        return f'Include({self.path})'
 
 
 class Rule(Statement):
