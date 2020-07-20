@@ -1,17 +1,13 @@
 plyara
 ======
 
-.. image:: https://api.codacy.com/project/badge/Grade/7bd0be1749804f0a8dd3d57f69888f68
-   :alt: Codacy Badge
-   :target: https://app.codacy.com/gh/plyara/plyara?utm_source=github.com&utm_medium=referral&utm_content=plyara/plyara&utm_campaign=Badge_Grade_Dashboard
-
-.. image:: https://travis-ci.org/plyara/plyara.svg?branch=master
-   :target: https://travis-ci.org/plyara/plyara
+.. image:: https://travis-ci.com/plyara/plyara.svg?branch=master
+   :target: https://travis-ci.com/plyara/plyara
    :alt: Build Status
 .. image:: https://readthedocs.org/projects/plyara/badge/?version=latest
    :target: http://plyara.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
-.. image:: https://api.codacy.com/project/badge/Grade/1c234b3d1ff349fa9dea7b4048dbc115
+.. image:: https://api.codacy.com/project/badge/Grade/7bd0be1749804f0a8dd3d57f69888f68
    :target: https://www.codacy.com/app/plyara/plyara
    :alt: Code Health
 .. image:: https://api.codacy.com/project/badge/Coverage/1c234b3d1ff349fa9dea7b4048dbc115
@@ -33,8 +29,6 @@ Plyara leverages the Python module PLY_ for lexing YARA rules.
 
 This is a community-maintained fork of the `original plyara`_ by 8u1a_. The "plyara" trademark
 is used with permission.
-
-**NOTE:** YARA rules compatible with YARA version 3.11+ are not yet supported. Specifically the `xor()` string modifier.
 
 Installation
 ------------
@@ -147,6 +141,24 @@ The command-line tool will print valid JSON output when parsing rules::
             ]
         }
     ]
+
+Reusing The Parser
+------------------
+
+If you want to reuse a single instance of the parser object for efficiency when
+parsing large quantities of rule or rulesets, the new clear() method must be
+used.
+
+.. code-block:: python
+
+    rules = list()
+    parser = plyara.Plyara()
+
+    for file in files:
+        with open(file, 'r') as fh:
+            yararules = parser.parse_string(fh.read())
+            rules += yararules
+        parser.clear()
 
 Migration
 ---------

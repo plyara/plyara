@@ -22,7 +22,7 @@ import concurrent.futures
 import contextlib
 import hashlib
 import io
-from pathlib import Path
+import pathlib
 import sys
 import unittest
 
@@ -36,11 +36,7 @@ from plyara.command_line import main
 
 UNHANDLED_RULE_MSG = 'Unhandled Test Rule: {}'
 
-tests = Path('tests')
-if tests.is_dir():
-    data_dir = tests.joinpath('data')
-else:
-    data_dir = Path('data')
+data_dir = pathlib.Path('tests').joinpath('data')
 
 
 @contextlib.contextmanager
@@ -484,8 +480,48 @@ class TestRuleParser(unittest.TestCase):
             elif rulename == 'DoubleBackslash':
                 self.assertEqual(kv, [{'name': '$bs', 'value': r'\"\\\\\\\"', 'type': 'text'}])
 
+            elif rulename == 'DoubleQuote':
+                self.assertEqual(kv, [{'name': '$text_string', 'value': r'foobar\"', 'type': 'text'}])
+
+            elif rulename == 'HorizontalTab':
+                self.assertEqual(kv, [{'name': '$text_string', 'value': r'foo\tbar', 'type': 'text'}])
+
+            elif rulename == 'Newline':
+                self.assertEqual(kv, [{'name': '$text_string', 'value': r'foo\nbar', 'type': 'text'}])
+
+            elif rulename == 'HexEscape':
+                self.assertEqual(kv, [{'name': '$text_string', 'value': r'foo\x00bar', 'type': 'text'}])
+
             else:
                 raise AssertionError(UNHANDLED_RULE_MSG.format(rulename))
+
+    def test_string_bad_escaped_hex(self):
+        inputRules = r'''
+        rule sample {
+            strings:
+                $ = "foo\xZZbar"
+            condition:
+                all of them
+        }
+        '''
+
+        plyara = Plyara()
+        with self.assertRaises(ParseTypeError):
+            plyara.parse_string(inputRules)
+
+    def test_string_invalid_escape(self):
+        inputRules = r'''
+        rule sample {
+            strings:
+                $ = "foo\gbar"
+            condition:
+                all of them
+        }
+        '''
+
+        plyara = Plyara()
+        with self.assertRaises(ParseTypeError):
+            plyara.parse_string(inputRules)
 
     def test_conditions(self):
         with data_dir.joinpath('condition_ruleset.yar').open('r') as fh:
@@ -925,6 +961,20 @@ class TestYaraRules(unittest.TestCase):
         with self.assertRaises(ParseValueError):
             plyara.parse_string(inputRules)
 
+    def test_bytestring_bad_hexchar(self):
+        inputRules = r'''
+        rule sample {
+            strings:
+                $ = { 4D 5X }
+            condition:
+                all of them
+        }
+        '''
+
+        plyara = Plyara()
+        with self.assertRaises(ParseTypeError):
+            plyara.parse_string(inputRules)
+
     def test_rexstring(self):
         inputRules = r'''
         rule testName
@@ -1018,6 +1068,7 @@ class TestYaraRules(unittest.TestCase):
     def test_plyara_script(self):
         test_file_path = data_dir.joinpath('test_file.txt')
 
+        # Without logging
         with captured_output() as (out, err):
             main([str(test_file_path)])
             output = out.getvalue()
@@ -1027,6 +1078,18 @@ class TestYaraRules(unittest.TestCase):
         self.assertTrue(output_hash in ['9d1991858f1b48b2485a9cb45692bc33c5228fb5acfa877a0d097b1db60052e3',
                                         '18569226a33c2f8f0c43dd0e034a6c05ea38f569adc3ca37d3c975be0d654f06'])
         self.assertEqual(error, str())
+
+        # With logging
+        with captured_output() as (out, err):
+            main(['--log', str(test_file_path)])
+            output = out.getvalue()
+            error = err.getvalue()
+        output_hash = hashlib.sha256(output.encode()).hexdigest()
+        error_hash = hashlib.sha256(error.encode()).hexdigest()
+
+        self.assertTrue(output_hash in ['9d1991858f1b48b2485a9cb45692bc33c5228fb5acfa877a0d097b1db60052e3',
+                                        '18569226a33c2f8f0c43dd0e034a6c05ea38f569adc3ca37d3c975be0d654f06'])
+        self.assertTrue(error_hash in ['4c303175e30f2257cc11ede86e08329815d2c06ada198e32055f0c88b73dda5a'])
 
     def test_raw_condition_contains_all_condition_text(self):
         inputRules = r'''
@@ -1110,6 +1173,15 @@ class TestYaraRules(unittest.TestCase):
                 self.assertEqual(6, e.lineno)
                 raise e
 
+    def test_lineno_incremented_by_windows_newlines_in_comment(self):
+        with data_dir.joinpath('windows_newline_ruleset_comment.yar').open('r') as fh:
+            inputRules = fh.read()
+
+        plyara = Plyara()
+
+        plyara.parse_string(inputRules)
+        self.assertEqual(plyara.lexer.lineno, 13)
+
     def test_windows_CRNL(self):
         with open('tests/data/windows_newline_ruleset.yar', 'r') as fh:
             inputRules = fh.read()
@@ -1190,6 +1262,19 @@ class TestGithubIssues(unittest.TestCase):
         result = plyara.parse_string(inputString)
 
         self.assertEqual(result, list())
+
+    # Reference: https://github.com/plyara/plyara/issues/99
+    def issue_99(self):
+        rules = list()
+        plyara = Plyara()
+
+        for file in data_dir.glob('issue99*.yar'):
+            with open(file, 'r') as fh:
+                yararules = plyara.parse_string(fh.read())
+                self.assertEqual(len(yararules), 1)
+                rules += yararules
+            plyara.clear()
+        self.assertEqual(len(rules), 2)
 
 
 if __name__ == '__main__':

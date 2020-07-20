@@ -22,11 +22,9 @@ include linters and dependency checkers.
 """
 import enum
 import logging
+import string
 import tempfile
 import re
-
-from distutils.version import StrictVersion
-from string import hexdigits
 
 import ply.lex as lex
 import ply.yacc as yacc
@@ -64,11 +62,9 @@ class StringTypes(enum.Enum):
 class Parser:
     """Interpret the output of the parser and produce an alternative representation of YARA rules."""
 
-    YARA_VERSION = StrictVersion('4.0.0')
-
     EXCLUSIVE_TEXT_MODIFIERS = {'nocase', 'xor', 'base64'}
 
-    COMPARISON_OPERATORS = {'==', '!=', '>', '<', '>=', '<=', }
+    COMPARISON_OPERATORS = {'==', '!=', '>', '<', '>=', '<='}
 
     IMPORT_OPTIONS = {'pe',
                       'elf',
@@ -77,7 +73,7 @@ class Parser:
                       'hash',
                       'math',
                       'dotnet',
-                      'androguard', }
+                      'androguard'}
 
     KEYWORDS = {'all', 'and', 'any', 'ascii', 'at', 'condition',
                 'contains', 'entrypoint', 'false', 'filesize',
@@ -86,9 +82,9 @@ class Parser:
                 'int16be', 'int32be', 'matches', 'meta', 'nocase',
                 'not', 'or', 'of', 'private', 'rule', 'strings',
                 'them', 'true', 'uint8', 'uint16', 'uint32', 'uint8be',
-                'uint16be', 'uint32be', 'wide', 'xor', 'base64', 'base64wide', }
+                'uint16be', 'uint32be', 'wide', 'xor', 'base64', 'base64wide'}
 
-    FUNCTION_KEYWORDS = {'uint8', 'uint16', 'uint32', 'uint8be', 'uint16be', 'uint32be', }
+    FUNCTION_KEYWORDS = {'uint8', 'uint16', 'uint32', 'uint8be', 'uint16be', 'uint32be'}
 
     def __init__(self, console_logging=False, store_raw_sections=True, meta_as_kv=False):
         """Initialize the parser object.
@@ -306,7 +302,7 @@ class Parser:
 class Plyara(Parser):
     """Define the lexer and the parser rules."""
 
-    STRING_ESCAPE_CHARS = {'"', '\\', 't', 'n', 'x', }
+    STRING_ESCAPE_CHARS = {'"', '\\', 't', 'n', 'x'}
 
     tokens = [
         'BYTESTRING',
@@ -353,7 +349,7 @@ class Plyara(Parser):
         'FILESIZE_SIZE',
         'NUM',
         'COMMENT',
-        'MCOMMENT',
+        'MCOMMENT'
     ]
 
     reserved = {
@@ -396,7 +392,7 @@ class Plyara(Parser):
         'uint32be': 'UINT32BE',
         'xor': 'XOR_MOD',  # XOR string modifier token (from strings section)
         'base64': 'BASE64',
-        'base64wide': 'BASE64WIDE',
+        'base64wide': 'BASE64WIDE'
     }
 
     tokens = tokens + list(reserved.values())
@@ -521,6 +517,7 @@ class Plyara(Parser):
             t.lexer.begin('INITIAL')
 
             return t
+
         else:
             self._process_string_with_escapes(t, escape_chars=self.STRING_ESCAPE_CHARS)
 
@@ -1122,7 +1119,7 @@ class Plyara(Parser):
             if t.value == 'x':
                 t.lexer.hex_escape = 2
         elif t.lexer.hex_escape > 0:
-            if t.value.lower() in hexdigits:
+            if t.value.lower() in string.hexdigits:
                 t.lexer.hex_escape -= 1
             else:
                 raise ParseTypeError('Invalid hex character: {!r}, at line: {}'.format(t.value, t.lexer.lineno),
@@ -1134,11 +1131,6 @@ class Plyara(Parser):
     def _add_string_modifier(self, p):
         mod_str = p[1]
         prev_mod_with_args = False
-        has_args = True if len(p) > 2 else False
-        compat_issue = self._check_modifier_compatibility(mod_str, has_args)
-        if compat_issue:
-            message = compat_issue.format(p.lineno(1))
-            raise ParseTypeError(message, p.lineno, p.lexpos)
         if mod_str in self.string_modifiers:
             message = 'Duplicate string modifier {} on line {}'.format(mod_str, p.lineno(1))
             raise ParseTypeError(message, p.lineno, p.lexpos)
@@ -1166,20 +1158,6 @@ class Plyara(Parser):
             self._add_element(ElementTypes.STRINGS_MODIFIER, mod_str)
             logger.debug('Matched a string modifier: {}'.format(mod_str))
 
-    def _check_modifier_compatibility(self, string_modifier, modifier_has_args):
-        if string_modifier == 'xor' and self.YARA_VERSION < StrictVersion('3.8.0'):
-            message = ('{} modifier on line {{}} not available in YARA {}'
-                       .format(string_modifier, self.YARA_VERSION))
-            return message
-        if string_modifier == 'xor' and modifier_has_args and self.YARA_VERSION < StrictVersion('3.11.0'):
-            message = ('{} modifier with args on line {{}} not available in YARA {}'
-                       .format(string_modifier, self.YARA_VERSION))
-            return message
-        if string_modifier.startswith('base64') and self.YARA_VERSION < StrictVersion('3.12.0'):
-            message = ('{} modifier on line {{}} not available in YARA {}'
-                       .format(string_modifier, self.YARA_VERSION))
-            return message
-
 
 class YaraXor(str):
     """YARA xor string modifier."""
@@ -1196,7 +1174,7 @@ class YaraXor(str):
             return self.modifier_name
         return '{}({})'.format(
             self.modifier_name,
-            '-'.join(["{0:#0{1}x}".format(x, 4) for x in self.modifier_list])
+            '-'.join(['{0:#0{1}x}'.format(x, 4) for x in self.modifier_list])
         )
 
     def __repr__(self):
