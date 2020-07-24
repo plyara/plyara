@@ -18,7 +18,7 @@ pip install -U pip setuptools
 To install this package in development mode, please use the following command:
 
 ```
-pip install -e .[dev]
+pip install -e '.[dev]'
 ```
 
 Additionally, if you wish to run the unit test suite, please use the following command:
