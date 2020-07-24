@@ -9,12 +9,10 @@ Please use the following commands to setup that virtualenv (for macOS and Linux)
 
 **NOTE: Development requires Python 3.7+**
 
-**NOTE: Command requires `jq` to be installed.**
-
 ```
 python3 -m venv venv
 source venv/bin/activate
-pip list -o --format json | jq -r '.[].name' | xargs -n 1 pip install -U
+pip install -U pip setuptools
 ```
 
 To install this package in development mode, please use the following command:
