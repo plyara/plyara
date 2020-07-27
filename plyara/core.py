@@ -712,7 +712,7 @@ class Plyara(Parser):
 
     @staticmethod
     def t_STRINGNAME_COUNT(t):
-        r'\#([a-z][0-9a-zA-Z\-_]*[*]?)?'
+        r'\#([a-zA-Z][0-9a-zA-Z\-_]*[*]?)?'
         t.value = t.value
 
         return t

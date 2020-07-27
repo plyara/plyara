@@ -1276,6 +1276,18 @@ class TestGithubIssues(unittest.TestCase):
             plyara.clear()
         self.assertEqual(len(rules), 2)
 
+    # Reference: https://github.com/plyara/plyara/issues/107
+    def issue_107(self):
+        with data_dir.joinpath('issue107.yar').open('r') as fh:
+            inputString = fh.read()
+
+        plyara = Plyara()
+        result = plyara.parse_string(inputString)
+
+        expected = ['(', '#TEST1', '>', '5', ')', 'and', '(', '#test2', '>', '5', ')']
+
+        self.assertEqual(parser.rules[0]['condition_terms'], expected)
+
 
 if __name__ == '__main__':
     unittest.main()
