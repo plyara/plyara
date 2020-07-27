@@ -1286,7 +1286,7 @@ class TestGithubIssues(unittest.TestCase):
 
         expected = ['(', '#TEST1', '>', '5', ')', 'and', '(', '#test2', '>', '5', ')']
 
-        self.assertEqual(parser.rules[0]['condition_terms'], expected)
+        self.assertEqual(result.rules[0]['condition_terms'], expected)
 
 
 if __name__ == '__main__':
