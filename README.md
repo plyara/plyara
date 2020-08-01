@@ -7,18 +7,18 @@ It is recommended to create a virtual environment in the plyara directory for an
 
 Please use the following commands to setup that virtualenv (for macOS and Linux):
 
-**NOTE: Command requires `jq` to be installed.**
+**NOTE: Development requires Python 3.7+**
 
 ```
-python -m venv venv
+python3 -m venv venv
 source venv/bin/activate
-pip list -o --format json | jq -r '.[].name' | xargs -n 1 pip install -U
+pip install -U pip setuptools
 ```
 
 To install this package in development mode, please use the following command:
 
 ```
-pip install -e .[dev]
+pip install -e '.[dev]'
 ```
 
 Additionally, if you wish to run the unit test suite, please use the following command:
