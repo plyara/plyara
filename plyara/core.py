@@ -73,7 +73,8 @@ class Parser:
                       'hash',
                       'math',
                       'dotnet',
-                      'androguard'}
+                      'androguard',
+                      'time'}
 
     KEYWORDS = {'all', 'and', 'any', 'ascii', 'at', 'condition',
                 'contains', 'entrypoint', 'false', 'filesize',
