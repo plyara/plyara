@@ -144,3 +144,24 @@ rule ExternalVariableExample4
         is__osx and
         string_ext_var matches /[a-z]+/
 }
+
+private rule WINDOWS_UPDATE_BDC
+{
+    condition:
+        (uint32be(0) == 0x44434d01 and // magic: DCM PA30
+         uint32be(4) == 0x50413330)
+        or
+        (uint32be(0) == 0x44434401 and
+         uint32be(12)== 0x50413330)    // magic: DCD PA30
+}
+
+rule SndVol_ANOMALY {
+    strings:
+        $s1 = "Volume Control Applet" fullword wide
+    condition:
+        filename == "sndvol.exe"
+        and uint16(0) == 0x5a4d
+        and not 1 of ($s*)
+        and not WINDOWS_UPDATE_BDC
+}
+

@@ -215,6 +215,7 @@ class TestUtilities(unittest.TestCase):
         self.assertEqual(detect_dependencies(result[13]), list())
         self.assertEqual(detect_dependencies(result[14]), ['is__osx'])
         self.assertEqual(detect_dependencies(result[15]), ['is__osx'])
+        self.assertEqual(detect_dependencies(result[17]), ['WINDOWS_UPDATE_BDC'])
 
     def test_detect_imports(self):
         for imp in ('androguard', 'cuckoo', 'dotnet', 'elf', 'hash', 'magic', 'math', 'pe'):
