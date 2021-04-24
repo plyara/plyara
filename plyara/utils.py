@@ -161,7 +161,7 @@ def detect_dependencies(rule):
             # Checks for likely rule reference
             if previous_term is None and next_term is None:
                 dependencies.append(term)
-            elif previous_term in ('and', 'or', ) or next_term in ('and', 'or', ):
+            elif previous_term in ('and', 'or', 'not', ) or next_term in ('and', 'or', 'not', ):
                 dependencies.append(term)
 
     return dependencies
