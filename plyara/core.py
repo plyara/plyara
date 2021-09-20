@@ -823,7 +823,7 @@ class Plyara(Parser):
     @staticmethod
     def p_rule_body(p):
         '''rule_body : sections'''
-        logger.info('Matched rule body')
+        logger.debug('Matched rule body')
 
     @staticmethod
     def p_rule_sections(p):
@@ -839,7 +839,7 @@ class Plyara(Parser):
     @staticmethod
     def p_meta_section(p):
         '''meta_section : SECTIONMETA meta_kvs'''
-        logger.info('Matched meta section')
+        logger.debug('Matched meta section')
 
     @staticmethod
     def p_strings_section(p):
@@ -854,7 +854,7 @@ class Plyara(Parser):
     def p_meta_kvs(p):
         '''meta_kvs : meta_kvs meta_kv
                     | meta_kv'''
-        logger.info('Matched meta kvs')
+        logger.debug('Matched meta kvs')
 
     def p_meta_kv(self, p):
         '''meta_kv : ID EQUALS STRING
@@ -880,7 +880,7 @@ class Plyara(Parser):
     def p_strings_kvs(p):
         '''strings_kvs : strings_kvs strings_kv
                        | strings_kv'''
-        logger.info('Matched strings kvs')
+        logger.debug('Matched strings kvs')
 
     def _parse_string_kv(self, p, string_type):
         """Perform parsing for all string types.
