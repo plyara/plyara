@@ -22,3 +22,13 @@ rule ForthRule
 	condition:
 		uint8(0)^unit8(1)==0x12
 }
+rule FifthRule
+{
+	condition:
+		file_name icontains "filename" and file_name endswith ".exe" and file_name iendswith ".exe"
+}
+rule SixthRule
+{
+	condition:
+		file_name startswith "file" and file_name istartswith "file"
+}
