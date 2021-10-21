@@ -83,7 +83,8 @@ class Parser:
                 'int16be', 'int32be', 'matches', 'meta', 'nocase',
                 'not', 'or', 'of', 'private', 'rule', 'strings',
                 'them', 'true', 'uint8', 'uint16', 'uint32', 'uint8be',
-                'uint16be', 'uint32be', 'wide', 'xor', 'base64', 'base64wide'}
+                'uint16be', 'uint32be', 'wide', 'xor', 'base64', 'base64wide',
+                'icontains', 'endswith', 'iendswith', 'startswith', 'istartswith'}
 
     FUNCTION_KEYWORDS = {'uint8', 'uint16', 'uint32', 'uint8be', 'uint16be', 'uint32be'}
 
@@ -393,7 +394,12 @@ class Plyara(Parser):
         'uint32be': 'UINT32BE',
         'xor': 'XOR_MOD',  # XOR string modifier token (from strings section)
         'base64': 'BASE64',
-        'base64wide': 'BASE64WIDE'
+        'base64wide': 'BASE64WIDE',
+        'icontains': 'ICONTAINS',
+        'endswith': 'ENDSWITH',
+        'iendswith': 'IENDSWITH',
+        'startswith': 'STARTSWITH',
+        'istartswith': 'ISTARTSWITH'
     }
 
     tokens = tokens + list(reserved.values())
@@ -1083,7 +1089,12 @@ class Plyara(Parser):
                 | STRINGNAME_ARRAY
                 | STRINGNAME_LENGTH
                 | STRINGNAME_COUNT
-                | REXSTRING'''
+                | REXSTRING
+                | ICONTAINS
+                | ENDSWITH
+                | IENDSWITH
+                | STARTSWITH
+                | ISTARTSWITH'''
         logger.debug('Matched a condition term: {}'.format(p[1]))
         if p[1] == '$':
             message = 'Potential wrong use of anonymous string on line {}'.format(p.lineno(1))
