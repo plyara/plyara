@@ -69,6 +69,7 @@ class Parser:
     IMPORT_OPTIONS = {'pe',
                       'elf',
                       'cuckoo',
+                      'macho',
                       'magic',
                       'hash',
                       'math',
