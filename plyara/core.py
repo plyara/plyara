@@ -700,7 +700,7 @@ class Plyara(Parser):
 
     @staticmethod
     def t_NUM(t):
-        r'(-)?\d+(\.\d+)?|0x\d+'
+        r'-[1-9](\d+(\.\d+)?)?|\d+(\.\d+)?|0x\d+'
         t.value = t.value
 
         return t
