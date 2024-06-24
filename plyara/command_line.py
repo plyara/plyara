@@ -25,15 +25,15 @@ from plyara.core import Plyara
 
 def main(arguments=None):
     """Run the command line process to parse a yara rule file and output pretty printed JSON."""
-    parser = argparse.ArgumentParser(description='Parse YARA rules into a dictionary representation.')
-    parser.add_argument('file', metavar='FILE', help='File containing YARA rules to parse.')
-    parser.add_argument('--log', help='Enable debug logging to the console.', action='store_true')
+    parser = argparse.ArgumentParser(description="Parse YARA rules into a dictionary representation.")
+    parser.add_argument("file", metavar="FILE", help="File containing YARA rules to parse.")
+    parser.add_argument("--log", help="Enable debug logging to the console.", action="store_true")
     if not arguments:
         args = parser.parse_args()
     else:
         args = parser.parse_args(arguments)
 
-    with open(args.file, 'r', encoding='utf-8') as fh:
+    with open(args.file, "r", encoding="utf-8") as fh:
         input_string = fh.read()
 
     plyara = Plyara(console_logging=args.log)
@@ -42,5 +42,5 @@ def main(arguments=None):
     print(json.dumps(rules, sort_keys=True, indent=4))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

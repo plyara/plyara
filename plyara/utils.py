@@ -49,7 +49,7 @@ def is_valid_rule_name(entry):
         return False
 
     # Accept only alphanumeric and underscores
-    if not re.match(r'[a-zA-Z_][a-zA-Z_0-9]*$', entry):
+    if not re.match(r"[a-zA-Z_][a-zA-Z_0-9]*$", entry):
         return False
 
     # Verify not in keywords
@@ -82,10 +82,10 @@ def detect_imports(rule):
         list: Imports that are required.
     """
     detected_imports = list()
-    condition_terms = rule['condition_terms']
+    condition_terms = rule["condition_terms"]
 
     for imp in Parser.IMPORT_OPTIONS:
-        imp_module = '{}.'.format(imp)
+        imp_module = "{}.".format(imp)
 
         for term in condition_terms:
             if term.startswith(imp_module):
@@ -106,7 +106,7 @@ def detect_dependencies(rule):
     """
     dependencies = list()
     string_iteration_variables = list()
-    condition_terms = rule['condition_terms']
+    condition_terms = rule["condition_terms"]
 
     # Number of terms for index iteration and reference
     term_count = len(condition_terms)
@@ -129,7 +129,7 @@ def detect_dependencies(rule):
                 next_term = None
 
             # Extend term indexes beyond wrapping parentheses for logic checks
-            if previous_term == '(' and next_term == ')':
+            if previous_term == "(" and next_term == ")":
                 if (index - 2) >= 0:
                     previous_term = condition_terms[index - 2]
                 else:
@@ -144,12 +144,25 @@ def detect_dependencies(rule):
             if term in string_iteration_variables:
                 continue
 
-            if previous_term in ('any', 'all', ) and next_term == 'in':
+            if (
+                previous_term
+                in (
+                    "any",
+                    "all",
+                )
+                and next_term == "in"
+            ):
                 string_iteration_variables.append(term)
                 continue
 
             # Check for external string variable dependency
-            if next_term in ('matches', 'contains',) or previous_term in ('matches', 'contains',):
+            if next_term in (
+                "matches",
+                "contains",
+            ) or previous_term in (
+                "matches",
+                "contains",
+            ):
                 continue
 
             # Check for external integer variable dependency
@@ -161,7 +174,15 @@ def detect_dependencies(rule):
             # Checks for likely rule reference
             if previous_term is None and next_term is None:
                 dependencies.append(term)
-            elif previous_term in ('and', 'or', 'not', ) or next_term in ('and', 'or', 'not', ):
+            elif previous_term in (
+                "and",
+                "or",
+                "not",
+            ) or next_term in (
+                "and",
+                "or",
+                "not",
+            ):
                 dependencies.append(term)
 
     return dependencies
@@ -177,33 +198,31 @@ def generate_logic_hash(rule):
         str: Hexdigest SHA-256.
     """
     import warnings
-    warnings.warn(
-        'Utility generate_logic_hash() may be deprecated, see generate_hash()',
-        PendingDeprecationWarning
-    )
-    strings = rule.get('strings', list())
-    conditions = rule['condition_terms']
+
+    warnings.warn("Utility generate_logic_hash() may be deprecated, see generate_hash()", PendingDeprecationWarning)
+    strings = rule.get("strings", list())
+    conditions = rule["condition_terms"]
 
     string_values = list()
     condition_mapping = list()
-    string_mapping = {'anonymous': list(), 'named': dict()}
+    string_mapping = {"anonymous": list(), "named": dict()}
 
     for entry in strings:
-        name = entry['name']
-        modifiers = entry.get('modifiers', list())
+        name = entry["name"]
+        modifiers = entry.get("modifiers", list())
 
         # Handle string modifiers
         if modifiers:
-            value = '{}<MODIFIED>{}'.format(entry['value'], ' & '.join(sorted(modifiers)))
+            value = "{}<MODIFIED>{}".format(entry["value"], " & ".join(sorted(modifiers)))
         else:
-            value = entry['value']
+            value = entry["value"]
 
-        if name == '$':
+        if name == "$":
             # Track anonymous strings
-            string_mapping['anonymous'].append(value)
+            string_mapping["anonymous"].append(value)
         else:
             # Track named strings
-            string_mapping['named'][name] = value
+            string_mapping["named"][name] = value
 
         # Track all string values
         string_values.append(value)
@@ -213,41 +232,41 @@ def generate_logic_hash(rule):
 
     for condition in conditions:
         # All string references (sort for consistency)
-        if condition == 'them' or condition == '$*':
-            condition_mapping.append('<STRINGVALUE>{}'.format(' | '.join(sorted_string_values)))
+        if condition == "them" or condition == "$*":
+            condition_mapping.append("<STRINGVALUE>{}".format(" | ".join(sorted_string_values)))
 
-        elif condition.startswith('$') and condition != '$':
+        elif condition.startswith("$") and condition != "$":
             # Exact Match
-            if condition in string_mapping['named']:
-                condition_mapping.append('<STRINGVALUE>{}'.format(string_mapping['named'][condition]))
+            if condition in string_mapping["named"]:
+                condition_mapping.append("<STRINGVALUE>{}".format(string_mapping["named"][condition]))
             # Wildcard Match
-            elif '*' in condition:
+            elif "*" in condition:
                 wildcard_strings = list()
-                condition = condition.replace('$', r'\$').replace('*', '.*')
+                condition = condition.replace("$", r"\$").replace("*", ".*")
                 pattern = re.compile(condition)
 
-                for name, value in string_mapping['named'].items():
+                for name, value in string_mapping["named"].items():
                     if pattern.match(name):
                         wildcard_strings.append(value)
 
                 wildcard_strings.sort()
-                condition_mapping.append('<STRINGVALUE>{}'.format(' | '.join(wildcard_strings)))
+                condition_mapping.append("<STRINGVALUE>{}".format(" | ".join(wildcard_strings)))
             else:
-                logger.error('[!] Unhandled String Condition {}'.format(condition))
+                logger.error("[!] Unhandled String Condition {}".format(condition))
 
         # Count Match
-        elif condition.startswith('#') and condition != '#':
-            condition = condition.replace('#', '$')
+        elif condition.startswith("#") and condition != "#":
+            condition = condition.replace("#", "$")
 
-            if condition in string_mapping['named']:
-                condition_mapping.append('<COUNTOFSTRING>{}'.format(string_mapping['named'][condition]))
+            if condition in string_mapping["named"]:
+                condition_mapping.append("<COUNTOFSTRING>{}".format(string_mapping["named"][condition]))
             else:
-                logger.error('[!] Unhandled String Count Condition {}'.format(condition))
+                logger.error("[!] Unhandled String Count Condition {}".format(condition))
 
         else:
             condition_mapping.append(condition)
 
-    logic_hash = hashlib.sha256(''.join(condition_mapping).encode()).hexdigest()
+    logic_hash = hashlib.sha256("".join(condition_mapping).encode()).hexdigest()
     return logic_hash
 
 
@@ -266,40 +285,40 @@ def generate_hash(rule, secure_hash=None):
     Returns:
         str: hexdigest
     """
-    condition_string_prefaces = ('$', '!', '#', '@')
+    condition_string_prefaces = ("$", "!", "#", "@")
     if secure_hash is None:
         hf = hashlib.sha256()
     else:
         hf = secure_hash()
 
-    strings = rule.get('strings', list())
-    conditions = rule['condition_terms']
+    strings = rule.get("strings", list())
+    conditions = rule["condition_terms"]
 
     string_values = list()
     condition_mapping = list()
-    string_mapping = {'anonymous': list(), 'named': dict()}
+    string_mapping = {"anonymous": list(), "named": dict()}
 
     for entry in strings:
-        name = entry['name']
-        modifiers = entry.get('modifiers', list())
+        name = entry["name"]
+        modifiers = entry.get("modifiers", list())
 
-        if entry['type'] == 'byte':
-            value = re.sub(r'[^-a-fA-F?0-9\[\]{}]+', '', entry['value'])
-        elif entry['type'] == 'text':
-            value = '{}'.format(entry['value'])
+        if entry["type"] == "byte":
+            value = re.sub(r"[^-a-fA-F?0-9\[\]{}]+", "", entry["value"])
+        elif entry["type"] == "text":
+            value = "{}".format(entry["value"])
         else:
-            value = entry['value']
+            value = entry["value"]
 
         # Handle string modifiers
         if modifiers:
-            value += '<MODIFIED>{}'.format(' & '.join(sorted(modifiers)))
+            value += "<MODIFIED>{}".format(" & ".join(sorted(modifiers)))
 
-        if name == '$':
+        if name == "$":
             # Track anonymous strings
-            string_mapping['anonymous'].append(value)
+            string_mapping["anonymous"].append(value)
         else:
             # Track named strings
-            string_mapping['named'][name] = value
+            string_mapping["named"][name] = value
 
         # Track all string values
         string_values.append(value)
@@ -309,58 +328,58 @@ def generate_hash(rule, secure_hash=None):
 
     for condition in conditions:
         # All string references (sort for consistency)
-        if condition == 'them' or condition == '$*':
-            all_values = '<STRINGVALUE>{}'.format(' | '.join(string_values))
-            if condition == 'them':
-                condition_mapping.extend(['(', all_values, ')'])
+        if condition == "them" or condition == "$*":
+            all_values = "<STRINGVALUE>{}".format(" | ".join(string_values))
+            if condition == "them":
+                condition_mapping.extend(["(", all_values, ")"])
             else:
                 condition_mapping.append(all_values)
 
-        elif condition.startswith('$') and condition != '$':
+        elif condition.startswith("$") and condition != "$":
             # Exact Match
-            if condition in string_mapping['named']:
-                condition_mapping.append('<STRINGVALUE>{}'.format(string_mapping['named'][condition]))
+            if condition in string_mapping["named"]:
+                condition_mapping.append("<STRINGVALUE>{}".format(string_mapping["named"][condition]))
             # Wildcard Match
-            elif '*' in condition:
+            elif "*" in condition:
                 wildcard_strings = list()
-                condition = condition.replace('$', r'\$').replace('*', '.*')
+                condition = condition.replace("$", r"\$").replace("*", ".*")
                 pattern = re.compile(condition)
 
-                for name, value in string_mapping['named'].items():
+                for name, value in string_mapping["named"].items():
                     if pattern.match(name):
                         wildcard_strings.append(value)
 
                 wildcard_strings.sort()
-                condition_mapping.append('<STRINGVALUE>{}'.format(' | '.join(wildcard_strings)))
+                condition_mapping.append("<STRINGVALUE>{}".format(" | ".join(wildcard_strings)))
             else:
-                logger.error('[!] Unhandled String Condition "{}" in "{}"'.format(condition, ' '.join(conditions)))
+                logger.error('[!] Unhandled String Condition "{}" in "{}"'.format(condition, " ".join(conditions)))
 
         # Count Match
-        elif condition[:1] in condition_string_prefaces and condition not in ('#', '!='):
+        elif condition[:1] in condition_string_prefaces and condition not in ("#", "!="):
             symbol = condition[:1]
-            condition = '${}'.format(condition[1:])
-            if symbol == '#':
-                symbol_type = 'COUNTOFSTRING'
-            elif symbol == '@':
-                symbol_type = 'POSITIONOFSTRING'
-            elif symbol == '!':
-                symbol_type = 'LENGTHOFSTRING'
-            elif symbol == condition == '$':
-                symbol_type = 'ANONYMOUSSTRING'
+            condition = "${}".format(condition[1:])
+            if symbol == "#":
+                symbol_type = "COUNTOFSTRING"
+            elif symbol == "@":
+                symbol_type = "POSITIONOFSTRING"
+            elif symbol == "!":
+                symbol_type = "LENGTHOFSTRING"
+            elif symbol == condition == "$":
+                symbol_type = "ANONYMOUSSTRING"
             else:
-                symbol_type = 'UNKNOWN'
+                symbol_type = "UNKNOWN"
 
-            if condition in string_mapping['named']:
-                condition_mapping.append('<{}>{}'.format(symbol_type, string_mapping['named'][condition]))
+            if condition in string_mapping["named"]:
+                condition_mapping.append("<{}>{}".format(symbol_type, string_mapping["named"][condition]))
             else:
-                condition_mapping.append('<{}>{}'.format(symbol_type, condition))
-                logger.error('[!] Unhandled {} Condition "{}" in "{}"'.format(
-                    symbol_type, symbol, ' '.join(conditions))
+                condition_mapping.append("<{}>{}".format(symbol_type, condition))
+                logger.error(
+                    '[!] Unhandled {} Condition "{}" in "{}"'.format(symbol_type, symbol, " ".join(conditions))
                 )
 
         else:
             condition_mapping.append(condition)
-    hf.update(''.join(condition_mapping).encode())
+    hf.update("".join(condition_mapping).encode())
     hexdigest = hf.hexdigest()
 
     return hexdigest
@@ -378,31 +397,31 @@ def rebuild_yara_rule(rule, condition_indents=False):
     """
     rule_format = "{imports}{scopes}rule {rulename}{tags}\n{{{meta}{strings}{condition}\n}}\n"
 
-    rule_name = rule['rule_name']
+    rule_name = rule["rule_name"]
 
     # Rule Imports
-    if rule.get('imports'):
-        unpacked_imports = ['import "{}"\n'.format(entry) for entry in rule['imports']]
-        rule_imports = '{}\n'.format(''.join(unpacked_imports))
+    if rule.get("imports"):
+        unpacked_imports = ['import "{}"\n'.format(entry) for entry in rule["imports"]]
+        rule_imports = "{}\n".format("".join(unpacked_imports))
     else:
         rule_imports = str()
 
     # Rule Scopes
-    if rule.get('scopes'):
-        rule_scopes = '{} '.format(' '.join(rule['scopes']))
+    if rule.get("scopes"):
+        rule_scopes = "{} ".format(" ".join(rule["scopes"]))
     else:
         rule_scopes = str()
 
     # Rule Tags
-    if rule.get('tags'):
-        rule_tags = ' : {}'.format(' '.join(rule['tags']))
+    if rule.get("tags"):
+        rule_tags = " : {}".format(" ".join(rule["tags"]))
     else:
         rule_tags = str()
 
     # Rule Metadata
-    if rule.get('metadata'):
+    if rule.get("metadata"):
         unpacked_meta = []
-        kv_list = [(k, ) + (v, ) for dic in rule['metadata'] for k, v in dic.items()]
+        kv_list = [(k,) + (v,) for dic in rule["metadata"] for k, v in dic.items()]
 
         # Check for and handle correctly quoting string metadata
         for k, v in kv_list:
@@ -412,49 +431,49 @@ def rebuild_yara_rule(rule, condition_indents=False):
                 v = str(v)
             else:
                 v = '"{}"'.format(v)
-            unpacked_meta.append('\n\t\t{key} = {value}'.format(key=k, value=v))
-        rule_meta = '\n\tmeta:{}\n'.format(''.join(unpacked_meta))
+            unpacked_meta.append("\n\t\t{key} = {value}".format(key=k, value=v))
+        rule_meta = "\n\tmeta:{}\n".format("".join(unpacked_meta))
     else:
         rule_meta = str()
 
     # Rule Strings
-    if rule.get('strings'):
+    if rule.get("strings"):
 
         string_container = list()
 
-        for rule_string in rule['strings']:
-            if 'modifiers' in rule_string:
-                string_modifiers = [x for x in rule_string['modifiers'] if isinstance(x, str)]
+        for rule_string in rule["strings"]:
+            if "modifiers" in rule_string:
+                string_modifiers = [x for x in rule_string["modifiers"] if isinstance(x, str)]
 
-                if rule_string['type'] == 'text':
+                if rule_string["type"] == "text":
                     string_format = '\n\t\t{} = "{}" {}'
                 else:
-                    string_format = '\n\t\t{} = {} {}'
-                fstring = string_format.format(rule_string['name'], rule_string['value'], ' '.join(string_modifiers))
+                    string_format = "\n\t\t{} = {} {}"
+                fstring = string_format.format(rule_string["name"], rule_string["value"], " ".join(string_modifiers))
 
             else:
-                if rule_string['type'] == 'text':
+                if rule_string["type"] == "text":
                     string_format = '\n\t\t{} = "{}"'
                 else:
-                    string_format = '\n\t\t{} = {}'
-                fstring = string_format.format(rule_string['name'], rule_string['value'])
+                    string_format = "\n\t\t{} = {}"
+                fstring = string_format.format(rule_string["name"], rule_string["value"])
 
             string_container.append(fstring)
 
-        rule_strings = '\n\tstrings:{}\n'.format(''.join(string_container))
+        rule_strings = "\n\tstrings:{}\n".format("".join(string_container))
     else:
         rule_strings = str()
 
-    if rule.get('condition_terms'):
+    if rule.get("condition_terms"):
         # Format condition with appropriate whitespace between keywords
         cond = list()
-        indents = '\n\t\t'
-        for term in rule['condition_terms']:
+        indents = "\n\t\t"
+        for term in rule["condition_terms"]:
 
             if condition_indents:
-                if term == '(':
-                    indents = indents + '\t'
-                if term == ')' and len(indents) > 3:
+                if term == "(":
+                    indents = indents + "\t"
+                if term == ")" and len(indents) > 3:
                     indents = indents[:-1]
 
             if not cond:
@@ -464,56 +483,58 @@ def rebuild_yara_rule(rule, condition_indents=False):
 
                 elif term in Parser.KEYWORDS:
                     cond.append(term)
-                    cond.append(' ')
+                    cond.append(" ")
 
                 else:
                     cond.append(term)
 
             else:
 
-                if cond[-1][-1] in (' ', '\t') and term in Parser.FUNCTION_KEYWORDS:
+                if cond[-1][-1] in (" ", "\t") and term in Parser.FUNCTION_KEYWORDS:
                     cond.append(term)
 
-                elif cond[-1][-1] not in (' ', '\t') and term in Parser.FUNCTION_KEYWORDS:
-                    cond.append(' ')
+                elif cond[-1][-1] not in (" ", "\t") and term in Parser.FUNCTION_KEYWORDS:
+                    cond.append(" ")
                     cond.append(term)
 
-                elif cond[-1][-1] in (' ', '\t') and term in Parser.KEYWORDS:
+                elif cond[-1][-1] in (" ", "\t") and term in Parser.KEYWORDS:
                     cond.append(term)
-                    cond.append(' ')
-                    if condition_indents and term in ('and', 'or'):
+                    cond.append(" ")
+                    if condition_indents and term in ("and", "or"):
                         cond.append(indents)
 
-                elif cond[-1][-1] not in (' ', '\t') and term in Parser.KEYWORDS:
-                    cond.append(' ')
+                elif cond[-1][-1] not in (" ", "\t") and term in Parser.KEYWORDS:
+                    cond.append(" ")
                     cond.append(term)
-                    cond.append(' ')
-                    if condition_indents and term in ('and', 'or'):
+                    cond.append(" ")
+                    if condition_indents and term in ("and", "or"):
                         cond.append(indents)
 
-                elif cond[-1][-1] in (' ', '\t') and term == ':':
+                elif cond[-1][-1] in (" ", "\t") and term == ":":
                     cond.append(term)
-                    cond.append(' ')
+                    cond.append(" ")
 
-                elif cond[-1][-1] not in (' ', '\t') and term == ':':
-                    cond.append(' ')
+                elif cond[-1][-1] not in (" ", "\t") and term == ":":
+                    cond.append(" ")
                     cond.append(term)
-                    cond.append(' ')
+                    cond.append(" ")
 
                 else:
                     cond.append(term)
 
-        fcondition = ''.join(cond).rstrip(' ')
-        rule_condition = '\n\tcondition:{}{}'.format('\n\t\t', fcondition)
+        fcondition = "".join(cond).rstrip(" ")
+        rule_condition = "\n\tcondition:{}{}".format("\n\t\t", fcondition)
     else:
         rule_condition = str()
 
-    formatted_rule = rule_format.format(imports=rule_imports,
-                                        rulename=rule_name,
-                                        tags=rule_tags,
-                                        meta=rule_meta,
-                                        scopes=rule_scopes,
-                                        strings=rule_strings,
-                                        condition=rule_condition)
+    formatted_rule = rule_format.format(
+        imports=rule_imports,
+        rulename=rule_name,
+        tags=rule_tags,
+        meta=rule_meta,
+        scopes=rule_scopes,
+        strings=rule_strings,
+        condition=rule_condition,
+    )
 
     return formatted_rule

@@ -1,0 +1,32 @@
+{
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit"
+    },
+    "editor.formatOnSave": true,
+    "editor.rulers": [
+        120
+    ],
+    "editor.tabSize": 4,
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 120,
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+    "files.trimTrailingWhitespace": true,
+    "isort.args": [
+        "-l",
+        "120",
+        "--profile=black",
+        // "--src=${workspaceFolder}"
+    ],
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    },
+    "black-formatter.args": [
+        "--line-length=120"
+    ],
+    "flake8.args": [
+        "--max-line-length=120",
+        //Added the ignore of E203 for now : https://github.com/PyCQA/pycodestyle/issues/373
+        "--ignore=E203,W503"
+    ],
+}
