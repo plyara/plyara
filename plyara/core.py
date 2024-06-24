@@ -66,26 +66,70 @@ class Parser:
 
     COMPARISON_OPERATORS = {'==', '!=', '>', '<', '>=', '<='}
 
-    IMPORT_OPTIONS = {'pe',
-                      'elf',
-                      'cuckoo',
-                      'macho',
-                      'magic',
-                      'hash',
-                      'math',
-                      'dotnet',
-                      'androguard',
-                      'time'}
+    IMPORT_OPTIONS = {
+        'androguard',
+        'console',
+        'cuckoo',
+        'dotnet',
+        'elf',
+        'hash',
+        'magic',
+        'math',
+        'pe',
+        'time'
+    }
 
-    KEYWORDS = {'all', 'and', 'any', 'ascii', 'at', 'condition',
-                'contains', 'entrypoint', 'false', 'filesize',
-                'fullword', 'for', 'global', 'in', 'import',
-                'include', 'int8', 'int16', 'int32', 'int8be',
-                'int16be', 'int32be', 'matches', 'meta', 'nocase',
-                'not', 'or', 'of', 'private', 'rule', 'strings',
-                'them', 'true', 'uint8', 'uint16', 'uint32', 'uint8be',
-                'uint16be', 'uint32be', 'wide', 'xor', 'base64', 'base64wide',
-                'icontains', 'endswith', 'iendswith', 'startswith', 'istartswith'}
+    KEYWORDS = {
+        'all',
+        'and',
+        'any',
+        'ascii',
+        'at',
+        'base64',
+        'base64wide',
+        'condition',
+        'contains',
+        'endswith',
+        'entrypoint',
+        'false',
+        'filesize',
+        'for',
+        'fullword',
+        'global',
+        'icontains',
+        'iendswith',
+        'iequals',
+        'import',
+        'in',
+        'include',
+        'int16',
+        'int16be',
+        'int32',
+        'int32be',
+        'int8',
+        'int8be',
+        'istartswith',
+        'matches',
+        'meta',
+        'nocase',
+        'not',
+        'of',
+        'or',
+        'private',
+        'rule',
+        'startswith',
+        'strings',
+        'them',
+        'true',
+        'uint16',
+        'uint16be',
+        'uint32',
+        'uint32be',
+        'uint8',
+        'uint8be',
+        'wide',
+        'xor'
+    }
 
     FUNCTION_KEYWORDS = {'uint8', 'uint16', 'uint32', 'uint8be', 'uint16be', 'uint32be'}
 
@@ -400,7 +444,8 @@ class Plyara(Parser):
         'endswith': 'ENDSWITH',
         'iendswith': 'IENDSWITH',
         'startswith': 'STARTSWITH',
-        'istartswith': 'ISTARTSWITH'
+        'istartswith': 'ISTARTSWITH',
+        'iequals': 'IEQUALS'
     }
 
     tokens = tokens + list(reserved.values())
@@ -1095,7 +1140,8 @@ class Plyara(Parser):
                 | ENDSWITH
                 | IENDSWITH
                 | STARTSWITH
-                | ISTARTSWITH'''
+                | ISTARTSWITH
+                | IEQUALS'''
         logger.debug('Matched a condition term: {}'.format(p[1]))
         if p[1] == '$':
             message = 'Potential wrong use of anonymous string on line {}'.format(p.lineno(1))
