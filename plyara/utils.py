@@ -149,7 +149,7 @@ def detect_dependencies(rule):
                 continue
 
             # Check for external string variable dependency
-            if next_term in ('matches', 'contains',) or previous_term in ('matches', 'contains',):
+            if next_term in ('matches', 'contains', ) or previous_term in ('matches', 'contains', ):
                 continue
 
             # Check for external integer variable dependency
@@ -177,10 +177,7 @@ def generate_logic_hash(rule):
         str: Hexdigest SHA-256.
     """
     import warnings
-    warnings.warn(
-        'Utility generate_logic_hash() may be deprecated, see generate_hash()',
-        PendingDeprecationWarning
-    )
+    warnings.warn('Utility generate_logic_hash() may be deprecated, see generate_hash()', PendingDeprecationWarning)
     strings = rule.get('strings', list())
     conditions = rule['condition_terms']
 
@@ -354,9 +351,7 @@ def generate_hash(rule, secure_hash=None):
                 condition_mapping.append('<{}>{}'.format(symbol_type, string_mapping['named'][condition]))
             else:
                 condition_mapping.append('<{}>{}'.format(symbol_type, condition))
-                logger.error('[!] Unhandled {} Condition "{}" in "{}"'.format(
-                    symbol_type, symbol, ' '.join(conditions))
-                )
+                logger.error(f'[!] Unhandled {symbol_type} Condition "{symbol}" in "{' '.join(conditions)}"')
 
         else:
             condition_mapping.append(condition)
@@ -508,12 +503,14 @@ def rebuild_yara_rule(rule, condition_indents=False):
     else:
         rule_condition = str()
 
-    formatted_rule = rule_format.format(imports=rule_imports,
-                                        rulename=rule_name,
-                                        tags=rule_tags,
-                                        meta=rule_meta,
-                                        scopes=rule_scopes,
-                                        strings=rule_strings,
-                                        condition=rule_condition)
+    formatted_rule = rule_format.format(
+        imports=rule_imports,
+        rulename=rule_name,
+        tags=rule_tags,
+        meta=rule_meta,
+        scopes=rule_scopes,
+        strings=rule_strings,
+        condition=rule_condition,
+    )
 
     return formatted_rule
