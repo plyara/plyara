@@ -617,7 +617,7 @@ class Plyara(Parser):
 
         return t
 
-    t_BYTESTRING_ignore = ' \r\n\t'
+    t_BYTESTRING_ignore = " \r\n\t~"
 
     @staticmethod
     def t_BYTESTRING_error(t):
