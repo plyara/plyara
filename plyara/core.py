@@ -22,9 +22,9 @@ include linters and dependency checkers.
 """
 import enum
 import logging
+import re
 import string
 import tempfile
-import re
 
 import ply.lex as lex
 import ply.yacc as yacc
@@ -351,7 +351,7 @@ class Parser:
 
         for rule in self.rules:
             if any(self.imports):
-                rule["imports"] = list(self.imports)
+                rule["imports"] = [yara_import for yara_import in self.imports if f"{yara_import}." in rule['raw_condition'] ]
             if any(self.includes):
                 rule["includes"] = self.includes
 
