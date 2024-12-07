@@ -22,9 +22,9 @@ include linters and dependency checkers.
 """
 import enum
 import logging
+import re
 import string
 import tempfile
-import re
 
 import ply.lex as lex
 import ply.yacc as yacc
@@ -66,24 +66,76 @@ class Parser:
 
     COMPARISON_OPERATORS = {'==', '!=', '>', '<', '>=', '<='}
 
-    IMPORT_OPTIONS = {'pe',
-                      'elf',
-                      'cuckoo',
-                      'magic',
-                      'hash',
-                      'math',
-                      'dotnet',
-                      'androguard',
-                      'time'}
+    IMPORT_OPTIONS = {
+        'androguard',
+        'console',
+        'cuckoo',
+        'dex',
+        'dotnet',
+        'elf',
+        'hash',
+        'lnk',
+        'macho',
+        'magic',
+        'math',
+        'pe',
+        'string',
+        'time'
+    }
 
-    KEYWORDS = {'all', 'and', 'any', 'ascii', 'at', 'condition',
-                'contains', 'entrypoint', 'false', 'filesize',
-                'fullword', 'for', 'global', 'in', 'import',
-                'include', 'int8', 'int16', 'int32', 'int8be',
-                'int16be', 'int32be', 'matches', 'meta', 'nocase',
-                'not', 'or', 'of', 'private', 'rule', 'strings',
-                'them', 'true', 'uint8', 'uint16', 'uint32', 'uint8be',
-                'uint16be', 'uint32be', 'wide', 'xor', 'base64', 'base64wide'}
+    KEYWORDS = {
+        'all',
+        'and',
+        'any',
+        'ascii',
+        'at',
+        'base64',
+        'base64wide',
+        'condition',
+        'contains',
+        'defined',
+        'endswith',
+        'entrypoint',
+        'false',
+        'filesize',
+        'for',
+        'fullword',
+        'global',
+        'icontains',
+        'iendswith',
+        'iequals',
+        'import',
+        'in',
+        'include',
+        'int16',
+        'int16be',
+        'int32',
+        'int32be',
+        'int8',
+        'int8be',
+        'istartswith',
+        'matches',
+        'meta',
+        'nocase',
+        'none',
+        'not',
+        'of',
+        'or',
+        'private',
+        'rule',
+        'startswith',
+        'strings',
+        'them',
+        'true',
+        'uint16',
+        'uint16be',
+        'uint32',
+        'uint32be',
+        'uint8',
+        'uint8be',
+        'wide',
+        'xor'
+    }
 
     FUNCTION_KEYWORDS = {'uint8', 'uint16', 'uint32', 'uint8be', 'uint16be', 'uint32be'}
 
@@ -293,7 +345,7 @@ class Parser:
 
         for rule in self.rules:
             if any(self.imports):
-                rule['imports'] = list(self.imports)
+                rule['imports'] = [imp for imp in self.imports if f'{imp}.' in rule['raw_condition']]
             if any(self.includes):
                 rule['includes'] = self.includes
 
@@ -303,7 +355,7 @@ class Parser:
 class Plyara(Parser):
     """Define the lexer and the parser rules."""
 
-    STRING_ESCAPE_CHARS = {'"', '\\', 't', 'n', 'x'}
+    STRING_ESCAPE_CHARS = {'"', '\\', 't', 'n', 'x', 'r'}
 
     tokens = [
         'BYTESTRING',
@@ -360,6 +412,7 @@ class Plyara(Parser):
         'ascii': 'ASCII',
         'at': 'AT',
         'contains': 'CONTAINS',
+        'defined': 'DEFINED',
         'entrypoint': 'ENTRYPOINT',
         'false': 'FALSE',
         'filesize': 'FILESIZE',
@@ -377,6 +430,7 @@ class Plyara(Parser):
         'int32be': 'INT32BE',
         'matches': 'MATCHES',
         'nocase': 'NOCASE',
+        'none': 'NONE',
         'not': 'NOT',
         'of': 'OF',
         'or': 'OR',
@@ -393,7 +447,13 @@ class Plyara(Parser):
         'uint32be': 'UINT32BE',
         'xor': 'XOR_MOD',  # XOR string modifier token (from strings section)
         'base64': 'BASE64',
-        'base64wide': 'BASE64WIDE'
+        'base64wide': 'BASE64WIDE',
+        'icontains': 'ICONTAINS',
+        'endswith': 'ENDSWITH',
+        'iendswith': 'IENDSWITH',
+        'startswith': 'STARTSWITH',
+        'istartswith': 'ISTARTSWITH',
+        'iequals': 'IEQUALS'
     }
 
     tokens = tokens + list(reserved.values())
@@ -610,7 +670,7 @@ class Plyara(Parser):
 
         return t
 
-    t_BYTESTRING_ignore = ' \r\n\t'
+    t_BYTESTRING_ignore = ' \r\n\t~'
 
     @staticmethod
     def t_BYTESTRING_error(t):
@@ -700,7 +760,7 @@ class Plyara(Parser):
 
     @staticmethod
     def t_NUM(t):
-        r'\d+(\.\d+)?|0x\d+'
+        r'-0\.\d+|-[1-9](\d+(\.\d+)?)?|\d+(\.\d+)?|0x\d+'
         t.value = t.value
 
         return t
@@ -756,7 +816,7 @@ class Plyara(Parser):
 
     def p_rule(self, p):
         '''rule : scopes RULE ID tag_section LBRACE rule_body RBRACE'''
-        logger.info('Matched rule: {}'.format(p[3]))
+        logger.debug('Matched rule: {}'.format(p[3]))
         if '.' in p[3]:
             message = 'Invalid rule name {}, on line {}'.format(p[3], p.lineno(1))
             raise ParseTypeError(message, p.lineno, p.lexpos)
@@ -823,7 +883,7 @@ class Plyara(Parser):
     @staticmethod
     def p_rule_body(p):
         '''rule_body : sections'''
-        logger.info('Matched rule body')
+        logger.debug('Matched rule body')
 
     @staticmethod
     def p_rule_sections(p):
@@ -839,7 +899,7 @@ class Plyara(Parser):
     @staticmethod
     def p_meta_section(p):
         '''meta_section : SECTIONMETA meta_kvs'''
-        logger.info('Matched meta section')
+        logger.debug('Matched meta section')
 
     @staticmethod
     def p_strings_section(p):
@@ -854,7 +914,7 @@ class Plyara(Parser):
     def p_meta_kvs(p):
         '''meta_kvs : meta_kvs meta_kv
                     | meta_kv'''
-        logger.info('Matched meta kvs')
+        logger.debug('Matched meta kvs')
 
     def p_meta_kv(self, p):
         '''meta_kv : ID EQUALS STRING
@@ -880,7 +940,7 @@ class Plyara(Parser):
     def p_strings_kvs(p):
         '''strings_kvs : strings_kvs strings_kv
                        | strings_kv'''
-        logger.info('Matched strings kvs')
+        logger.debug('Matched strings kvs')
 
     def _parse_string_kv(self, p, string_type):
         """Perform parsing for all string types.
@@ -1056,6 +1116,7 @@ class Plyara(Parser):
                 | ANY
                 | AT
                 | CONTAINS
+                | DEFINED
                 | ENTRYPOINT
                 | FALSE
                 | FILESIZE
@@ -1068,6 +1129,7 @@ class Plyara(Parser):
                 | INT16BE
                 | INT32BE
                 | MATCHES
+                | NONE
                 | NOT
                 | OR
                 | OF
@@ -1083,7 +1145,13 @@ class Plyara(Parser):
                 | STRINGNAME_ARRAY
                 | STRINGNAME_LENGTH
                 | STRINGNAME_COUNT
-                | REXSTRING'''
+                | REXSTRING
+                | ICONTAINS
+                | ENDSWITH
+                | IENDSWITH
+                | STARTSWITH
+                | ISTARTSWITH
+                | IEQUALS'''
         logger.debug('Matched a condition term: {}'.format(p[1]))
         if p[1] == '$':
             message = 'Potential wrong use of anonymous string on line {}'.format(p.lineno(1))
