@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "plyara"
+version = "2.2.0"
+dependencies = [
+    "ply >= 3.11"
+]
+requires-python = ">=3.10"
+authors = [
+    { name = "plyara Maintainers" }
+]
+description = "Parse YARA rules"
+readme = "README.rst"
+keywords = ["malware", "analysis", "yara"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Security",
+    "Topic :: Utilities"
+]
+
+[project.urls]
+Homepage = "https://github.com/plyara/plyara"
+Issues = "https://github.com/plyara/plyara/issues"
+
+[project.scripts]
+plyara = "plyara.command_line:main"
+
+[tool.pycodestyle]
+max-line-length = 120
+
+[tool.pydocstyle]
+ignore = ["D104", "D107", "D203", "D213"]
+
+[tool.coverage.run]
+branch = true
+source = ["src"]
