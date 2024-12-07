@@ -70,12 +70,16 @@ class Parser:
         'androguard',
         'console',
         'cuckoo',
+        'dex',
         'dotnet',
         'elf',
         'hash',
+        'lnk',
+        'macho',
         'magic',
         'math',
         'pe',
+        'string',
         'time'
     }
 
