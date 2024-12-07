@@ -763,7 +763,7 @@ class Plyara(Parser):
 
     def p_rule(self, p):
         '''rule : scopes RULE ID tag_section LBRACE rule_body RBRACE'''
-        logger.info('Matched rule: {}'.format(p[3]))
+        logger.debug('Matched rule: {}'.format(p[3]))
         if '.' in p[3]:
             message = 'Invalid rule name {}, on line {}'.format(p[3], p.lineno(1))
             raise ParseTypeError(message, p.lineno, p.lexpos)
