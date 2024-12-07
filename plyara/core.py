@@ -93,6 +93,7 @@ class Parser:
         'base64wide',
         'condition',
         'contains',
+        'defined',
         'endswith',
         'entrypoint',
         'false',
@@ -116,6 +117,7 @@ class Parser:
         'matches',
         'meta',
         'nocase',
+        'none',
         'not',
         'of',
         'or',
@@ -410,6 +412,7 @@ class Plyara(Parser):
         'ascii': 'ASCII',
         'at': 'AT',
         'contains': 'CONTAINS',
+        'defined': 'DEFINED',
         'entrypoint': 'ENTRYPOINT',
         'false': 'FALSE',
         'filesize': 'FILESIZE',
@@ -427,6 +430,7 @@ class Plyara(Parser):
         'int32be': 'INT32BE',
         'matches': 'MATCHES',
         'nocase': 'NOCASE',
+        'none': 'NONE',
         'not': 'NOT',
         'of': 'OF',
         'or': 'OR',
@@ -1112,6 +1116,7 @@ class Plyara(Parser):
                 | ANY
                 | AT
                 | CONTAINS
+                | DEFINED
                 | ENTRYPOINT
                 | FALSE
                 | FILESIZE
@@ -1124,6 +1129,7 @@ class Plyara(Parser):
                 | INT16BE
                 | INT32BE
                 | MATCHES
+                | NONE
                 | NOT
                 | OR
                 | OF
