@@ -496,7 +496,7 @@ class Plyara(Parser):
 
     # Complex token handling
     def t_RBRACE(self, t):
-        r'}'
+        r'}'  # noqa: D300, 400, 415
         t.value = t.value
         self._condition_end = t.lexpos
 
@@ -504,18 +504,18 @@ class Plyara(Parser):
 
     @staticmethod
     def t_NEWLINE(t):
-        r'(\n|\r\n)+'
+        r'(\n|\r\n)+'  # noqa: D300, 400, 415
         t.lexer.lineno += len(t.value)
         t.value = t.value
 
     @staticmethod
     def t_COMMENT(t):
-        r'(//[^\n]*)'
+        r'(//[^\n]*)'  # noqa: D300, 400, 415
         return t
 
     @staticmethod
     def t_MCOMMENT(t):
-        r'/\*(.|\n|\r\n)*?\*/'
+        r'/\*(.|\n|\r\n)*?\*/'  # noqa: D300, 400, 415
         if '\r\n' in t.value:
             t.lexer.lineno += t.value.count('\r\n')
         else:
@@ -525,13 +525,13 @@ class Plyara(Parser):
 
     @staticmethod
     def t_HEXNUM(t):
-        r'0x[A-Fa-f0-9]+'
+        r'0x[A-Fa-f0-9]+'  # noqa: D300, 400, 415
         t.value = t.value
 
         return t
 
     def t_SECTIONMETA(self, t):
-        r'meta\s*:'
+        r'meta\s*:'  # noqa: D300, 400, 415
         t.value = t.value
         self._meta_start = t.lexpos
         t.lexer.section = 'meta'
@@ -539,7 +539,7 @@ class Plyara(Parser):
         return t
 
     def t_SECTIONSTRINGS(self, t):
-        r'strings\s*:'
+        r'strings\s*:'  # noqa: D300, 400, 415
         t.value = t.value
         self._strings_start = t.lexpos
         if self._meta_end is None:
@@ -549,7 +549,7 @@ class Plyara(Parser):
         return t
 
     def t_SECTIONCONDITION(self, t):
-        r'condition\s*:'
+        r'condition\s*:'  # noqa: D300, 400, 415
         t.value = t.value
         self._condition_start = t.lexpos
         if self._meta_end is None:
@@ -563,7 +563,7 @@ class Plyara(Parser):
     # Text string handling
     @staticmethod
     def t_begin_STRING(t):
-        r'"'
+        r'"'  # noqa: D300, 400, 415
         t.lexer.escape = 0
         t.lexer.string_start = t.lexer.lexpos - 1
         t.lexer.begin('STRING')
@@ -571,7 +571,7 @@ class Plyara(Parser):
 
     # @staticmethod
     def t_STRING_value(self, t):
-        r'.'
+        r'.'  # noqa: D300, 400, 415
         if t.lexer.escape == 0 and t.value == '"':
             t.type = 'STRING'
             t.value = t.lexer.lexdata[t.lexer.string_start:t.lexer.lexpos]
@@ -600,7 +600,7 @@ class Plyara(Parser):
     # Byte string handling
     @staticmethod
     def t_begin_BYTESTRING(t):
-        r'\{'
+        r'\{'  # noqa: D300, 400, 415
         if hasattr(t.lexer, 'section') and t.lexer.section == 'strings':
             t.lexer.bytestring_start = t.lexer.lexpos - 1
             t.lexer.begin('BYTESTRING')
@@ -612,19 +612,19 @@ class Plyara(Parser):
 
     @staticmethod
     def t_BYTESTRING_pair(t):
-        r'\s*[a-fA-F0-9?]{2}\s*'
+        r'\s*[a-fA-F0-9?]{2}\s*'  # noqa: D300, 400, 415
 
     @staticmethod
     def t_BYTESTRING_comment(t):
-        r'\/\/[^\r\n]*'
+        r'\/\/[^\r\n]*'  # noqa: D300, 400, 415
 
     @staticmethod
     def t_BYTESTRING_mcomment(t):
-        r'/\*(.|\n|\r\n)*?\*/'
+        r'/\*(.|\n|\r\n)*?\*/'  # noqa: D300, 400, 415
 
     @staticmethod
     def t_BYTESTRING_jump(t):
-        r'\[\s*(\d*)\s*-?\s*(\d*)\s*\]'
+        r'\[\s*(\d*)\s*-?\s*(\d*)\s*\]'  # noqa: D300, 400, 415
         groups = t.lexer.lexmatch.groups()
         index = groups.index(t.value)
 
@@ -638,21 +638,21 @@ class Plyara(Parser):
 
     @staticmethod
     def t_BYTESTRING_group_start(t):
-        r'\('
+        r'\('  # noqa: D300, 400, 415
         t.lexer.bytestring_group += 1
 
     @staticmethod
     def t_BYTESTRING_group_end(t):
-        r'\)'
+        r'\)'  # noqa: D300, 400, 415
         t.lexer.bytestring_group -= 1
 
     @staticmethod
     def t_BYTESTRING_group_logical_or(t):
-        r'\|'
+        r'\|'  # noqa: D300, 400, 415
 
     @staticmethod
     def t_BYTESTRING_end(t):
-        r'\}'
+        r'\}'  # noqa: D300, 400, 415
         t.type = 'BYTESTRING'
         t.value = t.lexer.lexdata[t.lexer.bytestring_start:t.lexer.lexpos]
 
@@ -688,7 +688,7 @@ class Plyara(Parser):
     # Rexstring Handling
     @staticmethod
     def t_begin_REXSTRING(t):
-        r'/'
+        r'/'  # noqa: D300, 400, 415
         if hasattr(t.lexer, 'section') and t.lexer.section in ('strings', 'condition'):
             t.lexer.rexstring_start = t.lexer.lexpos - 1
             t.lexer.begin('REXSTRING')
@@ -701,7 +701,7 @@ class Plyara(Parser):
 
     @staticmethod
     def t_REXSTRING_end(t):
-        r'/(?:i?s?)'
+        r'/(?:i?s?)'  # noqa: D300, 400, 415
         if t.lexer.escape == 0:
             t.type = 'REXSTRING'
             t.value = t.lexer.lexdata[t.lexer.rexstring_start:t.lexer.lexpos]
@@ -712,7 +712,7 @@ class Plyara(Parser):
             t.lexer.escape ^= 1
 
     def t_REXSTRING_value(self, t):
-        r'.'
+        r'.'  # noqa: D300, 400, 415
         self._process_string_with_escapes(t)
 
     t_REXSTRING_ignore = ''
@@ -732,48 +732,48 @@ class Plyara(Parser):
 
     @staticmethod
     def t_STRINGNAME(t):
-        r'\$[0-9a-zA-Z\-_]*[*]?'
+        r'\$[0-9a-zA-Z\-_]*[*]?'  # noqa: D300, 400, 415
         t.value = t.value
 
         return t
 
     @staticmethod
     def t_STRINGNAME_ARRAY(t):
-        r'@[0-9a-zA-Z\-_]*[*]?'
+        r'@[0-9a-zA-Z\-_]*[*]?'  # noqa: D300, 400, 415
         t.value = t.value
 
         return t
 
     @staticmethod
     def t_STRINGNAME_LENGTH(t):
-        r'![0-9a-zA-Z\-_]*[*]?(?!=)'
+        r'![0-9a-zA-Z\-_]*[*]?(?!=)'  # noqa: D300, 400, 415
         t.value = t.value
 
         return t
 
     @staticmethod
     def t_FILESIZE_SIZE(t):
-        r"\d+[KM]B"
+        r"\d+[KM]B"  # noqa: D300, 400, 415
         t.value = t.value
 
         return t
 
     @staticmethod
     def t_NUM(t):
-        r'-0\.\d+|-[1-9](\d+(\.\d+)?)?|\d+(\.\d+)?|0x\d+'
+        r'-0\.\d+|-[1-9](\d+(\.\d+)?)?|\d+(\.\d+)?|0x\d+'  # noqa: D300, 400, 415
         t.value = t.value
 
         return t
 
     def t_ID(self, t):
-        r'[a-zA-Z_][a-zA-Z_0-9.]*'
+        r'[a-zA-Z_][a-zA-Z_0-9.]*'  # noqa: D300, 400, 415
         t.type = self.reserved.get(t.value, 'ID')  # Check for reserved words
 
         return t
 
     @staticmethod
     def t_STRINGNAME_COUNT(t):
-        r'\#([a-zA-Z][0-9a-zA-Z\-_]*[*]?)?'
+        r'\#([a-zA-Z][0-9a-zA-Z\-_]*[*]?)?'  # noqa: D300, 400, 415
         t.value = t.value
 
         return t
