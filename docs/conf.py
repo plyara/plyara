@@ -20,7 +20,7 @@
 # -- Project information -----------------------------------------------------
 
 project = u'plyara'
-copyright = u'2020, plyara'
+copyright = u'2024, plyara'
 author = u'plyara'
 
 # The short X.Y version
