@@ -807,12 +807,14 @@ class Plyara(Parser):
         '''ruleset : rules
                    | imports
                    | includes
-                   | ruleset ruleset'''
+                   | ruleset ruleset
+    '''
 
     @staticmethod
     def p_rules(p):
         '''rules : rules rule
-                 | rule'''
+                 | rule
+        '''
 
     def p_rule(self, p):
         '''rule : scopes RULE ID tag_section LBRACE rule_body RBRACE'''
@@ -834,18 +836,21 @@ class Plyara(Parser):
     @staticmethod
     def p_imports(p):
         '''imports : imports import
-                   | import'''
+                   | import
+        '''
 
     @staticmethod
     def p_includes(p):
         '''includes : includes include
-                    | include'''
+                    | include
+        '''
 
     @staticmethod
     def p_scopes(p):
         '''scopes : scopes scope
                   | scope
-                  | '''
+                  |
+        '''
 
     def p_import(self, p):
         '''import : IMPORT STRING'''
@@ -861,19 +866,22 @@ class Plyara(Parser):
 
     def p_scope(self, p):
         '''scope : PRIVATE
-                 | GLOBAL'''
+                 | GLOBAL
+        '''
         logger.debug('Matched scope identifier: {}'.format(p[1]))
         self._add_element(ElementTypes.SCOPE, p[1])
 
     @staticmethod
     def p_tag_section(p):
         '''tag_section : COLON tags
-                       | '''
+                       |
+        '''
 
     @staticmethod
     def p_tags(p):
         '''tags : tags tag
-                | tag'''
+                | tag
+        '''
 
     def p_tag(self, p):
         '''tag : ID'''
@@ -888,13 +896,15 @@ class Plyara(Parser):
     @staticmethod
     def p_rule_sections(p):
         '''sections : sections section
-                    | section'''
+                    | section
+        '''
 
     @staticmethod
     def p_rule_section(p):
         '''section : meta_section
                    | strings_section
-                   | condition_section'''
+                   | condition_section
+        '''
 
     @staticmethod
     def p_meta_section(p):
@@ -913,7 +923,8 @@ class Plyara(Parser):
     @staticmethod
     def p_meta_kvs(p):
         '''meta_kvs : meta_kvs meta_kv
-                    | meta_kv'''
+                    | meta_kv
+        '''
         logger.debug('Matched meta kvs')
 
     def p_meta_kv(self, p):
@@ -921,7 +932,8 @@ class Plyara(Parser):
                    | ID EQUALS ID
                    | ID EQUALS TRUE
                    | ID EQUALS FALSE
-                   | ID EQUALS NUM'''
+                   | ID EQUALS NUM
+        '''
         key = p[1]
         value = p[3]
         if re.match(r'".*"', value):
@@ -939,7 +951,8 @@ class Plyara(Parser):
     @staticmethod
     def p_strings_kvs(p):
         '''strings_kvs : strings_kvs strings_kv
-                       | strings_kv'''
+                       | strings_kv
+        '''
         logger.debug('Matched strings kvs')
 
     def _parse_string_kv(self, p, string_type):
@@ -965,27 +978,31 @@ class Plyara(Parser):
         '''strings_kv : STRINGNAME EQUALS BYTESTRING
                       | STRINGNAME EQUALS BYTESTRING comments
                       | STRINGNAME EQUALS BYTESTRING byte_string_modifiers
-                      | STRINGNAME EQUALS BYTESTRING byte_string_modifiers comments'''
+                      | STRINGNAME EQUALS BYTESTRING byte_string_modifiers comments
+        '''
         self._parse_string_kv(p, StringTypes.BYTE)
 
     def p_text_strings_kv(self, p):
         '''strings_kv : STRINGNAME EQUALS STRING
                       | STRINGNAME EQUALS STRING comments
                       | STRINGNAME EQUALS STRING text_string_modifiers
-                      | STRINGNAME EQUALS STRING text_string_modifiers comments'''
+                      | STRINGNAME EQUALS STRING text_string_modifiers comments
+        '''
         self._parse_string_kv(p, StringTypes.TEXT)
 
     def p_regex_strings_kv(self, p):
         '''strings_kv : STRINGNAME EQUALS REXSTRING
                       | STRINGNAME EQUALS REXSTRING comments
                       | STRINGNAME EQUALS REXSTRING regex_string_modifiers
-                      | STRINGNAME EQUALS REXSTRING regex_string_modifiers comments'''
+                      | STRINGNAME EQUALS REXSTRING regex_string_modifiers comments
+        '''
         self._parse_string_kv(p, StringTypes.REGEX)
 
     @staticmethod
     def p_text_string_modifiers(p):
         '''text_string_modifiers : text_string_modifiers text_string_modifier
-                                 | text_string_modifier'''
+                                 | text_string_modifier
+        '''
 
     def p_text_string_modifier(self, p):
         '''text_string_modifier : NOCASE
@@ -998,26 +1015,30 @@ class Plyara(Parser):
                                 | BASE64WIDE
                                 | BASE64 base64_with_args
                                 | BASE64WIDE base64_with_args
-                                | PRIVATE'''
+                                | PRIVATE
+        '''
         self._add_string_modifier(p)
 
     @staticmethod
     def p_regex_text_string_modifiers(p):
         '''regex_string_modifiers : regex_string_modifiers regex_string_modifer
-                                  | regex_string_modifer'''
+                                  | regex_string_modifer
+        '''
 
     def p_regex_string_modifer(self, p):
         '''regex_string_modifer : NOCASE
                                 | ASCII
                                 | WIDE
                                 | FULLWORD
-                                | PRIVATE'''
+                                | PRIVATE
+        '''
         self._add_string_modifier(p)
 
     @staticmethod
     def p_byte_string_modifiers(p):
         '''byte_string_modifiers : byte_string_modifiers byte_string_modifer
-                                 | byte_string_modifer'''
+                                 | byte_string_modifer
+        '''
 
     def p_byte_string_modifer(self, p):
         '''byte_string_modifer : PRIVATE'''
@@ -1029,7 +1050,8 @@ class Plyara(Parser):
                          | LPAREN HEXNUM RPAREN
                          | LPAREN HEXNUM HYPHEN HEXNUM RPAREN
                          | LPAREN NUM HYPHEN HEXNUM RPAREN
-                         | LPAREN HEXNUM HYPHEN NUM RPAREN'''
+                         | LPAREN HEXNUM HYPHEN NUM RPAREN
+        '''
         logger.debug('Matched an xor arg: {}'.format(''.join(p[1:])))
         mods = [x for x in p if x not in (None, '(', '-', ')')]
         mod_int_list = []
@@ -1069,14 +1091,16 @@ class Plyara(Parser):
     @staticmethod
     def p_comments(p):
         '''comments : COMMENT
-                    | MCOMMENT'''
+                    | MCOMMENT
+        '''
         logger.debug('Matched a comment: {}'.format(p[1]))
 
     # Condition elements
     @staticmethod
     def p_expression(p):
         '''expression : expression term
-                      | term'''
+                      | term
+        '''
 
     def p_condition(self, p):
         '''term : FILESIZE_SIZE
@@ -1151,7 +1175,8 @@ class Plyara(Parser):
                 | IENDSWITH
                 | STARTSWITH
                 | ISTARTSWITH
-                | IEQUALS'''
+                | IEQUALS
+        '''
         logger.debug('Matched a condition term: {}'.format(p[1]))
         if p[1] == '$':
             message = 'Potential wrong use of anonymous string on line {}'.format(p.lineno(1))

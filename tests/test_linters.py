@@ -20,6 +20,8 @@ import pyflakes.api
 exclude_paths = {'build', 'venv'}
 max_line_length = 120
 pydocstyle_ignore = ['D104', 'D107', 'D203', 'D213', 'D406', 'D407', 'D413']
+ply_ignore = ['D205', 'D207', 'D208', 'D300', 'D400', 'D401', 'D403', 'D415']
+ply_files = ['core.py']
 
 
 class BaseTest(unittest.TestCase):
@@ -71,8 +73,11 @@ class TestPyDocStyle(BaseTest):
                 source = path.read_text()
                 try:
                     for error in self.cc.check_source(source, path.name):
-                        if error.code not in pydocstyle_ignore:
-                            msg += f'\n{error}'
+                        if error.code in pydocstyle_ignore:
+                            continue
+                        if error.code in ply_ignore and path.name in ply_files:
+                            continue
+                        msg += f'\n{error}'
                 except pydocstyle.parser.ParseError:
                     self.skipTest(f'Cannot parse file: {relative_path}')
 
