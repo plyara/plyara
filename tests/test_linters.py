@@ -20,7 +20,7 @@ import pyflakes.api
 exclude_paths = {'build', 'venv'}
 max_line_length = 120
 pydocstyle_ignore = ['D104', 'D107', 'D203', 'D213', 'D406', 'D407', 'D413']
-ply_ignore = ['D205', 'D207', 'D208', 'D300', 'D400', 'D401', 'D403', 'D415']
+ply_ignore = ['D205', 'D207', 'D208', 'D209', 'D300', 'D400', 'D401', 'D403', 'D415']
 ply_files = ['core.py']
 
 
