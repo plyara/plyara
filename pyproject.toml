@@ -13,7 +13,7 @@ authors = [
     { name = "plyara Maintainers" }
 ]
 description = "Parse YARA rules"
-readme = "README.rst"
+readme = "README.md"
 keywords = ["malware", "analysis", "yara"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
