@@ -170,6 +170,20 @@ The existing parsed keys have stayed the same, and new ones have been added.
 
 When reusing a `parser` for multiple rules and/or files, be aware that imports are now shared across all rules - if one rule has an import, that import will be added to all rules in your parser object.
 
+## Breaking Change: Import Effects
+
+### Background
+
+Imports are available to be used in a rule even if not used in a condition. Also, any module which is imported at all is used in processing all files scanned using the ruleset regardless if the import is used anywhere. Some users require that all rules affected by a particular import include that import in the dictionary output of plyara. At the same time, many users expect that a particular rule not include an import if that import is not used in the rule.
+
+### New Parameter: Import Effects
+
+A new class constructor parameter called `import_effects` has been added to the parser. This parameter defaults to `False` which is a breaking change. Users who wish to retain the behavior from versions before 2.2, will need to set this parameter to `True` like so:
+
+```python
+parser = plyara.Plyara(import_effects=True)
+```
+
 ## Contributing
 
 - If you find a bug, or would like to see a new feature, [Pull Requests](https://github.com/plyara/plyara/pulls) and [Issues](https://github.com/plyara/plyara/issues) are always welcome.
