@@ -15,12 +15,12 @@ rule SecondRule : aTag
 		$z = "bye"
 
 	condition:
-		for all of them : (#>2)
+		for all of them : ( # > 2 )
 }
 rule ForthRule
 {
 	condition:
-		uint8(0)^uint8(1)==0x12
+		uint8( 0 ) ^ uint8( 1 ) == 0x12
 }
 rule FifthRule
 {

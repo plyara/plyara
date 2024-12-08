@@ -17,6 +17,7 @@ import pathlib
 import unittest
 
 from plyara.core import Plyara
+from plyara.utils import rebuild_yara_rule
 
 data_dir = pathlib.Path('tests').joinpath('data')
 
@@ -58,6 +59,21 @@ class TestGithubIssues(unittest.TestCase):
         expected = ['(', '#TEST1', '>', '5', ')', 'and', '(', '#test2', '>', '5', ')']
 
         self.assertEqual(result.rules[0]['condition_terms'], expected)
+
+    # Reference: https://github.com/plyara/plyara/issues/109
+    def issue_109(self):
+        with data_dir.joinpath('issue109.yar').open('r', encoding='utf-8') as fh:
+            inputString = fh.read()
+        with data_dir.joinpath('issue109_good_enough.yar').open('r', encoding='utf-8') as fh:
+            test_result = fh.read()
+
+        result = Plyara().parse_string(inputString)
+
+        rebuilt_rules = str()
+        for rule in result:
+            rebuilt_rules += rebuild_yara_rule(rule)
+
+        self.assertEqual(test_result, rebuilt_rules)
 
 
 if __name__ == '__main__':

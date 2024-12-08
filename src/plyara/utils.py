@@ -497,6 +497,7 @@ def rebuild_yara_rule(rule, condition_indents=False):
 
                 else:
                     cond.append(term)
+                    cond.append(' ')
 
         fcondition = ''.join(cond).rstrip(' ')
         rule_condition = '\n\tcondition:{}{}'.format('\n\t\t', fcondition)

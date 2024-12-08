@@ -139,6 +139,8 @@ class TestUtilities(unittest.TestCase):
     def test_rebuild_yara_rule(self):
         with data_dir.joinpath('rebuild_ruleset.yar').open('r', encoding='utf-8') as fh:
             inputString = fh.read()
+        with data_dir.joinpath('rebuild_ruleset_good_enough.yar').open('r', encoding='utf-8') as fh:
+            test_result = fh.read()
 
         result = Plyara().parse_string(inputString)
 
@@ -146,7 +148,7 @@ class TestUtilities(unittest.TestCase):
         for rule in result:
             rebuilt_rules += rebuild_yara_rule(rule)
 
-        self.assertEqual(inputString, rebuilt_rules)
+        self.assertEqual(test_result, rebuilt_rules)
 
     def test_rebuild_yara_rule_metadata(self):
         test_rule = """
