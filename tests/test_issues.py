@@ -67,11 +67,10 @@ class TestGithubIssues(unittest.TestCase):
         with data_dir.joinpath('issue109_good_enough.yar').open('r', encoding='utf-8') as fh:
             test_result = fh.read()
 
-        result = Plyara().parse_string(inputString)
+        plyara = Plyara()
+        plyara.parse_string(inputString)
 
-        rebuilt_rules = str()
-        for rule in result:
-            rebuilt_rules += rebuild_yara_rule(rule)
+        rebuilt_rules = rebuild_yara_rule(plyara.rules[0])
 
         self.assertEqual(test_result, rebuilt_rules)
 
