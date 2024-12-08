@@ -139,13 +139,14 @@ class Parser:
 
     FUNCTION_KEYWORDS = {'uint8', 'uint16', 'uint32', 'uint8be', 'uint16be', 'uint32be'}
 
-    def __init__(self, console_logging=False, store_raw_sections=True, meta_as_kv=False):
+    def __init__(self, console_logging=False, store_raw_sections=True, meta_as_kv=False, import_effects=False):
         """Initialize the parser object.
 
         Args:
             console_logging: Enable a stream handler if no handlers exist. (default False)
             store_raw_sections: Enable attribute storage of raw section input. (default True)
             meta_as_kv: Enable alternate structure for meta section as dictionary. (default False)
+            import_effects: Enable including imports in all rules affected by the import. (default False)
         """
         self.rules = list()
 
@@ -178,6 +179,9 @@ class Parser:
 
         # Adds a dictionary representation of the meta section of a rule
         self.meta_as_kv = meta_as_kv
+
+        # Includes imports in all rules affected by them whether or not the import is used in a condition
+        self.import_effects = import_effects
 
         self.lexer = lex.lex(module=self, debug=False)
         self.parser = yacc.yacc(module=self, debug=False, outputdir=tempfile.gettempdir())
@@ -345,7 +349,10 @@ class Parser:
 
         for rule in self.rules:
             if any(self.imports):
-                rule['imports'] = [imp for imp in self.imports if f'{imp}.' in rule['raw_condition']]
+                if self.import_effects:
+                    rule['imports'] = list(self.imports)
+                elif imports := [imp for imp in self.imports if f'{imp}.' in rule['raw_condition']]:
+                    rule['imports'] = imports
             if any(self.includes):
                 rule['includes'] = self.includes
 
