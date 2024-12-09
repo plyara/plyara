@@ -1064,9 +1064,9 @@ class Plyara(Parser):
         b64_mod = [x for x in p if x not in (None, '(', ')')][0].strip('"')
         b64_data = b64_mod.encode('ascii').decode('unicode-escape')
         if len(b64_data) != 64:
-            raise Exception(f'Base64 dictionary length {len(b64_data)}, must be 64 characters')
+            raise RuntimeError(f'Base64 dictionary length {len(b64_data)}, must be 64 characters')
         if re.search(r'(.).*\1', b64_data):
-            raise Exception('Duplicate character in Base64 dictionary')
+            raise RuntimeError('Duplicate character in Base64 dictionary')
         mod_str_mod = YaraBase64(b64_mod)
         logger.debug(f'Matched string modifier(s): {b64_mod}')
         self._add_element(ElementTypes.STRINGS_MODIFIER, mod_str_mod)
