@@ -2,8 +2,6 @@
 
 [![PyPi Version](http://img.shields.io/pypi/v/plyara.svg)](https://pypi.python.org/pypi/plyara)
 
-[![Documentation Status](https://readthedocs.org/projects/plyara/badge/?version=latest)](http://plyara.readthedocs.io/en/latest/?badge=latest)
-
 Parse [YARA](https://virustotal.github.io/yara/) rules into a dictionary representation.
 
 Plyara is a script and library that lexes and parses a file consisting of one more YARA rules into a python dictionary representation. The goal of this tool is to make it easier to perform bulk operations or transformations of large sets of YARA rules, such as extracting indicators, updating attributes, and analyzing a corpus. Other applications include linters and dependency checkers.
