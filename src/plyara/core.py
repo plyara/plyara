@@ -640,7 +640,7 @@ class Plyara(Parser):
 
         if lower_bound and upper_bound:
             if not 0 <= int(lower_bound) <= int(upper_bound):
-                raise ParseValueError('Illegal bytestring jump bounds: {}, at line: {}'.format(t.value, t.lexer.lineno),
+                raise ParseValueError(f'Illegal bytestring jump bounds: {t.value}, at line: {t.lexer.lineno}',
                                       t.lexer.lineno, t.lexer.lexpos)
 
     @staticmethod
@@ -664,7 +664,7 @@ class Plyara(Parser):
         t.value = t.lexer.lexdata[t.lexer.bytestring_start:t.lexer.lexpos]
 
         if t.lexer.bytestring_group != 0:
-            raise ParseValueError('Unbalanced group in bytestring: {}, at line: {}'.format(t.value, t.lexer.lineno),
+            raise ParseValueError(f'Unbalanced group in bytestring: {t.value}, at line: {t.lexer.lineno}',
                                   t.lexer.lineno, t.lexer.lexpos)
 
         t.lexer.begin('INITIAL')
@@ -689,7 +689,7 @@ class Plyara(Parser):
         Raises:
             ParseTypeError
         """
-        raise ParseTypeError('Illegal bytestring character : {}, at line: {}'.format(t.value[0], t.lexer.lineno),
+        raise ParseTypeError(f'Illegal bytestring character : {t.value[0]}, at line: {t.lexer.lineno}',
                              t.lexer.lineno, t.lexer.lexpos)
 
     # Rexstring Handling
@@ -734,7 +734,7 @@ class Plyara(Parser):
         Raises:
             ParseTypeError
         """
-        raise ParseTypeError('Illegal rexstring character : {!r}, at line: {}'.format(t.value[0], t.lexer.lineno),
+        raise ParseTypeError(f'Illegal rexstring character : {t.value[0]!r}, at line: {t.lexer.lineno}',
                              t.lexer.lineno, t.lexer.lexpos)
 
     @staticmethod
@@ -799,7 +799,7 @@ class Plyara(Parser):
         Raises:
             ParseTypeError
         """
-        raise ParseTypeError('Illegal character {!r} at line {}'.format(t.value[0], t.lexer.lineno),
+        raise ParseTypeError(f'Illegal character {t.value[0]!r} at line {t.lexer.lineno}',
                              t.lexer.lineno, t.lexer.lexpos)
 
     # Parsing rules
@@ -823,11 +823,10 @@ class Plyara(Parser):
 
     def p_rule(self, p):
         '''rule : scopes RULE ID tag_section LBRACE rule_body RBRACE'''  # noqa: D300, D400, D403, D415
-        logger.debug('Matched rule: {}'.format(p[3]))
+        logger.debug(f'Matched rule: {p[3]}')
         if '.' in p[3]:
-            message = 'Invalid rule name {}, on line {}'.format(p[3], p.lineno(1))
-            raise ParseTypeError(message, p.lineno, p.lexpos)
-        logger.debug('Rule start: {}, Rule stop: {}'.format(p.lineno(2), p.lineno(7)))
+            raise ParseTypeError(f'Invalid rule name {p[3]}, on line {p.lineno(1)}', p.lineno, p.lexpos)
+        logger.debug(f'Rule start: {p.lineno(2)}, Rule stop: {p.lineno(7)}')
 
         while self._rule_comments:
             comment = self._rule_comments.pop()
@@ -857,19 +856,19 @@ class Plyara(Parser):
     def p_import(self, p):
         '''import : IMPORT STRING'''  # noqa: D300, D400, D403, D415
         import_value = p[2].replace('"', '')
-        logger.debug('Matched import: {}'.format(import_value))
+        logger.debug(f'Matched import: {import_value}')
         self._add_element(ElementTypes.IMPORT, import_value)
 
     def p_include(self, p):
         '''include : INCLUDE STRING'''  # noqa: D300, D400, D403, D415
         include_value = p[2].replace('"', '')
-        logger.debug('Matched include: {}'.format(include_value))
+        logger.debug(f'Matched include: {include_value}')
         self._add_element(ElementTypes.INCLUDE, include_value)
 
     def p_scope(self, p):
         '''scope : PRIVATE
                  | GLOBAL'''  # noqa: D205, D208, D209, D300, D400, D401, D403, D415
-        logger.debug('Matched scope identifier: {}'.format(p[1]))
+        logger.debug(f'Matched scope identifier: {p[1]}')
         self._add_element(ElementTypes.SCOPE, p[1])
 
     @staticmethod
@@ -884,7 +883,7 @@ class Plyara(Parser):
 
     def p_tag(self, p):
         '''tag : ID'''  # noqa: D300, D400, D403, D415
-        logger.debug('Matched tag: {}'.format(p[1]))
+        logger.debug(f'Matched tag: {p[1]}')
         self._add_element(ElementTypes.TAG, p[1])
 
     @staticmethod
@@ -939,7 +938,7 @@ class Plyara(Parser):
             value = True if value == 'true' else False
         else:
             value = int(value)
-        logger.debug('Matched meta kv: {} equals {}'.format(key, value))
+        logger.debug(f'Matched meta kv: {key} equals {value}')
         self._add_element(ElementTypes.METADATA_KEY_VALUE, (key, value, ))
 
     # Strings elements
@@ -962,10 +961,9 @@ class Plyara(Parser):
         if match:
             value = match.group(1)
         if key != '$' and key in self._stringnames:
-            message = 'Duplicate string name key {} on line {}'.format(key, p.lineno(1))
-            raise ParseTypeError(message, p.lineno, p.lexpos)
+            raise ParseTypeError(f'Duplicate string name key {key} on line {p.lineno(1)}', p.lineno, p.lexpos)
         self._stringnames.add(key)
-        logger.debug('Matched strings kv: {} equals {}'.format(key, value))
+        logger.debug(f'Matched strings kv: {key} equals {value}')
         self._add_element(ElementTypes.STRINGS_KEY_VALUE, (key, value, string_type, ))
 
     def p_byte_strings_kv(self, p):
@@ -1047,17 +1045,17 @@ class Plyara(Parser):
                 mod_int_list.append(mod_int)
                 mod_lineidx.add(i)
             else:
-                message = 'String modification value {} not between 0-255 on line {}'.format(x, p.lineno(1 + i))
+                message = f'String modification value {x} not between 0-255 on line {p.lineno(1 + i)}'
                 raise ParseTypeError(message, p.lineno, p.lexpos)
         if mod_int_list[0] > mod_int_list[-1]:
             mod_lineno = list({p.lineno(1 + i) for i in mod_lineidx})
             mod_lineno.sort()
             line_no = ' and '.join(str(lno) for lno in mod_lineno)
-            message = 'String modification lower bound exceeds upper bound on line {}'.format(line_no)
+            message = f'String modification lower bound exceeds upper bound on line {line_no}'
             raise ParseTypeError(message, p.lineno, p.lexpos)
         else:
             mod_str_mod = YaraXor(mod_int_list)
-            logger.debug('Matched string modifier(s): {}'.format(mod_str_mod))
+            logger.debug(f'Matched string modifier(s): {mod_str_mod}')
             self._add_element(ElementTypes.STRINGS_MODIFIER, mod_str_mod)
 
     def p_base64_with_args(self, p):
@@ -1066,18 +1064,18 @@ class Plyara(Parser):
         b64_mod = [x for x in p if x not in (None, '(', ')')][0].strip('"')
         b64_data = b64_mod.encode('ascii').decode('unicode-escape')
         if len(b64_data) != 64:
-            raise Exception("Base64 dictionary length {}, must be 64 characters".format(len(b64_data)))
+            raise Exception(f'Base64 dictionary length {len(b64_data)}, must be 64 characters')
         if re.search(r'(.).*\1', b64_data):
-            raise Exception("Duplicate character in Base64 dictionary")
+            raise Exception('Duplicate character in Base64 dictionary')
         mod_str_mod = YaraBase64(b64_mod)
-        logger.debug('Matched string modifier(s): {}'.format(b64_mod))
+        logger.debug(f'Matched string modifier(s): {b64_mod}')
         self._add_element(ElementTypes.STRINGS_MODIFIER, mod_str_mod)
 
     @staticmethod
     def p_comments(p):
         '''comments : COMMENT
                     | MCOMMENT'''  # noqa: D205, D208, D209, D300, D400, D401, D403, D415
-        logger.debug('Matched a comment: {}'.format(p[1]))
+        logger.debug(f'Matched a comment: {p[1]}')
 
     # Condition elements
     @staticmethod
@@ -1159,10 +1157,9 @@ class Plyara(Parser):
                 | STARTSWITH
                 | ISTARTSWITH
                 | IEQUALS'''  # noqa: D205, D208, D209, D300, D400, D401, D403, D415
-        logger.debug('Matched a condition term: {}'.format(p[1]))
+        logger.debug(f'Matched a condition term: {p[1]}')
         if p[1] == '$':
-            message = 'Potential wrong use of anonymous string on line {}'.format(p.lineno(1))
-            logger.info(message)
+            logger.info(f'Potential wrong use of anonymous string on line {p.lineno(1)}')
 
         self._add_element(ElementTypes.TERM, p[1])
 
@@ -1183,7 +1180,7 @@ class Plyara(Parser):
             self.parser.errok()  # This is a method from PLY to reset the error state from parsing a comment
             self._rule_comments.append(p)
         else:
-            message = 'Unknown text {} for token of type {} on line {}'.format(p.value, p.type, p.lineno)
+            message = f'Unknown text {p.value} for token of type {p.type} on line {p.lineno}'
             raise ParseTypeError(message, p.lineno, p.lexpos)
 
     @staticmethod
@@ -1198,26 +1195,24 @@ class Plyara(Parser):
             if t.value.lower() in string.hexdigits:
                 t.lexer.hex_escape -= 1
             else:
-                raise ParseTypeError('Invalid hex character: {!r}, at line: {}'.format(t.value, t.lexer.lineno),
+                raise ParseTypeError(f'Invalid hex character: {t.value!r}, at line: {t.lexer.lineno}',
                                      t.lexer.lineno, t.lexer.lexpos)
         elif t.lexer.escape == 1:
-            raise ParseTypeError('Invalid escape sequence: \\{}, at line: {}'.format(t.value, t.lexer.lineno),
+            raise ParseTypeError(f'Invalid escape sequence: \\{t.value}, at line: {t.lexer.lineno}',
                                  t.lexer.lineno, t.lexer.lexpos)
 
     def _add_string_modifier(self, p):
         mod_str = p[1]
         prev_mod_with_args = False
         if mod_str in self.string_modifiers:
-            message = 'Duplicate string modifier {} on line {}'.format(mod_str, p.lineno(1))
-            raise ParseTypeError(message, p.lineno, p.lexpos)
+            raise ParseTypeError(f'Duplicate string modifier {mod_str} on line {p.lineno(1)}', p.lineno, p.lexpos)
         if mod_str in self.EXCLUSIVE_TEXT_MODIFIERS:
             prev_mods = {x for x in self.string_modifiers if isinstance(x, str)}
             excluded_modifiers = prev_mods & ({mod_str} ^ self.EXCLUSIVE_TEXT_MODIFIERS)
             if excluded_modifiers:
-                prev_mod_str = excluded_modifiers.pop()
-                message = ('Mutually exclusive string modifier use of {} on line {} after {} usage'
-                           .format(mod_str, p.lineno(1), prev_mod_str))
-                raise ParseTypeError(message, p.lineno, p.lexpos)
+                pr_mod_str = excluded_modifiers.pop()
+                msg = f'Mutually exclusive string modifier use: {mod_str}, line {p.lineno(1)}, after {pr_mod_str} usage'
+                raise ParseTypeError(msg, p.lineno, p.lexpos)
         if self.string_modifiers:
             # Convert previously created modifiers with args to strings
             if mod_str.startswith('base64') and isinstance(self.string_modifiers[-1], YaraBase64):
@@ -1232,7 +1227,7 @@ class Plyara(Parser):
                 prev_mod_with_args = True
         if not prev_mod_with_args:
             self._add_element(ElementTypes.STRINGS_MODIFIER, mod_str)
-            logger.debug('Matched a string modifier: {}'.format(mod_str))
+            logger.debug(f'Matched a string modifier: {mod_str}')
 
 
 class YaraXor(str):
