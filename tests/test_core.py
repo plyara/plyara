@@ -22,7 +22,7 @@ from plyara.exceptions import ParseTypeError, ParseValueError
 
 UNHANDLED_RULE_MSG = 'Unhandled Test Rule: {}'
 
-data_dir = pathlib.Path('tests').joinpath('data')
+DATA_DIR = pathlib.Path(__file__).parent.joinpath('data')
 
 
 class TestRuleParser(unittest.TestCase):
@@ -32,82 +32,73 @@ class TestRuleParser(unittest.TestCase):
         self.parser = Plyara()
 
     def test_import_pe(self):
-        with data_dir.joinpath('import_ruleset_pe.yar').open('r') as fh:
-            inputString = fh.read()
+        input_string = DATA_DIR.joinpath('import_ruleset_pe.yar').read_text()
 
-        result = self.parser.parse_string(inputString)
+        result = self.parser.parse_string(input_string)
 
         for rule in result:
             self.assertIn('pe', rule['imports'])
 
     def test_import_elf(self):
-        with data_dir.joinpath('import_ruleset_elf.yar').open('r') as fh:
-            inputString = fh.read()
+        input_string = DATA_DIR.joinpath('import_ruleset_elf.yar').read_text()
 
-        result = self.parser.parse_string(inputString)
+        result = self.parser.parse_string(input_string)
 
         for rule in result:
             self.assertIn('elf', rule['imports'])
 
     def test_import_cuckoo(self):
-        with data_dir.joinpath('import_ruleset_cuckoo.yar').open('r') as fh:
-            inputString = fh.read()
+        input_string = DATA_DIR.joinpath('import_ruleset_cuckoo.yar').read_text()
 
-        result = self.parser.parse_string(inputString)
+        result = self.parser.parse_string(input_string)
 
         for rule in result:
             self.assertIn('cuckoo', rule['imports'])
 
     def test_import_magic(self):
-        with data_dir.joinpath('import_ruleset_magic.yar').open('r') as fh:
-            inputString = fh.read()
+        input_string = DATA_DIR.joinpath('import_ruleset_magic.yar').read_text()
 
-        result = self.parser.parse_string(inputString)
+        result = self.parser.parse_string(input_string)
 
         for rule in result:
             self.assertIn('magic', rule['imports'])
 
     def test_import_hash(self):
-        with data_dir.joinpath('import_ruleset_hash.yar').open('r') as fh:
-            inputString = fh.read()
+        input_string = DATA_DIR.joinpath('import_ruleset_hash.yar').read_text()
 
-        result = self.parser.parse_string(inputString)
+        result = self.parser.parse_string(input_string)
 
         for rule in result:
             self.assertIn('hash', rule['imports'])
 
     def test_import_math(self):
-        with data_dir.joinpath('import_ruleset_math.yar').open('r') as fh:
-            inputString = fh.read()
+        input_string = DATA_DIR.joinpath('import_ruleset_math.yar').read_text()
 
-        result = self.parser.parse_string(inputString)
+        result = self.parser.parse_string(input_string)
 
         for rule in result:
             self.assertIn('math', rule['imports'])
 
     def test_import_dotnet(self):
-        with data_dir.joinpath('import_ruleset_dotnet.yar').open('r') as fh:
-            inputString = fh.read()
+        input_string = DATA_DIR.joinpath('import_ruleset_dotnet.yar').read_text()
 
-        result = self.parser.parse_string(inputString)
+        result = self.parser.parse_string(input_string)
 
         for rule in result:
             self.assertIn('dotnet', rule['imports'])
 
     def test_import_androguard(self):
-        with data_dir.joinpath('import_ruleset_androguard.yar').open('r') as fh:
-            inputString = fh.read()
+        input_string = DATA_DIR.joinpath('import_ruleset_androguard.yar').read_text()
 
-        result = self.parser.parse_string(inputString)
+        result = self.parser.parse_string(input_string)
 
         for rule in result:
             self.assertIn('androguard', rule['imports'])
 
     def test_scopes(self):
-        with data_dir.joinpath('scope_ruleset.yar').open('r') as fh:
-            inputString = fh.read()
+        input_string = DATA_DIR.joinpath('scope_ruleset.yar').read_text()
 
-        result = self.parser.parse_string(inputString)
+        result = self.parser.parse_string(input_string)
 
         for entry in result:
             rulename = entry['rule_name']
@@ -125,10 +116,9 @@ class TestRuleParser(unittest.TestCase):
                 raise AssertionError(UNHANDLED_RULE_MSG.format(rulename))
 
     def test_tags(self):
-        with data_dir.joinpath('tag_ruleset.yar').open('r') as fh:
-            inputString = fh.read()
+        input_string = DATA_DIR.joinpath('tag_ruleset.yar').read_text()
 
-        result = self.parser.parse_string(inputString)
+        result = self.parser.parse_string(input_string)
 
         for entry in result:
             rulename = entry['rule_name']
@@ -152,10 +142,9 @@ class TestRuleParser(unittest.TestCase):
                 raise AssertionError(UNHANDLED_RULE_MSG.format(rulename))
 
     def test_metadata(self):
-        with data_dir.joinpath('metadata_ruleset.yar').open('r') as fh:
-            inputString = fh.read()
+        input_string = DATA_DIR.joinpath('metadata_ruleset.yar').read_text()
 
-        result = self.parser.parse_string(inputString)
+        result = self.parser.parse_string(input_string)
 
         for entry in result:
             rulename = entry['rule_name']
@@ -190,10 +179,9 @@ class TestRuleParser(unittest.TestCase):
                 raise AssertionError(UNHANDLED_RULE_MSG.format(rulename))
 
     def test_strings(self):
-        with data_dir.joinpath('string_ruleset.yar').open('r') as fh:
-            inputString = fh.read()
+        input_string = DATA_DIR.joinpath('string_ruleset.yar').read_text()
 
-        result = self.parser.parse_string(inputString)
+        result = self.parser.parse_string(input_string)
 
         for entry in result:
             rulename = entry['rule_name']
@@ -325,17 +313,15 @@ class TestRuleParser(unittest.TestCase):
             plyara.parse_string(inputRules)
 
     def test_conditions(self):
-        with data_dir.joinpath('condition_ruleset.yar').open('r') as fh:
-            inputString = fh.read()
+        input_string = DATA_DIR.joinpath('condition_ruleset.yar').read_text()
 
         # Just checking for parsing errors
-        self.parser.parse_string(inputString)
+        self.parser.parse_string(input_string)
 
     def test_include(self):
-        with data_dir.joinpath('include_ruleset.yar').open('r') as fh:
-            inputString = fh.read()
+        input_string = DATA_DIR.joinpath('include_ruleset.yar').read_text()
 
-        result = self.parser.parse_string(inputString)
+        result = self.parser.parse_string(input_string)
         self.assertEqual(result[0]['includes'], ['string_ruleset.yar'])
 
     def test_include_statements(self):
@@ -343,24 +329,22 @@ class TestRuleParser(unittest.TestCase):
         self.assertEqual(len(self.parser.includes), 3)
 
     def test_rules_from_yara_project(self):
-        with data_dir.joinpath('test_rules_from_yara_project.yar').open('r') as fh:
-            inputRules = fh.read()
+        input_rules = DATA_DIR.joinpath('test_rules_from_yara_project.yar').read_text()
 
         plyara = Plyara()
-        output = plyara.parse_string(inputRules)
+        output = plyara.parse_string(input_rules)
 
         self.assertEqual(len(output), 293)
 
     def test_multiple_threads(self):
-        with data_dir.joinpath('test_rules_from_yara_project.yar').open('r') as fh:
-            inputRules = fh.read()
+        input_rules = DATA_DIR.joinpath('test_rules_from_yara_project.yar').read_text()
 
         def parse_rules(rules):
             plyara = Plyara()
-            return plyara.parse_string(inputRules)
+            return plyara.parse_string(input_rules)
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=4) as e:
-            futs = [e.submit(parse_rules, inputRules) for _ in range(4)]
+            futs = [e.submit(parse_rules, input_rules) for _ in range(4)]
             for fut in concurrent.futures.as_completed(futs):
                 self.assertEqual(len(fut.result()), 293)
 
@@ -369,11 +353,10 @@ class TestRuleParser(unittest.TestCase):
         parser = Plyara()
 
         # open a ruleset with one or more rules
-        with data_dir.joinpath('test_ruleset_2_rules.yar').open('r') as fh:
-            inputRules = fh.read()
+        input_rules = DATA_DIR.joinpath('test_ruleset_2_rules.yar').read_text()
 
         # parse the rules
-        parser.parse_string(inputRules)
+        parser.parse_string(input_rules)
 
         # clear the parser's state
         parser.clear()
@@ -382,11 +365,10 @@ class TestRuleParser(unittest.TestCase):
         self.assertEqual(parser.lexer.lineno, 1)
 
         # open a ruleset with one rule
-        with data_dir.joinpath('test_ruleset_1_rule.yar').open('r') as fh:
-            inputRules = fh.read()
+        input_rules = DATA_DIR.joinpath('test_ruleset_1_rule.yar').read_text()
 
         # parse the rules
-        result = parser.parse_string(inputRules)
+        result = parser.parse_string(input_rules)
 
         # does the result contain just the rule from the second parse
         self.assertEqual(len(result), 1)
@@ -400,8 +382,7 @@ class TestRuleParserKVMeta(unittest.TestCase):
         self.parser = Plyara(meta_as_kv=True)
 
     def test_meta_kv(self):
-        with data_dir.joinpath('metakv_test.yar').open('r') as fh:
-            inputString = fh.read()
+        input_string = DATA_DIR.joinpath('metakv_test.yar').read_text()
         reference1 = {'author': 'Malware Utkonos',
                       'date': '2020-01-04',
                       'tlp': 'Green'}
@@ -409,7 +390,7 @@ class TestRuleParserKVMeta(unittest.TestCase):
                       'date': '2020-01-04',
                       'tlp': 'Green'}
 
-        result = self.parser.parse_string(inputString)
+        result = self.parser.parse_string(input_string)
 
         self.assertEqual(result[0]['metadata_kv'], reference1)
         self.assertEqual(result[1]['metadata_kv'], reference2)
@@ -419,7 +400,7 @@ class TestYaraRules(unittest.TestCase):
     """Check as wide a variety of yara rules as possible."""
 
     def test_multiple_rules(self):
-        inputString = '''
+        input_string = '''
         rule FirstRule {
             meta:
                 author = "Andrés Iniesta"
@@ -449,7 +430,7 @@ class TestYaraRules(unittest.TestCase):
         '''
 
         plyara = Plyara()
-        result = plyara.parse_string(inputString)
+        result = plyara.parse_string(input_string)
 
         self.assertEqual(len(result), 3)
         kv_list = [(k,) + (v, ) for dic in result[0]['metadata'] for k, v in dic.items()]
@@ -460,7 +441,7 @@ class TestYaraRules(unittest.TestCase):
         self.assertEqual([x['name'] for x in result[0]['strings']], ['$a', '$b'])
 
     def disable_test_rule_name_imports_and_scopes(self):
-        inputStringNIS = r'''
+        input_string_nis = r'''
         rule four {meta: i = "j" strings: $a = "b" condition: true }
 
         global rule five {meta: i = "j" strings: $a = "b" condition: false }
@@ -481,7 +462,7 @@ class TestYaraRules(unittest.TestCase):
         '''
 
         plyara = Plyara()
-        result = plyara.parse_string(inputStringNIS)
+        result = plyara.parse_string(input_string_nis)
 
         self.assertEqual(len(result), 7)
 
@@ -550,7 +531,7 @@ class TestYaraRules(unittest.TestCase):
                 self.assertTrue('global' in rule['scopes'] and 'private' in rule['scopes'])
 
     def test_rule_name(self):
-        inputRule = r'''
+        input_rule = r'''
         rule testName
         {
         meta:
@@ -568,13 +549,13 @@ class TestYaraRules(unittest.TestCase):
         '''
 
         plyara = Plyara()
-        result = plyara.parse_string(inputRule)
+        result = plyara.parse_string(input_rule)
 
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]['rule_name'], 'testName')
 
     def test_store_raw(self):
-        inputRule = r'''
+        input_rule = r'''
         rule testName
         {
         meta:
@@ -608,7 +589,7 @@ class TestYaraRules(unittest.TestCase):
         '''
 
         plyara = Plyara(store_raw_sections=True)
-        result = plyara.parse_string(inputRule)
+        result = plyara.parse_string(input_rule)
 
         self.assertEqual(len(result), 4)
         self.assertTrue(result[0].get('raw_meta', False))
@@ -628,14 +609,14 @@ class TestYaraRules(unittest.TestCase):
         self.assertTrue(result[3].get('raw_condition', False))
 
     def test_tags(self):
-        inputTags = r'''
+        input_tags = r'''
         rule eleven: tag1 {meta: i = "j" strings: $a = "b" condition: true }
 
         rule twelve : tag1 tag2 {meta: i = "j" strings: $a = "b" condition: true }
         '''
 
         plyara = Plyara()
-        result = plyara.parse_string(inputTags)
+        result = plyara.parse_string(input_tags)
 
         for rule in result:
             rule_name = rule['rule_name']
@@ -648,7 +629,7 @@ class TestYaraRules(unittest.TestCase):
                 self.assertIn('tag2', rule['tags'])
 
     def test_empty_string(self):
-        inputRules = r'''
+        input_rules = r'''
         rule thirteen
         {
         meta:
@@ -666,7 +647,7 @@ class TestYaraRules(unittest.TestCase):
         '''
 
         plyara = Plyara()
-        result = plyara.parse_string(inputRules)
+        result = plyara.parse_string(input_rules)
 
         for rule in result:
             rule_name = rule['rule_name']
@@ -674,7 +655,7 @@ class TestYaraRules(unittest.TestCase):
                 self.assertEqual(len(rule['metadata']), 3)
 
     def test_bytestring(self):
-        inputRules = r'''
+        input_rules = r'''
         rule testName
         {
         strings:
@@ -700,7 +681,7 @@ class TestYaraRules(unittest.TestCase):
         '''
 
         plyara = Plyara()
-        result = plyara.parse_string(inputRules)
+        result = plyara.parse_string(input_rules)
 
         self.assertEqual(len(result), 1)
         for rule in result:
@@ -722,7 +703,7 @@ class TestYaraRules(unittest.TestCase):
 
     @staticmethod
     def test_nested_bytestring():
-        inputRules = r'''
+        input_rules = r'''
         rule sample {
             strings:
                 $ = { 4D 5A ( 90 ( 00 | 01 ) | 89 ) }
@@ -732,10 +713,10 @@ class TestYaraRules(unittest.TestCase):
         '''
 
         plyara = Plyara()
-        plyara.parse_string(inputRules)
+        plyara.parse_string(input_rules)
 
     def test_bytestring_bad_jump(self):
-        inputRules = r'''
+        input_rules = r'''
         rule testName
         {
         strings:
@@ -748,10 +729,10 @@ class TestYaraRules(unittest.TestCase):
 
         plyara = Plyara()
         with self.assertRaises(ParseValueError):
-            plyara.parse_string(inputRules)
+            plyara.parse_string(input_rules)
 
     def test_bytestring_bad_group(self):
-        inputRules = r'''
+        input_rules = r'''
         rule sample {
             strings:
                 $ = { 4D 5A ( 90 ( 00 | 01 ) | 89 ) ) }
@@ -762,10 +743,10 @@ class TestYaraRules(unittest.TestCase):
 
         plyara = Plyara()
         with self.assertRaises(ParseValueError):
-            plyara.parse_string(inputRules)
+            plyara.parse_string(input_rules)
 
     def test_bytestring_bad_hexchar(self):
-        inputRules = r'''
+        input_rules = r'''
         rule sample {
             strings:
                 $ = { 4D 5X }
@@ -776,10 +757,10 @@ class TestYaraRules(unittest.TestCase):
 
         plyara = Plyara()
         with self.assertRaises(ParseTypeError):
-            plyara.parse_string(inputRules)
+            plyara.parse_string(input_rules)
 
     def test_rexstring(self):
-        inputRules = r'''
+        input_rules = r'''
         rule testName
         {
         strings:
@@ -799,7 +780,7 @@ class TestYaraRules(unittest.TestCase):
         '''
 
         plyara = Plyara()
-        result = plyara.parse_string(inputRules)
+        result = plyara.parse_string(input_rules)
 
         self.assertEqual(len(result), 1)
         for rule in result:
@@ -823,7 +804,7 @@ class TestYaraRules(unittest.TestCase):
                         self.assertFalse('Unknown string name...')
 
     def test_string(self):
-        inputRules = r'''
+        input_rules = r'''
         rule testName
         {
         strings:
@@ -848,7 +829,7 @@ class TestYaraRules(unittest.TestCase):
         '''
 
         plyara = Plyara()
-        result = plyara.parse_string(inputRules)
+        result = plyara.parse_string(input_rules)
 
         self.assertEqual(len(result), 1)
         for rule in result:
@@ -869,55 +850,55 @@ class TestYaraRules(unittest.TestCase):
             self.assertEqual(rule['strings'][13]['value'], 'test string')
 
     def test_raw_condition_contains_all_condition_text(self):
-        inputRules = r'''
+        input_rules = r'''
         rule testName {condition: any of them}
         '''
 
         plyara = Plyara()
-        result = plyara.parse_string(inputRules)
+        result = plyara.parse_string(input_rules)
 
         self.assertEqual(result[0]['raw_condition'], 'condition: any of them')
 
     def test_raw_strings_contains_all_string_text(self):
-        inputRules = r'''
+        input_rules = r'''
         rule testName {strings: $a = "1" condition: true}
         '''
 
         plyara = Plyara()
-        result = plyara.parse_string(inputRules)
+        result = plyara.parse_string(input_rules)
 
         self.assertEqual(result[0]['raw_strings'], 'strings: $a = "1" ')
 
     def test_raw_meta_contains_all_meta_text(self):
-        inputRules = r'''
+        input_rules = r'''
         rule testName {meta: author = "Test" condition: true}
         '''
 
         plyara = Plyara()
-        result = plyara.parse_string(inputRules)
+        result = plyara.parse_string(input_rules)
 
         self.assertEqual(result[0]['raw_meta'], 'meta: author = "Test" ')
 
         # strings after meta
-        inputRules = r'''
+        input_rules = r'''
         rule testName {meta: author = "Test" strings: $a = "1"}
         '''
 
         plyara = Plyara()
-        result = plyara.parse_string(inputRules)
+        result = plyara.parse_string(input_rules)
 
         self.assertEqual(result[0]['raw_meta'], 'meta: author = "Test" ')
 
     def test_parse_file_without_rules_returns_empty_list(self):
-        inputRules = str()
+        input_rules = str()
 
         plyara = Plyara()
-        result = plyara.parse_string(inputRules)
+        result = plyara.parse_string(input_rules)
 
         self.assertEqual(result, list())
 
     def test_lineno_incremented_by_newlines_in_bytestring(self):
-        inputRules = r'''
+        input_rules = r'''
         rule sample
         {
             strings:
@@ -932,36 +913,33 @@ class TestYaraRules(unittest.TestCase):
 
         with self.assertRaises(ParseTypeError):
             try:
-                plyara.parse_string(inputRules)
+                plyara.parse_string(input_rules)
             except ParseTypeError as e:
                 self.assertEqual(7, e.lineno)
                 raise e
 
     def test_lineno_incremented_by_windows_newlines_in_bytestring(self):
-        with data_dir.joinpath('windows_newline_ruleset_with_error.yar').open('r') as fh:
-            inputRules = fh.read()
+        input_rules = DATA_DIR.joinpath('windows_newline_ruleset_with_error.yar').read_text()
 
         plyara = Plyara()
 
         with self.assertRaises(ParseTypeError):
             try:
-                plyara.parse_string(inputRules)
+                plyara.parse_string(input_rules)
             except ParseTypeError as e:
                 self.assertEqual(6, e.lineno)
                 raise e
 
     def test_lineno_incremented_by_windows_newlines_in_comment(self):
-        with data_dir.joinpath('windows_newline_ruleset_comment.yar').open('r') as fh:
-            inputRules = fh.read()
+        input_rules = DATA_DIR.joinpath('windows_newline_ruleset_comment.yar').read_text()
 
         plyara = Plyara()
 
-        plyara.parse_string(inputRules)
+        plyara.parse_string(input_rules)
         self.assertEqual(plyara.lexer.lineno, 13)
 
     def test_windows_CRNL(self):
-        with open('tests/data/windows_newline_ruleset.yar', 'r') as fh:
-            inputRules = fh.read()
+        input_rules = DATA_DIR.joinpath('windows_newline_ruleset.yar').read_text()
 
         reference = [{'condition_terms': ['all', 'of', 'them'],
                       'raw_condition': "condition:\nall of them\n",
@@ -974,7 +952,7 @@ class TestYaraRules(unittest.TestCase):
                                    'value': '{ 00\n      00 }'}]}]
 
         plyara = Plyara()
-        result = plyara.parse_string(inputRules)
+        result = plyara.parse_string(input_rules)
 
         self.assertEqual(result, reference)
 
@@ -995,11 +973,10 @@ class TestYaraRules(unittest.TestCase):
         self.assertEqual(result[0].get('condition_terms')[8], '@')
 
     def test_xor_modified_condition(self):
-        with data_dir.joinpath('xor_modifier_ruleset.yar').open('r') as fh:
-            inputRules = fh.read()
+        input_rules = DATA_DIR.joinpath('xor_modifier_ruleset.yar').read_text()
 
         plyara = Plyara()
-        results = plyara.parse_string(inputRules)
+        results = plyara.parse_string(input_rules)
 
         for res in results:
             yr_mods = res.get('strings')[0]['modifiers']
@@ -1010,11 +987,10 @@ class TestYaraRules(unittest.TestCase):
                 self.assertIn('(0x10', xor_string_mod)
 
     def test_base64_modified_condition(self):
-        with data_dir.joinpath('base64_modifier_ruleset.yar').open('r') as fh:
-            inputRules = fh.read()
+        input_rules = DATA_DIR.joinpath('base64_modifier_ruleset.yar').read_text()
 
         plyara = Plyara()
-        results = plyara.parse_string(inputRules)
+        results = plyara.parse_string(input_rules)
 
         for res in results:
             yr_mods = res.get('strings')[0]['modifiers']

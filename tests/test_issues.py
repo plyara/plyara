@@ -19,7 +19,7 @@ import unittest
 from plyara.core import Plyara
 from plyara.utils import rebuild_yara_rule
 
-data_dir = pathlib.Path('tests').joinpath('data')
+DATA_DIR = pathlib.Path(__file__).parent.joinpath('data')
 
 
 class TestGithubIssues(unittest.TestCase):
@@ -27,11 +27,10 @@ class TestGithubIssues(unittest.TestCase):
 
     # Reference: https://github.com/plyara/plyara/issues/63
     def issue_63(self):
-        with data_dir.joinpath('comment_only.yar').open('r') as fh:
-            inputString = fh.read()
+        input_string = DATA_DIR.joinpath('comment_only.yar').read_text()
 
         plyara = Plyara()
-        result = plyara.parse_string(inputString)
+        result = plyara.parse_string(input_string)
 
         self.assertEqual(result, list())
 
@@ -40,7 +39,7 @@ class TestGithubIssues(unittest.TestCase):
         rules = list()
         plyara = Plyara()
 
-        for file in data_dir.glob('issue99*.yar'):
+        for file in DATA_DIR.glob('issue99*.yar'):
             with open(file, 'r') as fh:
                 yararules = plyara.parse_string(fh.read())
                 self.assertEqual(len(yararules), 1)
@@ -50,11 +49,10 @@ class TestGithubIssues(unittest.TestCase):
 
     # Reference: https://github.com/plyara/plyara/issues/107
     def issue_107(self):
-        with data_dir.joinpath('issue107.yar').open('r') as fh:
-            inputString = fh.read()
+        input_string = DATA_DIR.joinpath('issue107.yar').read_text()
 
         plyara = Plyara()
-        result = plyara.parse_string(inputString)
+        result = plyara.parse_string(input_string)
 
         expected = ['(', '#TEST1', '>', '5', ')', 'and', '(', '#test2', '>', '5', ')']
 
@@ -62,13 +60,11 @@ class TestGithubIssues(unittest.TestCase):
 
     # Reference: https://github.com/plyara/plyara/issues/109
     def issue_109(self):
-        with data_dir.joinpath('issue109.yar').open('r', encoding='utf-8') as fh:
-            inputString = fh.read()
-        with data_dir.joinpath('issue109_good_enough.yar').open('r', encoding='utf-8') as fh:
-            test_result = fh.read()
+        input_string = DATA_DIR.joinpath('issue109.yar').read_text()
+        test_result = DATA_DIR.joinpath('issue109_good_enough.yar').read_text()
 
         plyara = Plyara()
-        plyara.parse_string(inputString)
+        plyara.parse_string(input_string)
 
         rebuilt_rules = rebuild_yara_rule(plyara.rules[0])
 

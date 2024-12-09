@@ -22,7 +22,7 @@ from plyara.utils import rebuild_yara_rule
 from plyara.utils import detect_imports, detect_dependencies
 from plyara.utils import is_valid_rule_name, is_valid_rule_tag
 
-data_dir = pathlib.Path('tests').joinpath('data')
+DATA_DIR = pathlib.Path(__file__).parent.joinpath('data')
 
 
 class TestUtilities(unittest.TestCase):
@@ -33,10 +33,9 @@ class TestUtilities(unittest.TestCase):
         self.maxDiff = None
 
     def test_generate_hash(self):
-        with data_dir.joinpath('logic_collision_ruleset.yar').open('r') as fh:
-            inputString = fh.read()
+        input_string = DATA_DIR.joinpath('logic_collision_ruleset.yar').read_text()
 
-        result = Plyara().parse_string(inputString)
+        result = Plyara().parse_string(input_string)
 
         rule_mapping = {}
 
@@ -54,14 +53,11 @@ class TestUtilities(unittest.TestCase):
             self.assertTrue(len(set(hashvalues)) == 1, 'Collision detection failure for {}'.format(setname))
 
     def test_generate_hash_output(self):
-        with data_dir.joinpath('rulehashes.txt').open('r') as fh:
-            rule_hashes = fh.read().splitlines()
+        rule_hashes = DATA_DIR.joinpath('rulehashes.txt').read_text().splitlines()
+        # Rules containing "(1..#)" or similar iterators cause Unhandled String Count Condition errors
+        input_string = DATA_DIR.joinpath('test_rules_from_yara_project.yar').read_text()
 
-        with data_dir.joinpath('test_rules_from_yara_project.yar').open('r') as fh:
-            # Rules containing "(1..#)" or similar iterators cause Unhandled String Count Condition errors
-            inputString = fh.read()
-
-        results = Plyara().parse_string(inputString)
+        results = Plyara().parse_string(input_string)
 
         for index, result in enumerate(results):
             rulehash = generate_hash(result)
@@ -137,12 +133,10 @@ class TestUtilities(unittest.TestCase):
         self.assertFalse(is_valid_rule_tag('x' * 129))
 
     def test_rebuild_yara_rule(self):
-        with data_dir.joinpath('rebuild_ruleset.yar').open('r', encoding='utf-8') as fh:
-            inputString = fh.read()
-        with data_dir.joinpath('rebuild_ruleset_good_enough.yar').open('r', encoding='utf-8') as fh:
-            test_result = fh.read()
+        input_string = DATA_DIR.joinpath('rebuild_ruleset.yar').read_text(encoding='utf-8')
+        test_result = DATA_DIR.joinpath('rebuild_ruleset_good_enough.yar').read_text(encoding='utf-8')
 
-        result = Plyara().parse_string(inputString)
+        result = Plyara().parse_string(input_string)
 
         rebuilt_rules = str()
         for rule in result:
@@ -175,10 +169,9 @@ class TestUtilities(unittest.TestCase):
             self.assertIn('digit_value = 10', unparsed)
 
     def test_detect_dependencies(self):
-        with data_dir.joinpath('detect_dependencies_ruleset.yar').open('r') as fh:
-            inputString = fh.read()
+        input_string = DATA_DIR.joinpath('detect_dependencies_ruleset.yar').read_text()
 
-        result = Plyara().parse_string(inputString)
+        result = Plyara().parse_string(input_string)
 
         self.assertEqual(detect_dependencies(result[0]), list())
         self.assertEqual(detect_dependencies(result[1]), list())
@@ -200,9 +193,9 @@ class TestUtilities(unittest.TestCase):
 
     def test_detect_imports(self):
         for imp in ('androguard', 'cuckoo', 'dotnet', 'elf', 'hash', 'magic', 'math', 'pe'):
-            with data_dir.joinpath('import_ruleset_{}.yar'.format(imp)).open('r') as fh:
-                inputString = fh.read()
-            results = Plyara().parse_string(inputString)
+            input_string = DATA_DIR.joinpath(f'import_ruleset_{imp}.yar').read_text()
+
+            results = Plyara().parse_string(input_string)
             for rule in results:
                 self.assertEqual(detect_imports(rule), [imp])
 

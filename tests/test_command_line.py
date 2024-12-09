@@ -22,7 +22,7 @@ import unittest
 
 from plyara.command_line import main
 
-data_dir = pathlib.Path('tests').joinpath('data')
+DATA_DIR = pathlib.Path(__file__).parent.joinpath('data')
 
 
 @contextlib.contextmanager
@@ -42,7 +42,7 @@ class TestCLI(unittest.TestCase):
 
     def test_plyara_script(self):
         """Check that the output hash of CLI output matches the expected hash."""
-        test_file_path = data_dir.joinpath('test_file.txt')
+        test_file_path = DATA_DIR.joinpath('test_file.txt')
 
         # Without logging
         with captured_output() as (out, err):
