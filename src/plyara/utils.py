@@ -304,24 +304,24 @@ def generate_hash(rule, secure_hash=None):
     # Sort all string values
     string_values.sort()
 
-    for condition in conditions:
+    for cond in conditions:
         # All string references (sort for consistency)
-        if condition == 'them' or condition == '$*':
+        if cond == 'them' or cond == '$*':
             all_values = '<STRINGVALUE>{}'.format(' | '.join(string_values))
-            if condition == 'them':
+            if cond == 'them':
                 condition_mapping.extend(['(', all_values, ')'])
             else:
                 condition_mapping.append(all_values)
 
-        elif condition.startswith('$') and condition != '$':
+        elif cond.startswith('$') and cond != '$':
             # Exact Match
-            if condition in string_mapping['named']:
-                condition_mapping.append('<STRINGVALUE>{}'.format(string_mapping['named'][condition]))
+            if cond in string_mapping['named']:
+                condition_mapping.append('<STRINGVALUE>{}'.format(string_mapping['named'][cond]))
             # Wildcard Match
-            elif '*' in condition:
+            elif '*' in cond:
                 wildcard_strings = list()
-                condition = condition.replace('$', r'\$').replace('*', '.*')
-                pattern = re.compile(condition)
+                cond = cond.replace('$', r'\$').replace('*', '.*')
+                pattern = re.compile(cond)
 
                 for name, value in string_mapping['named'].items():
                     if pattern.match(name):
@@ -330,31 +330,31 @@ def generate_hash(rule, secure_hash=None):
                 wildcard_strings.sort()
                 condition_mapping.append('<STRINGVALUE>{}'.format(' | '.join(wildcard_strings)))
             else:
-                logger.error('[!] Unhandled String Condition "{}" in "{}"'.format(condition, ' '.join(conditions)))
+                logger.error('[!] Unhandled String Condition "{}" in "{}"'.format(cond, ' '.join(conditions)))
 
         # Count Match
-        elif condition[:1] in condition_string_prefaces and condition not in ('#', '!='):
-            symbol = condition[:1]
-            condition = '${}'.format(condition[1:])
+        elif cond[:1] in condition_string_prefaces and cond not in ('#', '!='):
+            symbol = cond[:1]
+            cond = '${}'.format(cond[1:])
             if symbol == '#':
                 symbol_type = 'COUNTOFSTRING'
             elif symbol == '@':
                 symbol_type = 'POSITIONOFSTRING'
             elif symbol == '!':
                 symbol_type = 'LENGTHOFSTRING'
-            elif symbol == condition == '$':
+            elif symbol == cond == '$':
                 symbol_type = 'ANONYMOUSSTRING'
             else:
                 symbol_type = 'UNKNOWN'
 
-            if condition in string_mapping['named']:
-                condition_mapping.append('<{}>{}'.format(symbol_type, string_mapping['named'][condition]))
+            if cond in string_mapping['named']:
+                condition_mapping.append('<{}>{}'.format(symbol_type, string_mapping['named'][cond]))
             else:
-                condition_mapping.append('<{}>{}'.format(symbol_type, condition))
+                condition_mapping.append('<{}>{}'.format(symbol_type, cond))
                 logger.error(f'[!] Unhandled {symbol_type} Condition "{symbol}" in "{' '.join(conditions)}"')
 
         else:
-            condition_mapping.append(condition)
+            condition_mapping.append(cond)
     hf.update(''.join(condition_mapping).encode())
     hexdigest = hf.hexdigest()
 
