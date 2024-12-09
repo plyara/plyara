@@ -230,7 +230,7 @@ def generate_logic_hash(rule):
                 wildcard_strings.sort()
                 condition_mapping.append('<STRINGVALUE>{}'.format(' | '.join(wildcard_strings)))
             else:
-                logger.error('[!] Unhandled String Condition {}'.format(condition))
+                logger.error(f'Unhandled String Condition {condition}')
 
         # Count Match
         elif condition.startswith('#') and condition != '#':
@@ -239,7 +239,7 @@ def generate_logic_hash(rule):
             if condition in string_mapping['named']:
                 condition_mapping.append('<COUNTOFSTRING>{}'.format(string_mapping['named'][condition]))
             else:
-                logger.error('[!] Unhandled String Count Condition {}'.format(condition))
+                logger.error(f'Unhandled String Count Condition {condition}')
 
         else:
             condition_mapping.append(condition)
@@ -330,7 +330,8 @@ def generate_hash(rule, secure_hash=None):
                 wildcard_strings.sort()
                 condition_mapping.append('<STRINGVALUE>{}'.format(' | '.join(wildcard_strings)))
             else:
-                logger.error('[!] Unhandled String Condition "{}" in "{}"'.format(cond, ' '.join(conditions)))
+                condstr = ' '.join(conditions)
+                logger.error(f'Unhandled String Condition "{cond}" in "{condstr}"')
 
         # Count Match
         elif cond[:1] in condition_string_prefaces and cond not in ('#', '!='):
@@ -351,7 +352,8 @@ def generate_hash(rule, secure_hash=None):
                 condition_mapping.append('<{}>{}'.format(symbol_type, string_mapping['named'][cond]))
             else:
                 condition_mapping.append('<{}>{}'.format(symbol_type, cond))
-                logger.error(f'[!] Unhandled {symbol_type} Condition "{symbol}" in "{' '.join(conditions)}"')
+                condstr = ' '.join(conditions)
+                logger.error(f'Unhandled {symbol_type} Condition "{symbol}" in "{condstr}"')
 
         else:
             condition_mapping.append(cond)
