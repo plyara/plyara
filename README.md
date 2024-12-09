@@ -2,8 +2,6 @@
 
 [![PyPi Version](http://img.shields.io/pypi/v/plyara.svg)](https://pypi.python.org/pypi/plyara)
 
-[![Code Health](https://api.codacy.com/project/badge/Grade/7bd0be1749804f0a8dd3d57f69888f68)](https://www.codacy.com/app/plyara/plyara)
-
 [![Documentation Status](https://readthedocs.org/projects/plyara/badge/?version=latest)](http://plyara.readthedocs.io/en/latest/?badge=latest)
 
 Parse [YARA](https://virustotal.github.io/yara/) rules into a dictionary representation.
