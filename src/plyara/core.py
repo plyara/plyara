@@ -80,7 +80,8 @@ class Parser:
         'math',
         'pe',
         'string',
-        'time'
+        'time',
+        'vt'
     }
 
     KEYWORDS = {
