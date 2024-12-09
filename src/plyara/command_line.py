@@ -18,6 +18,7 @@ This module contains command line script for parsing rules.
 """
 import argparse
 import json
+import pathlib
 import sys
 
 from plyara.core import Plyara
@@ -34,8 +35,7 @@ def main(arguments=None):
         args = parser.parse_args(arguments)
 
     try:
-        with open(args.file, 'r', encoding='utf-8') as fh:
-            input_string = fh.read()
+        input_string = pathlib.Path(args.file).read_text(encoding='utf-8')
     except FileNotFoundError as e:
         sys.exit(e)
 
