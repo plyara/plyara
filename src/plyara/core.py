@@ -335,6 +335,19 @@ class Parser:
         self._condition_start = None
         self._condition_end = None
 
+    @staticmethod
+    def _find_imports_in_condition(imports, condition_terms):
+        """Search a list of condition terms for any that use the given imports."""
+        used_imports = set()
+
+        for imp in imports:
+            for term in condition_terms:
+                if term.startswith(f'{imp}.'):
+                    used_imports.add(imp)
+                    break
+
+        return list(used_imports)
+
     def parse_string(self, input_string):
         """Take a string input expected to consist of YARA rules, and return list of dictionaries representing them.
 
@@ -351,7 +364,7 @@ class Parser:
             if any(self.imports):
                 if self.import_effects:
                     rule['imports'] = list(self.imports)
-                elif imports := [imp for imp in self.imports if f'{imp}.' in rule['raw_condition']]:
+                elif imports := self._find_imports_in_condition(self.imports, rule['condition_terms']):
                     rule['imports'] = imports
             if any(self.includes):
                 rule['includes'] = self.includes
