@@ -164,6 +164,9 @@ cython_debug/
 # PyCharm
 .idea/
 
+# Test files
+test.py
+
 ## macOS Section
 # General
 .DS_Store
