@@ -100,6 +100,29 @@ class TestGithubIssues(unittest.TestCase):
                 elif i == 1:
                     self.assertEqual(rule.get('imports'), ['pe'])
 
+    # Reference: https://github.com/plyara/plyara/issues/112
+    def issue_112(self):
+        input_string = DATA_DIR.joinpath('issue112.yar').read_text()
+
+        correct = {
+            'minus_bad': ['$str_bef', 'in', '(', '@str_after', '-', '512', '..', '@str_after', ')'],
+            'minus_good': ['$str_bef', 'in', '(', '@str_after', '-', '512', '..', '@str_after', ')'],
+            'minus_very_bad': ['$str_bef', 'in', '(', '@str_after', '-', '-512', '..', '@str_after', ')'],
+            'minus_very_very_bad': ['$str_bef', 'in', '(', '@str_after', '-', '-512', '..', '@str_after', ')'],
+            'minus_bad_hexnum': ['$str_bef', 'in', '(', '@str_after', '-', '0x200', '..', '@str_after', ')'],
+            'minus_good_hexnum': ['$str_bef', 'in', '(', '@str_after', '-', '0x200', '..', '@str_after', ')'],
+            'minus_very_bad_hexnum': ['$str_bef', 'in', '(', '@str_after', '-', '-0x200', '..', '@str_after', ')'],
+            'minus_very_very_bad_hexnum': ['$str_bef', 'in', '(', '@str_after', '-', '-0x200', '..', '@str_after', ')']
+        }
+
+        plyara = Plyara()
+        result = plyara.parse_string(input_string)
+
+        for rule in result.rules:
+            rule_name = rule['rule_name']
+            with self.subTest(rulename=rule_name):
+                self.assertListEqual(rule['condition_terms'], correct[rule_name])
+
     # Reference: https://github.com/plyara/plyara/issues/115
     def issue_115(self):
         input_string = DATA_DIR.joinpath('issue115.yar').read_text()

@@ -545,7 +545,7 @@ class Plyara(Parser):
 
     @staticmethod
     def t_HEXNUM(t):
-        r'0x[A-Fa-f0-9]+'  # noqa: D300, D400, D415
+        r'-?0x[A-Fa-f0-9]+'  # noqa: D300, D400, D415
         t.value = t.value
 
         return t
@@ -1094,14 +1094,59 @@ class Plyara(Parser):
     @staticmethod
     def p_expression(p):
         '''expression : expression term
-                      | term'''  # noqa: D205, D208, D209, D300, D400, D401, D403, D415
+                      | expression num_term
+                      | term
+                      | num_term'''  # noqa: D205, D208, D209, D300, D400, D401, D403, D415
+
+    def p_condition_num(self, p):
+        '''num_term   : NUM
+                      | HEXNUM'''  # noqa: D205, D208, D209, D300, D400, D401, D403, D415
+        operators = [
+            '..',
+            '-',
+            '~',
+            '*',
+            '\\',
+            '%',
+            '+',
+            '<<',
+            '>>',
+            '&',
+            '^',
+            '|',
+            '<',
+            '<=',
+            '>',
+            '>=',
+            '==',
+            '!=',
+            'defined',
+            'and',
+            'or'
+        ]
+
+        try:
+            last_term = self.terms[-1]
+        except IndexError:
+            logger.debug(f'Matched a condition term: {p[1]}')
+            self._add_element(ElementTypes.TERM, p[1])
+            return
+
+        if p[1].startswith('-') and last_term not in operators:
+            logger.debug('Matched a condition term: -')
+            self._add_element(ElementTypes.TERM, '-')
+            logger.debug(f'Matched a condition term: {p[1]}')
+            term = p[1].lstrip('-')
+            logger.debug(f'Matched a condition term: {term}')
+            self._add_element(ElementTypes.TERM, term)
+        else:
+            logger.debug(f'Matched a condition term: {p[1]}')
+            self._add_element(ElementTypes.TERM, p[1])
 
     def p_condition(self, p):
         '''term : FILESIZE_SIZE
                 | ID
                 | STRING
-                | NUM
-                | HEXNUM
                 | LPAREN
                 | RPAREN
                 | LBRACK
