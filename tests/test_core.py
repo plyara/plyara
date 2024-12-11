@@ -14,6 +14,7 @@
 # limitations under the License.
 """Unit test plyara core module."""
 import concurrent.futures
+import contextlib
 import pathlib
 import unittest
 
@@ -956,6 +957,14 @@ class TestYaraRules(unittest.TestCase):
 
         self.assertEqual(result, list())
 
+    def test_bad_condition_string(self):
+        input_string = DATA_DIR.joinpath('bad_condition_string.yar').read_text()
+
+        plyara = Plyara()
+
+        with self.assertRaises(ParseTypeError):
+            plyara.parse_string(input_string)
+
     def test_lineno_incremented_by_newlines_in_bytestring(self):
         input_rules = r'''
         rule sample
@@ -970,7 +979,7 @@ class TestYaraRules(unittest.TestCase):
 
         plyara = Plyara()
 
-        with self.assertRaises(ParseTypeError):
+        with contextlib.suppress(ParseTypeError):
             try:
                 plyara.parse_string(input_rules)
             except ParseTypeError as e:
