@@ -143,27 +143,6 @@ for file in files:
     parser.clear()
 ```
 
-## Migration
-
-If you used an older version of plyara, and want to migrate to this version, there will be some changes required. Most importantly, the parser object instantiation has changed. It was:
-
-``` python
-# Old style - don't do this!
-import plyara.interp as interp
-rules_list = interp.parseString(open('myfile.yar').read())
-```
-
-But is now:
-
-``` python
-# New style - do this instead!
-import plyara
-parser = plyara.Plyara()
-rules_list = parser.parse_string(open('myfile.yar').read())
-```
-
-The existing parsed keys have stayed the same, and new ones have been added.
-
 ## Breaking Change: Import Effects
 
 ### Background
