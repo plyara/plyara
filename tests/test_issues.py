@@ -70,6 +70,36 @@ class TestGithubIssues(unittest.TestCase):
 
         self.assertEqual(test_result, rebuilt_rules)
 
+    # Reference: https://github.com/plyara/plyara/issues/141
+    def issue_141_store_raw_sections_true(self):
+        """Check when store_raw_sections at the default."""
+        input_string = DATA_DIR.joinpath('issue141.yar').read_text()
+
+        plyara = Plyara()
+        parsed_rules = plyara.parse_string(input_string)
+
+        for i, rule in enumerate(parsed_rules):
+            with self.subTest(rulenum=i):
+                if i == 0:
+                    self.assertIsNone(rule.get('imports'))
+                elif i == 1:
+                    self.assertEqual(rule.get('imports'), ['pe'])
+
+    # Reference: https://github.com/plyara/plyara/issues/141
+    def issue_141_store_raw_sections_false(self):
+        """Check when store_raw_sections set to False."""
+        input_string = DATA_DIR.joinpath('issue141.yar').read_text()
+
+        plyara = Plyara(store_raw_sections=False)
+        parsed_rules = plyara.parse_string(input_string)
+
+        for i, rule in enumerate(parsed_rules):
+            with self.subTest(rulenum=i):
+                if i == 0:
+                    self.assertIsNone(rule.get('imports'))
+                elif i == 1:
+                    self.assertEqual(rule.get('imports'), ['pe'])
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -375,6 +375,22 @@ class TestRuleParser(unittest.TestCase):
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]['rule_name'], 'rule_one')
 
+    def test_find_imports_in_condition(self):
+        """Check if the finder function works across all testing rules."""
+        input_rulesets = DATA_DIR.glob('import_ruleset_*.yar')
+
+        for ruleset in input_rulesets:
+            import_type = ruleset.name[15:-4]
+            with self.subTest(import_type=import_type):
+                parser = Plyara()
+                input_string = ruleset.read_text()
+                parser._raw_input = input_string
+                parser.parser.parse(input_string, lexer=parser.lexer)
+
+                imports = parser._find_imports_in_condition(parser.imports, parser.rules[0]['condition_terms'])
+
+                self.assertEqual(imports, [import_type])
+
 
 class TestRuleParserKVMeta(unittest.TestCase):
     """Check metadata key value pairs."""
