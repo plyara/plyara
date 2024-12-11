@@ -772,6 +772,13 @@ class Plyara(Parser):
         return t
 
     @staticmethod
+    def t_STRINGNAME_COUNT(t):
+        r'\#([a-zA-Z][0-9a-zA-Z_]*[*]?)?'  # noqa: D300, D400, D415
+        t.value = t.value
+
+        return t
+
+    @staticmethod
     def t_FILESIZE_SIZE(t):
         r"\d+[KM]B"  # noqa: D300, D400, D415
         t.value = t.value
@@ -788,13 +795,6 @@ class Plyara(Parser):
     def t_ID(self, t):
         r'[a-zA-Z_][a-zA-Z_0-9.]*'  # noqa: D300, D400, D415
         t.type = self.reserved.get(t.value, 'ID')  # Check for reserved words
-
-        return t
-
-    @staticmethod
-    def t_STRINGNAME_COUNT(t):
-        r'\#([a-zA-Z][0-9a-zA-Z_]*[*]?)?'  # noqa: D300, D400, D415
-        t.value = t.value
 
         return t
 
