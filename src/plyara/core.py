@@ -752,21 +752,21 @@ class Plyara(Parser):
 
     @staticmethod
     def t_STRINGNAME(t):
-        r'\$[0-9a-zA-Z\-_]*[*]?'  # noqa: D300, D400, D415
+        r'\$[0-9a-zA-Z_]*[*]?'  # noqa: D300, D400, D415
         t.value = t.value
 
         return t
 
     @staticmethod
     def t_STRINGNAME_ARRAY(t):
-        r'@[0-9a-zA-Z\-_]*[*]?'  # noqa: D300, D400, D415
+        r'@[0-9a-zA-Z_]*[*]?'  # noqa: D300, D400, D415
         t.value = t.value
 
         return t
 
     @staticmethod
     def t_STRINGNAME_LENGTH(t):
-        r'![0-9a-zA-Z\-_]*[*]?(?!=)'  # noqa: D300, D400, D415
+        r'![0-9a-zA-Z_]*[*]?(?!=)'  # noqa: D300, D400, D415
         t.value = t.value
 
         return t
@@ -793,7 +793,7 @@ class Plyara(Parser):
 
     @staticmethod
     def t_STRINGNAME_COUNT(t):
-        r'\#([a-zA-Z][0-9a-zA-Z\-_]*[*]?)?'  # noqa: D300, D400, D415
+        r'\#([a-zA-Z][0-9a-zA-Z_]*[*]?)?'  # noqa: D300, D400, D415
         t.value = t.value
 
         return t
