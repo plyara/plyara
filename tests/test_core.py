@@ -313,6 +313,48 @@ class TestRuleParser(unittest.TestCase):
         with self.assertRaises(ParseTypeError):
             plyara.parse_string(inputRules)
 
+    def test_illegal_stringname_prefix(self):
+        input_rule = r'''
+        rule sample
+        {
+            strings:
+                $-a = "test"
+            condition:
+                any of them
+        }
+        '''
+
+        with self.assertRaises(ParseTypeError):
+            self.parser.parse_string(input_rule)
+
+    def test_illegal_stringname_infix(self):
+        input_rule = r'''
+        rule sample
+        {
+            strings:
+                $a-b = "test"
+            condition:
+                any of them
+        }
+        '''
+
+        with self.assertRaises(ParseTypeError):
+            self.parser.parse_string(input_rule)
+
+    def test_illegal_stringname_suffix(self):
+        input_rule = r'''
+        rule sample
+        {
+            strings:
+                $a- = "test"
+            condition:
+                any of them
+        }
+        '''
+
+        with self.assertRaises(ParseTypeError):
+            self.parser.parse_string(input_rule)
+
     def test_conditions(self):
         input_string = DATA_DIR.joinpath('condition_ruleset.yar').read_text()
 
