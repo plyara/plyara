@@ -164,8 +164,6 @@ rules_list = parser.parse_string(open('myfile.yar').read())
 
 The existing parsed keys have stayed the same, and new ones have been added.
 
-When reusing a `parser` for multiple rules and/or files, be aware that imports are now shared across all rules - if one rule has an import, that import will be added to all rules in your parser object.
-
 ## Breaking Change: Import Effects
 
 ### Background
@@ -179,6 +177,20 @@ A new class constructor parameter called `import_effects` has been added to the 
 ```python
 parser = plyara.Plyara(import_effects=True)
 ```
+
+### Note
+
+When reusing a `parser` for multiple rules and/or files and `import_effects` is enabled, be aware that imports are now shared across all rules - if one rule has an import, that import will be added to all rules in your parser object.
+
+## Known Issues
+
+Due to an unsolved issue with precendece, a `-` operator is being considered a negative number. Until this is fixed, it is recommended that users employ YARA-X's `fmt` command to pre-process yara rulesets for automatic formatting before using plyara on problematic rulesets.
+
+```bash
+yr fmt foo.yar
+```
+
+More information here: https://github.com/plyara/plyara/issues/112
 
 ## Contributing
 
