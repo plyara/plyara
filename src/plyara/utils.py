@@ -176,7 +176,7 @@ def generate_logic_hash(rule):
         str: Hexdigest SHA-256.
     """
     import warnings
-    warnings.warn('Utility generate_logic_hash() is deprecated, please use generate_hash()', DeprecationWarning)
+    warnings.warn('Use generate_hash(); generate_logic_hash() will be removed next release', DeprecationWarning)
     strings = rule.get('strings', list())
     conditions = rule['condition_terms']
 

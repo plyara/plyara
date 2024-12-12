@@ -63,41 +63,6 @@ class TestUtilities(unittest.TestCase):
             rulehash = generate_hash(result)
             self.assertEqual(rulehash, rule_hashes[index])
 
-    # def test_generate_logic_hash(self):
-    #     with data_dir.joinpath('logic_collision_ruleset_v2.0.0.yar').open('r') as fh:
-    #         inputString = fh.read()
-
-    #     result = Plyara().parse_string(inputString)
-
-    #     rule_mapping = {}
-
-    #     for entry in result:
-    #         rulename = entry['rule_name']
-    #         setname, _ = rulename.split('_')
-    #         rulehash = generate_logic_hash(entry)
-
-    #         if setname not in rule_mapping:
-    #             rule_mapping[setname] = [rulehash]
-    #         else:
-    #             rule_mapping[setname].append(rulehash)
-
-    #     for setname, hashvalues in rule_mapping.items():
-    #         self.assertTrue(len(set(hashvalues)) == 1, 'Collision detection failure for {}'.format(setname))
-
-    # def test_generate_logic_hash_output(self):
-    #     with data_dir.joinpath('rulehashes_v2.0.0.txt').open('r') as fh:
-    #         rule_hashes = fh.read().splitlines()
-
-    #     with data_dir.joinpath('test_rules_from_yara_project.yar').open('r') as fh:
-    #         # Rules containing "(1..#)" or similar iterators cause Unhandled String Count Condition errors
-    #         inputString = fh.read()
-
-    #     results = Plyara().parse_string(inputString)
-
-    #     for index, result in enumerate(results):
-    #         rulehash = generate_logic_hash(result)
-    #         self.assertEqual(rulehash, rule_hashes[index])
-
     def test_is_valid_rule_name(self):
         self.assertTrue(is_valid_rule_name('test'))
         self.assertTrue(is_valid_rule_name('test123'))
