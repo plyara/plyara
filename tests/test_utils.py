@@ -22,7 +22,11 @@ from plyara.utils import rebuild_yara_rule
 from plyara.utils import detect_imports, detect_dependencies
 from plyara.utils import is_valid_rule_name, is_valid_rule_tag
 
-DATA_DIR = pathlib.Path(__file__).parent.joinpath('data')
+PARENT = pathlib.Path(__file__).parent.joinpath('data')
+
+DATA_DIR = PARENT.joinpath('utils')
+COMMON_DATA_DIR = PARENT.joinpath('common')
+IMPORTS_DATA_DIR = PARENT.joinpath('imports')
 
 
 class TestUtilities(unittest.TestCase):
@@ -55,7 +59,7 @@ class TestUtilities(unittest.TestCase):
     def test_generate_hash_output(self):
         rule_hashes = DATA_DIR.joinpath('rulehashes.txt').read_text().splitlines()
         # Rules containing "(1..#)" or similar iterators cause Unhandled String Count Condition errors
-        input_string = DATA_DIR.joinpath('test_rules_from_yara_project.yar').read_text()
+        input_string = COMMON_DATA_DIR.joinpath('test_rules_from_yara_project.yar').read_text()
 
         results = Plyara().parse_string(input_string)
 
@@ -158,7 +162,7 @@ class TestUtilities(unittest.TestCase):
 
     def test_detect_imports(self):
         for imp in ('androguard', 'cuckoo', 'dotnet', 'elf', 'hash', 'magic', 'math', 'pe'):
-            input_string = DATA_DIR.joinpath(f'import_ruleset_{imp}.yar').read_text()
+            input_string = IMPORTS_DATA_DIR.joinpath(f'import_ruleset_{imp}.yar').read_text()
 
             results = Plyara().parse_string(input_string)
             for rule in results:

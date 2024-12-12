@@ -22,7 +22,7 @@ import unittest
 
 from plyara.command_line import main
 
-DATA_DIR = pathlib.Path(__file__).parent.joinpath('data')
+DATA_DIR = pathlib.Path(__file__).parent.joinpath('data').joinpath('command_line')
 
 
 @contextlib.contextmanager

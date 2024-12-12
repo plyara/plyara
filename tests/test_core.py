@@ -24,7 +24,11 @@ from plyara.exceptions import ParseTypeError, ParseValueError
 
 UNHANDLED_RULE_MSG = 'Unhandled Test Rule: {}'
 
-DATA_DIR = pathlib.Path(__file__).parent.joinpath('data')
+PARENT = pathlib.Path(__file__).parent.joinpath('data')
+
+DATA_DIR = PARENT.joinpath('core')
+COMMON_DATA_DIR = PARENT.joinpath('common')
+IMPORTS_DATA_DIR = PARENT.joinpath('imports')
 
 
 class TestRuleParser(unittest.TestCase):
@@ -34,7 +38,7 @@ class TestRuleParser(unittest.TestCase):
         self.parser = Plyara()
 
     def test_import_pe(self):
-        input_string = DATA_DIR.joinpath('import_ruleset_pe.yar').read_text()
+        input_string = IMPORTS_DATA_DIR.joinpath('import_ruleset_pe.yar').read_text()
 
         result = self.parser.parse_string(input_string)
 
@@ -42,7 +46,7 @@ class TestRuleParser(unittest.TestCase):
             self.assertIn('pe', rule['imports'])
 
     def test_import_elf(self):
-        input_string = DATA_DIR.joinpath('import_ruleset_elf.yar').read_text()
+        input_string = IMPORTS_DATA_DIR.joinpath('import_ruleset_elf.yar').read_text()
 
         result = self.parser.parse_string(input_string)
 
@@ -50,7 +54,7 @@ class TestRuleParser(unittest.TestCase):
             self.assertIn('elf', rule['imports'])
 
     def test_import_cuckoo(self):
-        input_string = DATA_DIR.joinpath('import_ruleset_cuckoo.yar').read_text()
+        input_string = IMPORTS_DATA_DIR.joinpath('import_ruleset_cuckoo.yar').read_text()
 
         result = self.parser.parse_string(input_string)
 
@@ -58,7 +62,7 @@ class TestRuleParser(unittest.TestCase):
             self.assertIn('cuckoo', rule['imports'])
 
     def test_import_magic(self):
-        input_string = DATA_DIR.joinpath('import_ruleset_magic.yar').read_text()
+        input_string = IMPORTS_DATA_DIR.joinpath('import_ruleset_magic.yar').read_text()
 
         result = self.parser.parse_string(input_string)
 
@@ -66,7 +70,7 @@ class TestRuleParser(unittest.TestCase):
             self.assertIn('magic', rule['imports'])
 
     def test_import_hash(self):
-        input_string = DATA_DIR.joinpath('import_ruleset_hash.yar').read_text()
+        input_string = IMPORTS_DATA_DIR.joinpath('import_ruleset_hash.yar').read_text()
 
         result = self.parser.parse_string(input_string)
 
@@ -74,7 +78,7 @@ class TestRuleParser(unittest.TestCase):
             self.assertIn('hash', rule['imports'])
 
     def test_import_math(self):
-        input_string = DATA_DIR.joinpath('import_ruleset_math.yar').read_text()
+        input_string = IMPORTS_DATA_DIR.joinpath('import_ruleset_math.yar').read_text()
 
         result = self.parser.parse_string(input_string)
 
@@ -82,7 +86,7 @@ class TestRuleParser(unittest.TestCase):
             self.assertIn('math', rule['imports'])
 
     def test_import_dotnet(self):
-        input_string = DATA_DIR.joinpath('import_ruleset_dotnet.yar').read_text()
+        input_string = IMPORTS_DATA_DIR.joinpath('import_ruleset_dotnet.yar').read_text()
 
         result = self.parser.parse_string(input_string)
 
@@ -90,7 +94,7 @@ class TestRuleParser(unittest.TestCase):
             self.assertIn('dotnet', rule['imports'])
 
     def test_import_androguard(self):
-        input_string = DATA_DIR.joinpath('import_ruleset_androguard.yar').read_text()
+        input_string = IMPORTS_DATA_DIR.joinpath('import_ruleset_androguard.yar').read_text()
 
         result = self.parser.parse_string(input_string)
 
@@ -373,7 +377,7 @@ class TestRuleParser(unittest.TestCase):
         self.assertEqual(len(self.parser.includes), 3)
 
     def test_rules_from_yara_project(self):
-        input_rules = DATA_DIR.joinpath('test_rules_from_yara_project.yar').read_text()
+        input_rules = COMMON_DATA_DIR.joinpath('test_rules_from_yara_project.yar').read_text()
 
         plyara = Plyara()
         output = plyara.parse_string(input_rules)
@@ -381,7 +385,7 @@ class TestRuleParser(unittest.TestCase):
         self.assertEqual(len(output), 293)
 
     def test_multiple_threads(self):
-        input_rules = DATA_DIR.joinpath('test_rules_from_yara_project.yar').read_text()
+        input_rules = COMMON_DATA_DIR.joinpath('test_rules_from_yara_project.yar').read_text()
 
         def parse_rules(rules):
             plyara = Plyara()
