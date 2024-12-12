@@ -75,9 +75,13 @@ rule silent_banker : banker
 }
 ```
 
+Command-line tool:
+
 ```sh
 plyara example.yar
 ```
+
+JSON Output:
 
 ```json
 [
