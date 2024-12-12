@@ -36,14 +36,15 @@ class TestGithubIssues(unittest.TestCase):
 
     # Reference: https://github.com/plyara/plyara/issues/99
     def issue_99(self):
+        input_string1 = DATA_DIR.joinpath('issue99_1.yar').read_text()
+        input_string2 = DATA_DIR.joinpath('issue99_2.yar').read_text()
         rules = list()
         plyara = Plyara()
 
-        for file in DATA_DIR.glob('issue99*.yar'):
-            with open(file, 'r') as fh:
-                yararules = plyara.parse_string(fh.read())
-                self.assertEqual(len(yararules), 1)
-                rules += yararules
+        for input_string in [input_string1, input_string2]:
+            yararules = plyara.parse_string(input_string)
+            self.assertEqual(len(yararules), 1)
+            rules += yararules
             plyara.clear()
         self.assertEqual(len(rules), 2)
 
