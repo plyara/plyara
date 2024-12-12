@@ -56,6 +56,17 @@ class TestUtilities(unittest.TestCase):
         for setname, hashvalues in rule_mapping.items():
             self.assertTrue(len(set(hashvalues)) == 1, 'Collision detection failure for {}'.format(setname))
 
+    def test_generate_hash_output_legacy(self):
+        rule_hashes = DATA_DIR.joinpath('rulehashes_legacy.txt').read_text().splitlines()
+        # Rules containing "(1..#)" or similar iterators cause Unhandled String Count Condition errors
+        input_string = COMMON_DATA_DIR.joinpath('test_rules_from_yara_project.yar').read_text()
+
+        results = Plyara().parse_string(input_string)
+
+        for index, result in enumerate(results):
+            rulehash = generate_hash(result, legacy=True)
+            self.assertEqual(rulehash, rule_hashes[index])
+
     def test_generate_hash_output(self):
         rule_hashes = DATA_DIR.joinpath('rulehashes.txt').read_text().splitlines()
         # Rules containing "(1..#)" or similar iterators cause Unhandled String Count Condition errors

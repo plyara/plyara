@@ -247,7 +247,7 @@ def generate_logic_hash(rule):
     return logic_hash
 
 
-def generate_hash(rule, secure_hash=None):
+def generate_hash(rule, secure_hash=None, legacy=False):
     """Calculate a secure hash of the logic in the rule strings and condition.
 
     If the resultant hashes are identical for two YARA rules, the rules will match on identical content.
@@ -262,12 +262,16 @@ def generate_hash(rule, secure_hash=None):
     Returns:
         str: hexdigest
     """
-    condition_string_prefaces = ('$', '!', '#', '@')
+    version = 'v1'
+
     if secure_hash is None:
         hf = hashlib.sha256()
+        algo = 'sha256'
     else:
         hf = secure_hash()
+        algo = hf.__name__
 
+    condition_string_prefaces = ('$', '!', '#', '@')
     strings = rule.get('strings', list())
     conditions = rule['condition_terms']
 
@@ -360,7 +364,11 @@ def generate_hash(rule, secure_hash=None):
         else:
             condition_mapping.append(cond)
     hf.update(''.join(condition_mapping).encode())
-    hexdigest = hf.hexdigest()
+
+    if legacy:
+        hexdigest = hf.hexdigest()
+    else:
+        hexdigest = f'{version}_{algo}_{hf.hexdigest()}'
 
     return hexdigest
 
