@@ -65,7 +65,7 @@ rule silent_banker : banker
 {
     meta:
         description = "This is just an example"
-        thread_level = 3
+        threat_level = 3
         in_the_wild = true
     strings:
         $a = {6A 40 68 00 30 00 00 6A 14 8D 91}
@@ -92,14 +92,14 @@ $ plyara example.yar
                 "description": "This is just an example"
             },
             {
-                "thread_level": 3
+                "threat_level": 3
             },
             {
                 "in_the_wild": true
             }
         ],
         "raw_condition": "condition:\n        $a or $b or $c\n",
-        "raw_meta": "meta:\n        description = \"This is just an example\"\n        thread_level = 3\n        in_the_wild = true\n    ",
+        "raw_meta": "meta:\n        description = \"This is just an example\"\n        threat_level = 3\n        in_the_wild = true\n    ",
         "raw_strings": "strings:\n        $a = {6A 40 68 00 30 00 00 6A 14 8D 91}\n        $b = {8D 4D B0 2B C1 83 C0 27 99 6A 4E 59 F7 F9}\n        $c = \"UVODFRYSIHLNWPEJXQZAKCBGMT\"\n    ",
         "rule_name": "silent_banker",
         "start_line": 1,
