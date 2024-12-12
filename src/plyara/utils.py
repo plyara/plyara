@@ -312,6 +312,9 @@ def generate_hash(rule, secure_hash=None):
             else:
                 condition_mapping.append(all_values)
 
+        elif cond in ['#', '@', '!', '$']:
+            condition_mapping.append(cond)
+
         elif cond.startswith('$') and cond != '$':
             # Exact Match
             if cond in string_mapping['named']:
