@@ -59,8 +59,7 @@ optional arguments:
 
 The command-line tool will print valid JSON output when parsing rules:
 
-```sh
-$ cat example.yar
+```yara
 rule silent_banker : banker
 {
     meta:
@@ -77,7 +76,10 @@ rule silent_banker : banker
 ```
 
 ```sh
-$ plyara example.yar
+plyara example.yar
+```
+
+```json
 [
     {
         "condition_terms": [
