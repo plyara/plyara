@@ -1071,6 +1071,106 @@ class TestYaraRules(unittest.TestCase):
                     continue
                 self.assertEqual(yr_base64_mod, r"!@#$%^&*(){}[].,|ABCDEFGHIJ\x09LMNOPQRSTUVWXYZabcdefghijklmnopqrstu")
 
+    def test_duplicated_modifier_xor(self):
+        input_rule = r'''
+        rule duplicate_modifier
+        {
+            strings:
+                $a = "one" xor xor
+            condition:
+                all of them
+        }
+        '''
+
+        plyara = Plyara()
+
+        with self.assertRaisesRegex(ParseTypeError, r'Duplicate string modifier xor on line \d'):
+            plyara.parse_string(input_rule)
+
+    def test_unexpected_xor(self):
+        input_rule = r'''
+        rule invalid_xor_modifier
+        {
+            strings:
+                $a = /AA/ xor(500)
+            condition:
+                all of them
+        }
+        '''
+
+        plyara = Plyara()
+
+        with self.assertRaisesRegex(ParseTypeError, r'Unknown text xor for token of type XOR_MOD on line \d'):
+            plyara.parse_string(input_rule)
+
+    # def test_invalid_modifier_combination_base64_nocase(self):
+    #     input_rule = r'''
+    #     rule base64_error_nocase
+    #     {
+    #         strings:
+    #             $a = "one" base64("!@#$%^&*(){}[].,|ABCDEFGHIJ\x09LMNOPQRSTUVWXYZabcdefghijklmnopqrstu") nocase
+    #             $b = "two" base64wide("!@#$%^&*(){}[].,|ABCDEFGHIJ\x09LMNOPQRSTUVWXYZabcdefghijklmnopqrstu") nocase
+    #         condition:
+    #             all of them
+    #     }
+    #     '''
+
+    #     plyara = Plyara()
+
+    #     with self.assertRaisesRegex(ParseTypeError, r'Mutually exclusive string modifier use.+'):
+    #         plyara.parse_string(input_rule)
+
+    # def test_invalid_modifier_combination_base64_xor(self):
+    #     input_rule = r'''
+    #     rule base64_error_xor
+    #     {
+    #         strings:
+    #             $a = "one" base64("!@#$%^&*(){}[].,|ABCDEFGHIJ\x09LMNOPQRSTUVWXYZabcdefghijklmnopqrstu") xor
+    #             $b = "two" base64wide("!@#$%^&*(){}[].,|ABCDEFGHIJ\x09LMNOPQRSTUVWXYZabcdefghijklmnopqrstu") xor
+    #         condition:
+    #             all of them
+    #     }
+    #     '''
+
+    #     plyara = Plyara()
+
+    #     with self.assertRaisesRegex(ParseTypeError, r'Mutually exclusive string modifier use.+'):
+    #         plyara.parse_string(input_rule)
+
+    def test_base64_alphabet_length_too_long(self):
+        input_rule = r'''
+        rule base64_error_xor
+        {
+            strings:
+                $a = "one" base64("!@#$%^&*(){}[].,|ABCDEFGHIJ\x09LMNOPQRSTUVWXYZabcdefghijklmnopqrstuxyz")
+                $b = "two" base64wide("!@#$%^&*(){}[].,|ABCDEFGHIJ\x09LMNOPQRSTUVWXYZabcdefghijklmnopqrstuxyz")
+            condition:
+                all of them
+        }
+        '''
+
+        plyara = Plyara()
+
+        with self.assertRaisesRegex(RuntimeError, r'Base64 dictionary length \d+, must be 64 characters'):
+            plyara.parse_string(input_rule)
+
+    def test_base64_alphabet_length_too_short(self):
+        input_rule = r'''
+        rule base64_error_xor
+        {
+            strings:
+                $a = "one" base64("!@#$%^&*(){}[].,|ABCDEFGHIJ\x09LMNOPQRSTUVWXYZ")
+                $b = "two" base64wide("!@#$%^&*(){}[].,|ABCDEFGHIJ\x09LMNOPQRSTUVWXYZ")
+            condition:
+                all of them
+        }
+        '''
+
+        plyara = Plyara()
+
+        with self.assertRaisesRegex(RuntimeError, r'Base64 dictionary length \d+, must be 64 characters'):
+            plyara.parse_string(input_rule)
+
 
 if __name__ == '__main__':
     unittest.main()
