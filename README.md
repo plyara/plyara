@@ -161,15 +161,22 @@ parser = plyara.Plyara(import_effects=True)
 
 When reusing a `parser` for multiple rules and/or files and `import_effects` is enabled, be aware that imports are now shared across all rules - if one rule has an import, that import will be added to all rules in your parser object.
 
-## Known Issues
+## Breaking Change: Logic Hash Versions
 
-Due to an unsolved issue with precendece, a `-` operator is being considered a negative number. Until this is fixed, it is recommended that users employ YARA-X's `fmt` command to pre-process yara rulesets for automatic formatting before using plyara on problematic rulesets.
+Logic hashes now prepend a version number as well as the algorithm used to the hash itself. This will make future changes and revisions easier for uses to track. The old behavior is accessed using the `legacy` parameter on the `utils.generate_hash()` utility function.
+
+```python
+rules = Plyara().parse_string(input_string)
+rulehash = generate_hash(rules[0], legacy=True)
+```
+
+## Pre-Processing
+
+If the output of a particular rule looks incorrect after parsing by Plyara, you may be able to mitigate the problem by using YARA-X's `fmt` command for pre-processing. If you do notice a problem that requires pre-processing, please also open an issue.
 
 ```bash
 yr fmt foo.yar
 ```
-
-More information here: https://github.com/plyara/plyara/issues/112
 
 ## Contributing
 
