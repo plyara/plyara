@@ -187,6 +187,33 @@ class TestGithubIssues(unittest.TestCase):
         quality = [entry['quality'] for entry in metadata if 'quality' in entry]
         self.assertDictEqual(quality, [-5])
 
+    # Reference: https://github.com/plyara/plyara/issues/145
+    def issue_145(self):
+        """Check correct parsing for PR#130 changes."""
+        input_string = DATA_DIR.joinpath('issue145.yar').read_text()
+
+        plyara = Plyara()
+        parsed_rules = plyara.parse_string(input_string)
+
+        for rule in parsed_rules:
+            rulename = rule.get('rule_name')
+            with self.subTest(rulenum=rulename):
+                if rulename == 'test1':
+                    bv = rule['strings'][0]['value']
+                    self.assertEqual(bv, '{ AA AA ~AA }')
+                elif rulename == 'test2':
+                    bv = rule['strings'][0]['value']
+                    self.assertEqual(bv, '{ AA AA~AA }')
+                elif rulename == 'test3':
+                    md = rule['metadata'][0]['one']
+                    self.assertEqual(md, 0)
+                elif rulename == 'test4':
+                    ct = rule['condition_terms']
+                    self.assertListEqual(ct, ['-', '0.5'])
+                elif rulename == 'test5':
+                    ct = rule['condition_terms']
+                    self.assertListEqual(ct, ['-', '1.5'])
+
 
 if __name__ == '__main__':
     unittest.main()
