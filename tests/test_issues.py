@@ -142,6 +142,20 @@ class TestGithubIssues(unittest.TestCase):
                 elif i == 1:
                     self.assertEqual(rule.get('imports'), ['pe'])
 
+    # Reference: https://github.com/plyara/plyara/issues/143
+    def issue_143(self):
+        """Check whether xor modifier with hexnum range is parsed correctly."""
+        input_string = DATA_DIR.joinpath('issue143.yar').read_text()
+
+        plyara = Plyara()
+        parsed_rules = plyara.parse_string(input_string)
+
+        strings = parsed_rules[0].get('strings')
+        self.assertIsInstance(strings, list)
+
+        modifier = strings[0].get('modifiers', list())[0]
+        self.assertEqual(modifier, 'xor(0x01-0xff)')
+
     # Reference: https://github.com/plyara/plyara/issues/144
     # Reference: https://github.com/CybercentreCanada/assemblyline/issues/231
     def issue_144(self):
