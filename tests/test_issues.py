@@ -142,6 +142,21 @@ class TestGithubIssues(unittest.TestCase):
                 elif i == 1:
                     self.assertEqual(rule.get('imports'), ['pe'])
 
+    # Reference: https://github.com/plyara/plyara/issues/144
+    # Reference: https://github.com/CybercentreCanada/assemblyline/issues/231
+    def issue_144(self):
+        """Check whether negative numbers are parsed correctly in the meta section."""
+        input_string = DATA_DIR.joinpath('issue144.yar').read_text()
+
+        plyara = Plyara()
+        parsed_rules = plyara.parse_string(input_string)
+
+        metadata = parsed_rules[0].get('metadata')
+        self.assertIsInstance(metadata, list)
+
+        quality = [entry['quality'] for entry in metadata if 'quality' in entry]
+        self.assertDictEqual(quality, [-5])
+
 
 if __name__ == '__main__':
     unittest.main()

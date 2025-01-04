@@ -545,7 +545,7 @@ class Plyara(Parser):
 
     @staticmethod
     def t_HEXNUM(t):
-        r'-?0x[A-Fa-f0-9]+'  # noqa: D300, D400, D415
+        r'0x[A-Fa-f0-9]+'  # noqa: D300, D400, D415
         t.value = t.value
 
         return t
@@ -787,7 +787,7 @@ class Plyara(Parser):
 
     @staticmethod
     def t_NUM(t):
-        r'-0\.\d+|-[1-9](\d+(\.\d+)?)?|\d+(\.\d+)?|0x\d+'  # noqa: D300, D400, D415
+        r'\d+(\.\d+)?'  # noqa: D300, D400, D415
         t.value = t.value
 
         return t
@@ -940,7 +940,8 @@ class Plyara(Parser):
                    | ID EQUALS ID
                    | ID EQUALS TRUE
                    | ID EQUALS FALSE
-                   | ID EQUALS NUM'''  # noqa: D205, D208, D209, D300, D400, D401, D403, D415
+                   | ID EQUALS NUM
+                   | ID EQUALS HYPHEN NUM'''  # noqa: D205, D208, D209, D300, D400, D401, D403, D415
         key = p[1]
         value = p[3]
         if re.match(r'".*"', value):
@@ -949,6 +950,9 @@ class Plyara(Parser):
                 value = match.group(1)
         elif value in ('true', 'false'):
             value = True if value == 'true' else False
+        elif value == '-':
+            num_value = p[4]
+            value = -int(num_value)
         else:
             value = int(value)
         logger.debug(f'Matched meta kv: {key} equals {value}')
@@ -1094,58 +1098,13 @@ class Plyara(Parser):
     @staticmethod
     def p_expression(p):
         '''expression : expression term
-                      | expression num_term
-                      | term
-                      | num_term'''  # noqa: D205, D208, D209, D300, D400, D401, D403, D415
-
-    def p_condition_num(self, p):
-        '''num_term   : NUM
-                      | HEXNUM'''  # noqa: D205, D208, D209, D300, D400, D401, D403, D415
-        operators = [
-            '..',
-            '-',
-            '~',
-            '*',
-            '\\',
-            '%',
-            '+',
-            '<<',
-            '>>',
-            '&',
-            '^',
-            '|',
-            '<',
-            '<=',
-            '>',
-            '>=',
-            '==',
-            '!=',
-            'defined',
-            'and',
-            'or'
-        ]
-
-        try:
-            last_term = self.terms[-1]
-        except IndexError:
-            logger.debug(f'Matched a condition term: {p[1]}')
-            self._add_element(ElementTypes.TERM, p[1])
-            return
-
-        if p[1].startswith('-') and last_term not in operators:
-            logger.debug('Matched a condition term: -')
-            self._add_element(ElementTypes.TERM, '-')
-            logger.debug(f'Matched a condition term: {p[1]}')
-            term = p[1].lstrip('-')
-            logger.debug(f'Matched a condition term: {term}')
-            self._add_element(ElementTypes.TERM, term)
-        else:
-            logger.debug(f'Matched a condition term: {p[1]}')
-            self._add_element(ElementTypes.TERM, p[1])
+                      | term'''  # noqa: D205, D208, D209, D300, D400, D401, D403, D415
 
     def p_condition(self, p):
         '''term : FILESIZE_SIZE
                 | ID
+                | NUM
+                | HEXNUM
                 | STRING
                 | LPAREN
                 | RPAREN
