@@ -17,6 +17,7 @@ import pathlib
 import unittest
 
 from plyara.core import Plyara
+from plyara.exceptions import ParseTypeError
 from plyara.utils import rebuild_yara_rule
 
 DATA_DIR = pathlib.Path(__file__).parent.joinpath('data')
@@ -111,6 +112,21 @@ class TestGithubIssues(unittest.TestCase):
             rule_name = rule['rule_name']
             with self.subTest(rulename=rule_name):
                 self.assertListEqual(rule['condition_terms'], correct[rule_name])
+
+    # Reference: https://github.com/plyara/plyara/issues/118
+    def issue_118(self):
+        """Check that clearing the parser works after an exception has been raised."""
+        input_string = DATA_DIR.joinpath('issue118.yar').read_text()
+
+        plyara = Plyara()
+
+        for i in range(4):
+            with self.subTest(iteration=i):
+                with self.assertRaises(ParseTypeError) as e:
+                    _ = plyara.parse_string(input_string)
+
+                self.assertEqual(str(e), 'Unknown text strings: for token of type SECTIONSTRINGS on line 5')
+                plyara.clear()
 
     # Reference: https://github.com/plyara/plyara/issues/141
     def issue_141_store_raw_sections_true(self):
