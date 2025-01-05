@@ -18,10 +18,20 @@ This module contains command line script for parsing rules.
 """
 import argparse
 import json
+import logging
 import pathlib
 import sys
 
 import plyara.core
+
+
+def _set_logging():
+    """Set the console logger."""
+    logger = logging.getLogger('plyara')
+    logger.setLevel(logging.DEBUG)
+    sh = logging.StreamHandler()
+    sh.setLevel(logging.DEBUG)
+    logger.addHandler(sh)
 
 
 def main():
@@ -37,7 +47,11 @@ def main():
     except FileNotFoundError as e:
         sys.exit(e)
 
-    parser = plyara.core.Plyara(console_logging=args.log)
+    parser = plyara.core.Plyara()
+
+    if args.log:
+        _set_logging()
+
     rules = parser.parse_string(input_string)
 
     print(json.dumps(rules, sort_keys=True, indent=4))

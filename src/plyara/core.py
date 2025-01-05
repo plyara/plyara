@@ -139,11 +139,10 @@ class Parser:
 
     FUNCTION_KEYWORDS = {'uint8', 'uint16', 'uint32', 'uint8be', 'uint16be', 'uint32be'}
 
-    def __init__(self, console_logging=False, store_raw_sections=True, meta_as_kv=False, import_effects=False):
+    def __init__(self, store_raw_sections=True, meta_as_kv=False, import_effects=False):
         """Initialize the parser object.
 
         Args:
-            console_logging: Enable a stream handler if no handlers exist. (default False)
             store_raw_sections: Enable attribute storage of raw section input. (default True)
             meta_as_kv: Enable alternate structure for meta section as dictionary. (default False)
             import_effects: Enable including imports in all rules affected by the import. (default False)
@@ -159,9 +158,6 @@ class Parser:
         self.scopes = list()
         self.tags = list()
         self.comments = list()
-
-        if console_logging:
-            self._set_logging()
 
         # adds functionality to track attributes containing raw section data
         # in case needed (ie modifying metadata and re-constructing a complete rule
@@ -212,15 +208,6 @@ class Parser:
 
         self.lexer = lex.lex(module=self, debug=False)
         self.parser = yacc.yacc(module=self, debug=False, outputdir=tempfile.gettempdir())
-
-    @staticmethod
-    def _set_logging():
-        """Set the console logger only if handler(s) aren't already set."""
-        if not len(logger.handlers):
-            logger.setLevel(logging.DEBUG)
-            ch = logging.StreamHandler()
-            ch.setLevel(logging.DEBUG)
-            logger.addHandler(ch)
 
     def _add_element(self, element_type, element_value):
         """Accept elements from the parser and uses them to construct a representation of the YARA rule.
