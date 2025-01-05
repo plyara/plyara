@@ -15,59 +15,71 @@
 """Unit tests for plyara command line functionality."""
 import contextlib
 import hashlib
+import importlib.resources
 import io
+import os
 import pathlib
-import sys
+import tempfile
 import unittest
+import unittest.mock
 
-from plyara.command_line import main
-
-DATA_DIR = pathlib.Path(__file__).parent.joinpath('data').joinpath('command_line')
-
-
-@contextlib.contextmanager
-def captured_output():
-    """Capture stdout and stderr from execution."""
-    new_out, new_err = io.StringIO(), io.StringIO()
-    old_out, old_err = sys.stdout, sys.stderr
-    try:
-        sys.stdout, sys.stderr = new_out, new_err
-        yield sys.stdout, sys.stderr
-    finally:
-        sys.stdout, sys.stderr = old_out, old_err
+import plyara.command_line
 
 
 class TestCLI(unittest.TestCase):
     """Checks command line scripts."""
 
-    def test_plyara_script(self):
-        """Check that the output hash of CLI output matches the expected hash."""
-        test_file_path = DATA_DIR.joinpath('test_file.txt')
+    def setUp(self):
+        data = importlib.resources.files('tests.data.command_line').joinpath('test_file.yar').read_text()
+        self.td = tempfile.TemporaryDirectory()
+        os.chdir(self.td.name)
+        self.target = pathlib.Path(self.td.name).joinpath('test_file.yar').write_text(data)
 
-        # Without logging
-        with captured_output() as (out, err):
-            main([str(test_file_path)])
-            output = out.getvalue()
-            error = err.getvalue()
+        self.output_hashes = [
+            '9d1991858f1b48b2485a9cb45692bc33c5228fb5acfa877a0d097b1db60052e3',
+            '18569226a33c2f8f0c43dd0e034a6c05ea38f569adc3ca37d3c975be0d654f06',
+            'b9b64df222a91d5b99b0099320134e3aecd532513965d1cf7b5a0b58881bcccc'
+        ]
+        self.error_hash = '4c303175e30f2257cc11ede86e08329815d2c06ada198e32055f0c88b73dda5a'
+
+    @unittest.mock.patch('argparse._sys.argv', ['plyara', 'test_file.yar'])
+    def test_plyara_cli_nolog(self):
+        """Check that the output hash of CLI output matches the expected hash without logging."""
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            with contextlib.redirect_stderr(io.StringIO()) as err:
+                plyara.command_line.main()
+
+        output = out.getvalue()
+        error = err.getvalue()
         output_hash = hashlib.sha256(output.encode()).hexdigest()
 
-        self.assertTrue(output_hash in ['9d1991858f1b48b2485a9cb45692bc33c5228fb5acfa877a0d097b1db60052e3',
-                                        '18569226a33c2f8f0c43dd0e034a6c05ea38f569adc3ca37d3c975be0d654f06',
-                                        'b9b64df222a91d5b99b0099320134e3aecd532513965d1cf7b5a0b58881bcccc'])
+        self.assertTrue(output_hash in self.output_hashes)
         self.assertEqual(error, str())
 
-        # With logging
-        with captured_output() as (out, err):
-            main(['--log', str(test_file_path)])
-            output = out.getvalue()
-            error = err.getvalue()
+    @unittest.mock.patch('argparse._sys.argv', ['plyara', '--log', 'test_file.yar'])
+    def test_plyara_cli_withlog(self):
+        """Check that the output hash of CLI output matches the expected hash with logging."""
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            with contextlib.redirect_stderr(io.StringIO()) as err:
+                plyara.command_line.main()
+
+        output = out.getvalue()
         output_hash = hashlib.sha256(output.encode()).hexdigest()
+        error = err.getvalue()
         error_hash = hashlib.sha256(error.encode()).hexdigest()
 
-        self.assertTrue(output_hash in ['9d1991858f1b48b2485a9cb45692bc33c5228fb5acfa877a0d097b1db60052e3',
-                                        '18569226a33c2f8f0c43dd0e034a6c05ea38f569adc3ca37d3c975be0d654f06',
-                                        'b9b64df222a91d5b99b0099320134e3aecd532513965d1cf7b5a0b58881bcccc'])
-        self.assertTrue(error_hash in ['4c303175e30f2257cc11ede86e08329815d2c06ada198e32055f0c88b73dda5a'])
+        self.assertTrue(output_hash in self.output_hashes)
+        self.assertEqual(error_hash, '4c303175e30f2257cc11ede86e08329815d2c06ada198e32055f0c88b73dda5a')
+
+    @unittest.mock.patch('argparse._sys.argv', ['plyara', 'doesnotexist.yar'])
+    def test_plyara_cli_filenotfound(self):
+        """Check that the error output is correct for a file not found exception."""
+        with self.assertRaisesRegex(SystemExit, r"\[Errno 2\] No such file or directory: 'doesnotexist\.yar'"):
+            plyara.command_line.main()
+
+    def tearDown(self):
+        """Cleanup the temporary directory."""
+        self.td.cleanup()
 
 
 if __name__ == '__main__':

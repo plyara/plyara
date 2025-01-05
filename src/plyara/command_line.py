@@ -21,29 +21,23 @@ import json
 import pathlib
 import sys
 
-from plyara.core import Plyara
+import plyara.core
 
 
-def main(arguments=None):
+def main():
     """Run the command line process to parse a yara rule file and output pretty printed JSON."""
-    parser = argparse.ArgumentParser(description='Parse YARA rules into a dictionary representation.')
+    parser = argparse.ArgumentParser(description='Parse YARA rules into a JSON representation.')
     parser.add_argument('file', metavar='FILE', help='File containing YARA rules to parse.')
     parser.add_argument('--log', help='Enable debug logging to the console.', action='store_true')
-    if not arguments:
-        args = parser.parse_args()
-    else:
-        args = parser.parse_args(arguments)
+
+    args = parser.parse_args()
 
     try:
         input_string = pathlib.Path(args.file).read_text(encoding='utf-8')
     except FileNotFoundError as e:
         sys.exit(e)
 
-    plyara = Plyara(console_logging=args.log)
-    rules = plyara.parse_string(input_string)
+    parser = plyara.core.Plyara(console_logging=args.log)
+    rules = parser.parse_string(input_string)
 
     print(json.dumps(rules, sort_keys=True, indent=4))
-
-
-if __name__ == '__main__':
-    main()
