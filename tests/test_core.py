@@ -1303,6 +1303,40 @@ class TestYaraRules(unittest.TestCase):
         with self.assertRaisesRegex(ParseTypeError, r'Unknown text xor for token of type XOR_MOD on line \d'):
             parser.parse_string(input_rule)
 
+    def test_unexpected_base64(self):
+        """Test that an base64 modifier on the wrong string type raises an exception."""
+        input_rule = r'''
+        rule invalid_base64_modifier
+        {
+            strings:
+                $a = /AA/ base64("!@#$%^&*(){}[].,|ABCDEFGHIJ\x09LMNOPQRSTUVWXYZabcdefghijklmnopqrstu")
+            condition:
+                all of them
+        }
+        '''
+
+        parser = plyara.core.Plyara()
+
+        with self.assertRaisesRegex(ParseTypeError, r'Unknown text base64 for token of type BASE64 on line \d'):
+            parser.parse_string(input_rule)
+
+    def test_unexpected_base64wide(self):
+        """Test that an base64wide modifier on the wrong string type raises an exception."""
+        input_rule = r'''
+        rule invalid_base64wide_modifier
+        {
+            strings:
+                $a = /AA/ base64wide("!@#$%^&*(){}[].,|ABCDEFGHIJ\x09LMNOPQRSTUVWXYZabcdefghijklmnopqrstu")
+            condition:
+                all of them
+        }
+        '''
+
+        parser = plyara.core.Plyara()
+
+        with self.assertRaisesRegex(ParseTypeError, r'Unknown text base64wide for token of type BASE64WIDE on line \d'):
+            parser.parse_string(input_rule)
+
 
 if __name__ == '__main__':
     unittest.main()
