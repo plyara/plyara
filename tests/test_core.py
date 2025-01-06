@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Unit test plyara core module."""
+import binascii
 import concurrent.futures
 import contextlib
 import importlib.resources
@@ -21,6 +22,60 @@ import unittest
 import plyara.core
 from plyara.core import Plyara
 from plyara.exceptions import ParseTypeError, ParseValueError
+
+
+class TestStoreRawSections(unittest.TestCase):
+    """Test various raw sections are stored correctly."""
+
+    def setUp(self):
+        self.data = importlib.resources.files('tests.data.core')
+
+    def test_raw_meta(self):
+        """Test that the raw meta result is as expected."""
+        expected = self.data.joinpath('raw_sections_meta.txt').read_text().strip()
+        test_rule = self.data.joinpath('raw_sections.yar').read_text()
+
+        parser = plyara.core.Plyara()
+        result = parser.parse_string(test_rule)[0]
+
+        raw = result.get('raw_meta')
+        section = binascii.hexlify(raw.encode()).decode()
+        self.assertEqual(section, expected)
+
+    def test_raw_strings(self):
+        """Test that the raw strings result is as expected."""
+        expected = self.data.joinpath('raw_sections_strings.txt').read_text().strip()
+        test_rule = self.data.joinpath('raw_sections.yar').read_text()
+
+        parser = plyara.core.Plyara()
+        result = parser.parse_string(test_rule)[0]
+
+        raw = result.get('raw_strings')
+        section = binascii.hexlify(raw.encode()).decode()
+        self.assertEqual(section, expected)
+
+    def test_raw_condition(self):
+        """Test that the raw condition result is as expected."""
+        expected = self.data.joinpath('raw_sections_condition.txt').read_text().strip()
+        test_rule = self.data.joinpath('raw_sections.yar').read_text()
+
+        parser = plyara.core.Plyara()
+        result = parser.parse_string(test_rule)[0]
+
+        raw = result.get('raw_condition')
+        section = binascii.hexlify(raw.encode()).decode()
+        self.assertEqual(section, expected)
+
+    def test_no_raw_sections(self):
+        """Test that raw sections are not saved when init parameter is False."""
+        test_rule = self.data.joinpath('raw_sections.yar').read_text()
+
+        parser = plyara.core.Plyara(store_raw_sections=False)
+        result = parser.parse_string(test_rule)[0]
+
+        self.assertIsNone(result.get('raw_meta'))
+        self.assertIsNone(result.get('raw_strings'))
+        self.assertIsNone(result.get('raw_condition'))
 
 
 class TestRuleParser(unittest.TestCase):
