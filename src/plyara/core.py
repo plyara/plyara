@@ -930,9 +930,7 @@ class Plyara(Parser):
         key = p[1]
         value = p[3]
         if re.match(r'".*"', value):
-            match = re.match('"(.*)"', value)
-            if match:
-                value = match.group(1)
+            value = p[3].strip('"')
         elif value in ('true', 'false'):
             value = True if value == 'true' else False
         elif value == '-':
