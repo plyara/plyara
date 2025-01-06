@@ -251,6 +251,11 @@ class TestRuleParser(unittest.TestCase):
                 self.assertIs(kv_list[1][1], 33)
                 self.assertIs(kv_list[2][1], False)
 
+            elif rulename == 'NegativeNumberMetadata':
+                self.assertEqual(len(kv), 1)
+                self.assertEqual(kv_list[0][0], 'negative')
+                self.assertIs(kv_list[0][1], -5)
+
             else:
                 raise AssertionError(self.unhandled_rule.format(rulename))
 
@@ -372,6 +377,19 @@ class TestRuleParser(unittest.TestCase):
 
             raw_condition = entry.get('raw_condition')
             self.assertEqual(raw_condition, 'condition: true')
+
+    def test_illegal_rule_name(self):
+        """Check if illegal rule name with '.' character."""
+        inputRules = r'''
+        rule sam.ple {
+            condition:
+                true
+        }
+        '''
+
+        plyara = Plyara()
+        with self.assertRaises(ParseTypeError):
+            plyara.parse_string(inputRules)
 
     def test_string_illegal_character(self):
         """Check if illegal character is in a string."""

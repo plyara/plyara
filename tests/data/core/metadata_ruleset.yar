@@ -33,3 +33,11 @@ rule AllTypesMetadata
 
     condition: false
 }
+
+rule NegativeNumberMetadata
+{
+    meta:
+        negative = -5
+    condition:
+        false
+}
