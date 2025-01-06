@@ -1080,8 +1080,6 @@ class Plyara(Parser):
             self._add_element(ElementTypes.COMMENT, p[1])
         elif p[1][:2] == '/*':
             self._add_element(ElementTypes.MCOMMENT, p[1])
-        else:
-            raise ParseTypeError('Bad comment type detected', p.lineno, p.lexpos)
 
     # Condition elements
     @staticmethod
