@@ -1070,6 +1070,13 @@ class TestYaraRules(unittest.TestCase):
 
         self.assertEqual(result[0]['raw_meta'], 'meta: author = "Test" ')
 
+    def test_illegal_char(self):
+        """Test if an illegal character anywhere raises an exception."""
+        input_string = self.data.joinpath('illegal_char.yar').read_text()
+
+        with self.assertRaises(ParseTypeError):
+            _ = self.parser.parse_string(input_string)
+
     def test_parse_file_without_rules_returns_empty_list(self):
         input_rules = str()
 

@@ -788,8 +788,8 @@ class Plyara(Parser):
         Raises:
             ParseTypeError
         """
-        raise ParseTypeError(f'Illegal character {t.value[0]!r} at line {t.lexer.lineno}',
-                             t.lexer.lineno, t.lexer.lexpos)
+        msg = 'Illegal character {!r} at line {}'
+        raise ParseTypeError(msg.format(t.value[0], t.lexer.lineno), t.lexer.lineno, t.lexer.lexpos)
 
     # Parsing rules
     precedence = (
