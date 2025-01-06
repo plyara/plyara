@@ -554,6 +554,24 @@ class Plyara(Parser):
 
         return t
 
+    @staticmethod
+    def _process_string_with_escapes(t, escape_chars=None):
+        if escape_chars is None:
+            escape_chars = [t.value]
+        if t.lexer.escape == 1 and t.value in escape_chars or t.value == '\\':
+            t.lexer.escape ^= 1
+            if t.value == 'x':
+                t.lexer.hex_escape = 2
+        elif t.lexer.hex_escape > 0:
+            if t.value.lower() in string.hexdigits:
+                t.lexer.hex_escape -= 1
+            else:
+                raise ParseTypeError(f'Invalid hex character: {t.value!r}, at line: {t.lexer.lineno}',
+                                     t.lexer.lineno, t.lexer.lexpos)
+        elif t.lexer.escape == 1:
+            raise ParseTypeError(f'Invalid escape sequence: \\{t.value}, at line: {t.lexer.lineno}',
+                                 t.lexer.lineno, t.lexer.lexpos)
+
     # Text string handling
     @staticmethod
     def t_begin_STRING(t):
@@ -1182,21 +1200,3 @@ class Plyara(Parser):
         else:
             message = f'Unknown text {p.value} for token of type {p.type} on line {p.lineno}'
             raise ParseTypeError(message, p.lineno, p.lexpos)
-
-    @staticmethod
-    def _process_string_with_escapes(t, escape_chars=None):
-        if escape_chars is None:
-            escape_chars = [t.value]
-        if t.lexer.escape == 1 and t.value in escape_chars or t.value == '\\':
-            t.lexer.escape ^= 1
-            if t.value == 'x':
-                t.lexer.hex_escape = 2
-        elif t.lexer.hex_escape > 0:
-            if t.value.lower() in string.hexdigits:
-                t.lexer.hex_escape -= 1
-            else:
-                raise ParseTypeError(f'Invalid hex character: {t.value!r}, at line: {t.lexer.lineno}',
-                                     t.lexer.lineno, t.lexer.lexpos)
-        elif t.lexer.escape == 1:
-            raise ParseTypeError(f'Invalid escape sequence: \\{t.value}, at line: {t.lexer.lineno}',
-                                 t.lexer.lineno, t.lexer.lexpos)
