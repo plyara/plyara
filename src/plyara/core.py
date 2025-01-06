@@ -1022,6 +1022,13 @@ class Plyara(Parser):
                 message = f'Incompatible modifiers [{mod}, {bad_mod.pop()}] on line {lineno}'
                 raise ParseTypeError(message, lineno, lexpos)
 
+        if mod in ['base64', 'base64wide'] and pred:
+            modlen = len(re.findall(r'(?:\\x[a-fA-F0-9]{2}|.)', pred[2:-2]))
+            if modlen > 64:
+                raise ParseTypeError(f'Modifier {mod} predicate too long: {modlen} on line {lineno}', lineno, lexpos)
+            if modlen < 64:
+                raise ParseTypeError(f'Modifier {mod} predicate too short: {modlen} on line {lineno}', lineno, lexpos)
+
         logger.debug(f'Matched {mtype}: {mod}')
         self._add_element(ElementTypes.STRINGS_MODIFIER, (mod, pred, ))
 

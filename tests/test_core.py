@@ -1403,7 +1403,6 @@ class TestYaraRules(unittest.TestCase):
         {
             strings:
                 $a = "one" base64("!@#$%^&*(){}[].,|ABCDEFGHIJ\x09LMNOPQRSTUVWXYZabcdefghijklmnopqrstu") nocase
-                $b = "two" base64wide("!@#$%^&*(){}[].,|ABCDEFGHIJ\x09LMNOPQRSTUVWXYZabcdefghijklmnopqrstu") nocase
             condition:
                 all of them
         }
@@ -1422,7 +1421,114 @@ class TestYaraRules(unittest.TestCase):
         {
             strings:
                 $a = "one" base64("!@#$%^&*(){}[].,|ABCDEFGHIJ\x09LMNOPQRSTUVWXYZabcdefghijklmnopqrstu") xor
+            condition:
+                all of them
+        }
+        '''
+
+        parser = plyara.core.Plyara()
+
+        with self.assertRaisesRegex(ParseTypeError, error_msg):
+            parser.parse_string(input_rule)
+
+    def test_invalid_modifier_combination_base64wide_nocase(self):
+        """Test that incompatible modifiers raise an exception."""
+        error_msg = r'Incompatible modifiers \[nocase, base64wide\] on line \d'
+        input_rule = r'''
+        rule base64wide_error_nocase
+        {
+            strings:
+                $b = "two" base64wide("!@#$%^&*(){}[].,|ABCDEFGHIJ\x09LMNOPQRSTUVWXYZabcdefghijklmnopqrstu") nocase
+            condition:
+                all of them
+        }
+        '''
+
+        parser = plyara.core.Plyara()
+
+        with self.assertRaisesRegex(ParseTypeError, error_msg):
+            parser.parse_string(input_rule)
+
+    def test_invalid_modifier_combination_base64wide_xor(self):
+        """Test that incompatible modifiers raise an exception."""
+        error_msg = r'Incompatible modifiers \[xor, base64wide\] on line \d'
+        input_rule = r'''
+        rule base64wide_error_xor
+        {
+            strings:
                 $b = "two" base64wide("!@#$%^&*(){}[].,|ABCDEFGHIJ\x09LMNOPQRSTUVWXYZabcdefghijklmnopqrstu") xor
+            condition:
+                all of them
+        }
+        '''
+
+        parser = plyara.core.Plyara()
+
+        with self.assertRaisesRegex(ParseTypeError, error_msg):
+            parser.parse_string(input_rule)
+
+    def test_base64_alphabet_length_too_long(self):
+        """Test that a base64 alphabet is not more than 64 characters."""
+        error_msg = r'Modifier base64 predicate too long: \d+ on line \d'
+        input_rule = r'''
+        rule base64_error_xor
+        {
+            strings:
+                $a = "one" base64("!@#$%^&*(){}[].,|ABCDEFGHIJ\x09LMNOPQRSTUVWXYZabcdefghijklmnopqrstuxyz")
+            condition:
+                all of them
+        }
+        '''
+
+        parser = plyara.core.Plyara()
+
+        with self.assertRaisesRegex(ParseTypeError, error_msg):
+            parser.parse_string(input_rule)
+
+    def test_base64_alphabet_length_too_short(self):
+        """Test that a base64 alphabet is not less than 64 characters."""
+        error_msg = r'Modifier base64 predicate too short: \d+ on line \d'
+        input_rule = r'''
+        rule base64_error_xor
+        {
+            strings:
+                $a = "one" base64("!@#$%^&*(){}[].,|ABCDEFGHIJ\x09LMNOPQRSTUVWXYZ")
+            condition:
+                all of them
+        }
+        '''
+
+        parser = plyara.core.Plyara()
+
+        with self.assertRaisesRegex(ParseTypeError, error_msg):
+            parser.parse_string(input_rule)
+
+    def test_base64wide_alphabet_length_too_long(self):
+        """Test that a base64wide alphabet is not more than 64 characters."""
+        error_msg = r'Modifier base64wide predicate too long: \d+ on line \d'
+        input_rule = r'''
+        rule base64_error_xor
+        {
+            strings:
+                $a = "two" base64wide("!@#$%^&*(){}[].,|ABCDEFGHIJ\x09LMNOPQRSTUVWXYZabcdefghijklmnopqrstuxyz")
+            condition:
+                all of them
+        }
+        '''
+
+        parser = plyara.core.Plyara()
+
+        with self.assertRaisesRegex(ParseTypeError, error_msg):
+            parser.parse_string(input_rule)
+
+    def test_base64wide_alphabet_length_too_short(self):
+        """Test that a base64wide alphabet is not less than 64 characters."""
+        error_msg = r'Modifier base64wide predicate too short: \d+ on line \d'
+        input_rule = r'''
+        rule base64_error_xor
+        {
+            strings:
+                $a = "two" base64wide("!@#$%^&*(){}[].,|ABCDEFGHIJ\x09LMNOPQRSTUVWXYZ")
             condition:
                 all of them
         }
