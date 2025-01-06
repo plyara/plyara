@@ -521,7 +521,7 @@ class Plyara(Parser):
 
     @staticmethod
     def t_HEXNUM(t):
-        r'0x[A-Fa-f0-9]+'  # noqa: D300, D400, D415
+        r'0x[A-Fa-f0-9]{1,15}'  # noqa: D300, D400, D415
         t.value = t.value
 
         return t
@@ -780,7 +780,7 @@ class Plyara(Parser):
 
     @staticmethod
     def t_NUM(t):
-        r'\d+(\.\d+)?'  # noqa: D300, D400, D415
+        r'\d{1,18}(\.\d+)?'  # noqa: D300, D400, D415
         t.value = t.value
 
         return t
