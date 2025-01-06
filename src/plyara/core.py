@@ -61,8 +61,6 @@ class StringTypes(enum.Enum):
 class Parser:
     """Interpret the output of the parser and produce an alternative representation of YARA rules."""
 
-    EXCLUSIVE_TEXT_MODIFIERS = {'nocase', 'xor', 'base64'}
-
     COMPARISON_OPERATORS = {'==', '!=', '>', '<', '>=', '<='}
 
     IMPORT_OPTIONS = {
