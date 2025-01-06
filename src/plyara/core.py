@@ -708,7 +708,7 @@ class Plyara(Parser):
             t.lexer.escape ^= 1
 
     def t_REXSTRING_value(self, t):
-        r'.'  # noqa: D300, D400, D415
+        r'[\x20-\x7f]'  # noqa: D300, D400, D415
         self._process_string_with_escapes(t)
 
     t_REXSTRING_ignore = ''
@@ -723,8 +723,8 @@ class Plyara(Parser):
         Raises:
             ParseTypeError
         """
-        raise ParseTypeError(f'Illegal rexstring character : {t.value[0]!r}, at line: {t.lexer.lineno}',
-                             t.lexer.lineno, t.lexer.lexpos)
+        msg = 'Illegal rexstring character : {!r}, at line: {}'
+        raise ParseTypeError(msg.format(t.value[0], t.lexer.lineno), t.lexer.lineno, t.lexer.lexpos)
 
     @staticmethod
     def t_STRINGNAME(t):

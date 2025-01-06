@@ -977,6 +977,13 @@ class TestYaraRules(unittest.TestCase):
                     else:
                         self.assertFalse('Unknown string name...')
 
+    def test_bad_regex_string_char(self):
+        """Test if an illegal character in a regex string raises an exception."""
+        input_string = self.data.joinpath('bad_regex_string_char.yar').read_text()
+
+        with self.assertRaises(ParseTypeError):
+            _ = self.parser.parse_string(input_string)
+
     def test_string(self):
         input_rules = r'''
         rule testName
