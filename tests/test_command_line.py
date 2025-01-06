@@ -40,7 +40,7 @@ class TestCLI(unittest.TestCase):
             '18569226a33c2f8f0c43dd0e034a6c05ea38f569adc3ca37d3c975be0d654f06',
             'b9b64df222a91d5b99b0099320134e3aecd532513965d1cf7b5a0b58881bcccc'
         ]
-        self.error_hash = '976d253035846f34286f87b7559d67de22f2f777b87dc8186ad5245c3e85a1ca'
+        self.error_hash = '15cca23e71c5307424bb71830627de444ad382479cf0c7818d65395c87770580'
 
     @unittest.mock.patch('argparse._sys.argv', ['plyara', 'test_file.yar'])
     def test_plyara_cli_nolog(self):

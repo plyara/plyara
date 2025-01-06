@@ -834,12 +834,9 @@ class Plyara(Parser):
         if '.' in p[3]:
             raise ParseTypeError(f'Invalid rule name {p[3]}, on line {p.lineno(1)}', p.lineno, p.lexpos)
 
-        logger.debug(f'Matched rule: {p[3]}')
-        logger.debug(f'Rule start: {p.lineno(2)}, Rule stop: {p.lineno(7)}')
-
         if len(p) == 9:
             if p.lineno(7) == p.lineno(8):
-                logger.debug(f'Matched a comment: {p[8]}')
+                logger.debug(f'Matched a trailing comment: {p[8]}')
 
                 if p[8][:2] == '//':
                     self._add_element(ElementTypes.COMMENT, p[8])
@@ -850,10 +847,14 @@ class Plyara(Parser):
             comment = self._rule_comments.pop()
 
             if p.lexpos(5) < comment.lexpos < p.lexpos(7):
+                logger.debug(f'Matched a rule comment: {comment.value}')
                 self._add_element(getattr(ElementTypes, comment.type), comment.value)
 
         element_value = (p[3], int(p.lineno(2)), int(p.lineno(7)), )
         self._add_element(ElementTypes.RULE_NAME, element_value)
+
+        logger.debug(f'Matched rule: {p[3]}')
+        logger.debug(f'Rule start: {p.lineno(2)}, Rule stop: {p.lineno(7)}')
 
     @staticmethod
     def p_imports(p):
@@ -1216,8 +1217,8 @@ class Plyara(Parser):
             # This happens when we try to parse an empty string or file, or one with no actual rules.
             pass
         elif p.type in ('COMMENT', 'MCOMMENT'):  # Only bytestring internal comments should fall through to here
-            self.parser.errok()  # This is a method from PLY to reset the error state from parsing a comment
             self._rule_comments.append(p)
+            self.parser.errok()  # This is a method from PLY to reset the error state from parsing a comment
         else:
             message = f'Unknown text {p.value} for token of type {p.type} on line {p.lineno}'
             raise ParseTypeError(message, p.lineno, p.lexpos)
