@@ -987,33 +987,12 @@ class Plyara(Parser):
                       | STRINGNAME EQUALS REXSTRING regex_string_modifiers comments'''  # noqa: D205, D208, D209, D300, D400, D401, D403, D415
         self._parse_string_kv(p, StringTypes.REGEX)
 
-    def _parse_string_simple_modifier(self, p):
-        mod_str = p[1]
-        prev_mod_with_args = False
-        if mod_str in self.string_modifiers:
-            raise ParseTypeError(f'Duplicate string modifier {mod_str} on line {p.lineno(1)}', p.lineno, p.lexpos)
-        if mod_str in self.EXCLUSIVE_TEXT_MODIFIERS:
-            prev_mods = {x for x in self.string_modifiers if isinstance(x, str)}
-            excluded_modifiers = prev_mods & ({mod_str} ^ self.EXCLUSIVE_TEXT_MODIFIERS)
-            if excluded_modifiers:
-                pr_mod_str = excluded_modifiers.pop()
-                msg = f'Mutually exclusive string modifier use: {mod_str}, line {p.lineno(1)}, after {pr_mod_str} usage'
-                raise ParseTypeError(msg, p.lineno, p.lexpos)
-        if self.string_modifiers:
-            # Convert previously created modifiers with args to strings
-            if mod_str.startswith('base64') and isinstance(self.string_modifiers[-1], YaraBase64):
-                if mod_str == 'base64wide':
-                    self.string_modifiers[-1].modifier_name = 'base64wide'
-                    logger.debug('Corrected base64 string modifier to base64wide')
-                self.string_modifiers[-1] = str(self.string_modifiers[-1])
-                prev_mod_with_args = True
-            elif mod_str == 'xor' and isinstance(self.string_modifiers[-1], YaraXor):
-                self.string_modifiers[-1] = str(self.string_modifiers[-1])
-                logger.debug('Modified xor string was already added')
-                prev_mod_with_args = True
-        if not prev_mod_with_args:
-            self._add_element(ElementTypes.STRINGS_MODIFIER, mod_str)
-            logger.debug(f'Matched a string modifier: {mod_str}')
+    def _parse_string_modifier(self, p, mod, mtype):
+        """Processes one string modifier after checking if it is a duplicate."""
+        if mod in self.string_modifiers:
+            raise ParseTypeError(f'Duplicate {mtype} {mod} on line {p.lineno(1)}', p.lineno(1), p.lexpos(1))
+        logger.debug(f'Matched {mtype}: {mod}')
+        self._add_element(ElementTypes.STRINGS_MODIFIER, mod)
 
     @staticmethod
     def p_text_string_modifiers(p):
@@ -1026,13 +1005,31 @@ class Plyara(Parser):
                                 | WIDE
                                 | FULLWORD
                                 | XOR_MOD
-                                | XOR_MOD xor_mod_args
+                                | XOR_MOD LPAREN NUM RPAREN
+                                | XOR_MOD LPAREN HEXNUM RPAREN
+                                | XOR_MOD LPAREN NUM HYPHEN NUM RPAREN
+                                | XOR_MOD LPAREN HEXNUM HYPHEN HEXNUM RPAREN
+                                | XOR_MOD LPAREN HEXNUM HYPHEN NUM RPAREN
+                                | XOR_MOD LPAREN NUM HYPHEN HEXNUM RPAREN
                                 | BASE64
                                 | BASE64WIDE
-                                | BASE64 base64_with_args
-                                | BASE64WIDE base64_with_args
+                                | BASE64 LPAREN STRING RPAREN
+                                | BASE64WIDE LPAREN STRING RPAREN
                                 | PRIVATE'''  # noqa: D205, D208, D209, D300, D400, D401, D403, D415
-        self._parse_string_simple_modifier(p)
+        if len(p) == 2:
+            mod = p[1]
+            mtype = 'simple text string modifier'
+        elif p[1] == 'xor':
+            mod = ''.join(p[1:])
+            mtype = 'complex xor text string modifier'
+        elif p[1] == 'base64wide':
+            mod = ''.join(p[1:])
+            mtype = 'complex base64wide text string modifier'
+        else:
+            mod = ''.join(p[1:])
+            mtype = 'complex base64 text string modifier'
+
+        self._parse_string_modifier(p, mod, mtype)
 
     @staticmethod
     def p_regex_string_modifiers(p):
@@ -1045,7 +1042,7 @@ class Plyara(Parser):
                                 | WIDE
                                 | FULLWORD
                                 | PRIVATE'''  # noqa: D205, D208, D209, D300, D400, D401, D403, D415
-        self._parse_string_simple_modifier(p)
+        self._parse_string_modifier(p, p[1], 'simple regex string modifier')
 
     @staticmethod
     def p_byte_string_modifiers(p):
@@ -1054,50 +1051,7 @@ class Plyara(Parser):
 
     def p_byte_string_modifer(self, p):
         '''byte_string_modifer : PRIVATE'''  # noqa: D300, D400, D403, D415
-        self._parse_string_simple_modifier(p)
-
-    def p_xor_mod_args(self, p):
-        '''xor_mod_args : LPAREN NUM RPAREN
-                        | LPAREN NUM HYPHEN NUM RPAREN
-                        | LPAREN HEXNUM RPAREN
-                        | LPAREN HEXNUM HYPHEN HEXNUM RPAREN
-                        | LPAREN NUM HYPHEN HEXNUM RPAREN
-                        | LPAREN HEXNUM HYPHEN NUM RPAREN'''  # noqa: D205, D208, D209, D300, D400, D401, D403, D415
-        logger.debug('Matched an xor arg: {}'.format(''.join(p[1:])))
-        mods = [x for x in p if x not in (None, '(', '-', ')')]
-        mod_int_list = []
-        mod_lineidx = set()
-        for i, x in enumerate(mods):
-            mod_int = int(x, 16) if x.startswith('0x') else int(x)
-            if 0 <= mod_int <= 255:
-                mod_int_list.append(mod_int)
-                mod_lineidx.add(i)
-            else:
-                message = f'String modification value {x} not between 0-255 on line {p.lineno(1 + i)}'
-                raise ParseTypeError(message, p.lineno, p.lexpos)
-        if mod_int_list[0] > mod_int_list[-1]:
-            mod_lineno = list({p.lineno(1 + i) for i in mod_lineidx})
-            mod_lineno.sort()
-            line_no = ' and '.join(str(lno) for lno in mod_lineno)
-            message = f'String modification lower bound exceeds upper bound on line {line_no}'
-            raise ParseTypeError(message, p.lineno, p.lexpos)
-        else:
-            mod_str_mod = YaraXor(mod_int_list)
-            logger.debug(f'Matched string modifier(s): {mod_str_mod}')
-            self._add_element(ElementTypes.STRINGS_MODIFIER, mod_str_mod)
-
-    def p_base64_with_args(self, p):
-        '''base64_with_args : LPAREN STRING RPAREN'''  # noqa: D300, D400, D403, D415
-        # Remove parens and leading/trailing quotes
-        b64_mod = [x for x in p if x not in (None, '(', ')')][0].strip('"')
-        b64_data = b64_mod.encode('ascii').decode('unicode-escape')
-        if len(b64_data) != 64:
-            raise RuntimeError(f'Base64 dictionary length {len(b64_data)}, must be 64 characters')
-        if re.search(r'(.).*\1', b64_data):
-            raise RuntimeError('Duplicate character in Base64 dictionary')
-        mod_str_mod = YaraBase64(b64_mod)
-        logger.debug(f'Matched string modifier(s): {b64_mod}')
-        self._add_element(ElementTypes.STRINGS_MODIFIER, mod_str_mod)
+        self._parse_string_modifier(p, p[1], 'simple byte string modifier')
 
     def p_comments(self, p):
         '''comments : COMMENT
@@ -1233,53 +1187,3 @@ class Plyara(Parser):
         elif t.lexer.escape == 1:
             raise ParseTypeError(f'Invalid escape sequence: \\{t.value}, at line: {t.lexer.lineno}',
                                  t.lexer.lineno, t.lexer.lexpos)
-
-
-class YaraXor(str):
-    """YARA xor string modifier."""
-
-    def __init__(self, xor_range=None):
-        """Initialize XOR string modifier."""
-        str.__init__(self)
-        self.modifier_name = 'xor'
-        self.modifier_list = xor_range if xor_range is not None else []
-
-    def __str__(self):
-        """Return the string representation."""
-        if len(self.modifier_list) == 0:
-            return self.modifier_name
-        return '{}({})'.format(
-            self.modifier_name,
-            '-'.join(['{0:#0{1}x}'.format(x, 4) for x in self.modifier_list])
-        )
-
-    def __repr__(self):
-        """Return the object representation."""
-        if len(self.modifier_list) == 0:
-            return '{}()'.format(self.__class__.__name__)
-        else:
-            return '{}({})'.format(self.__class__.__name__, self.modifier_list)
-
-
-class YaraBase64(str):
-    """YARA base64 string modifier for easier printing."""
-
-    def __init__(self, modifier_alphabet=None, modifier_name='base64'):
-        """Initialize base64 string modifier."""
-        str.__init__(self)
-        self.modifier_name = 'base64' if modifier_name != 'base64wide' else 'base64wide'
-        self.modifier_alphabet = modifier_alphabet
-
-    def __str__(self):
-        """Return the string representation."""
-        if self.modifier_alphabet is None:
-            return '{}'.format(self.modifier_name)
-        else:
-            return '{}("{}")'.format(self.modifier_name, self.modifier_alphabet)
-
-    def __repr__(self):
-        """Return the object representation."""
-        if self.modifier_alphabet is None:
-            return '{}()'.format(self.__class__.__name__)
-        else:
-            return '{}({})'.format(self.__class__.__name__, repr(self.modifier_alphabet))

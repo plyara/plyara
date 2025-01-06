@@ -40,10 +40,18 @@ rule xor_mod_hexnum_range
         all of them
 }
 
-rule xor_mod_mixed_range
+rule xor_mod_mixed_range1
 {
     strings:
         $a = "one" xor( 16 - 0x80 )
+    condition:
+        all of them
+}
+
+rule xor_mod_mixed_range2
+{
+    strings:
+        $a = "one" xor( 0x10 - 64 )
     condition:
         all of them
 }
