@@ -40,7 +40,7 @@ class TestCLI(unittest.TestCase):
             '18569226a33c2f8f0c43dd0e034a6c05ea38f569adc3ca37d3c975be0d654f06',
             'b9b64df222a91d5b99b0099320134e3aecd532513965d1cf7b5a0b58881bcccc'
         ]
-        self.error_hash = '4c303175e30f2257cc11ede86e08329815d2c06ada198e32055f0c88b73dda5a'
+        self.error_hash = 'ae974fa25090ba1a1227b379a5ea1efdc56b84adf6a78118190223512e892b81'
 
     @unittest.mock.patch('argparse._sys.argv', ['plyara', 'test_file.yar'])
     def test_plyara_cli_nolog(self):
@@ -69,7 +69,7 @@ class TestCLI(unittest.TestCase):
         error_hash = hashlib.sha256(error.encode()).hexdigest()
 
         self.assertTrue(output_hash in self.output_hashes)
-        self.assertEqual(error_hash, '4c303175e30f2257cc11ede86e08329815d2c06ada198e32055f0c88b73dda5a')
+        self.assertEqual(error_hash, self.error_hash)
 
     @unittest.mock.patch('argparse._sys.argv', ['plyara', 'doesnotexist.yar'])
     def test_plyara_cli_filenotfound(self):

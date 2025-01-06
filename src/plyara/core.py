@@ -616,10 +616,16 @@ class Plyara(Parser):
     @staticmethod
     def t_BYTESTRING_comment(t):
         r'\/\/[^\r\n]*'  # noqa: D300, D400, D415
+        t.type = 'COMMENT'
+
+        return t
 
     @staticmethod
     def t_BYTESTRING_mcomment(t):
         r'/\*(.|\n|\r\n)*?\*/'  # noqa: D300, D400, D415
+        t.type = 'MCOMMENT'
+
+        return t
 
     @staticmethod
     def t_BYTESTRING_jump(t):
@@ -814,7 +820,8 @@ class Plyara(Parser):
                  | rule'''  # noqa: D205, D208, D209, D300, D400, D401, D403, D415
 
     def p_rule(self, p):
-        '''rule : scopes RULE ID tag_section LBRACE rule_body RBRACE'''  # noqa: D300, D400, D403, D415
+        '''rule : scopes RULE ID tag_section LBRACE rule_body RBRACE
+                | scopes RULE ID tag_section LBRACE rule_body RBRACE comments'''  # noqa: D300, D400, D403, D415
         logger.debug(f'Matched rule: {p[3]}')
         if '.' in p[3]:
             raise ParseTypeError(f'Invalid rule name {p[3]}, on line {p.lineno(1)}', p.lineno, p.lexpos)
@@ -866,6 +873,8 @@ class Plyara(Parser):
     @staticmethod
     def p_tag_section(p):
         '''tag_section : COLON tags
+                       | COLON tags comments
+                       | comments
                        | '''  # noqa: D205, D208, D209, D300, D400, D401, D403, D415
 
     @staticmethod
@@ -880,7 +889,8 @@ class Plyara(Parser):
 
     @staticmethod
     def p_rule_body(p):
-        '''rule_body : sections'''  # noqa: D300, D400, D403, D415
+        '''rule_body : sections
+                     | comments sections'''  # noqa: D300, D400, D403, D415
         logger.debug('Matched rule body')
 
     @staticmethod
@@ -896,21 +906,26 @@ class Plyara(Parser):
 
     @staticmethod
     def p_meta_section(p):
-        '''meta_section : SECTIONMETA meta_kvs'''  # noqa: D300, D400, D403, D415
+        '''meta_section : SECTIONMETA meta_kvs
+                        | SECTIONMETA comments meta_kvs'''  # noqa: D300, D400, D403, D415
         logger.debug('Matched meta section')
 
     @staticmethod
     def p_strings_section(p):
-        '''strings_section : SECTIONSTRINGS strings_kvs'''  # noqa: D300, D400, D403, D415
+        '''strings_section : SECTIONSTRINGS strings_kvs
+                           | SECTIONSTRINGS comments strings_kvs'''  # noqa: D300, D400, D403, D415
 
     @staticmethod
     def p_condition_section(p):
-        '''condition_section : SECTIONCONDITION expression'''  # noqa: D300, D400, D403, D415
+        '''condition_section : SECTIONCONDITION expression
+                             | SECTIONCONDITION comments expression'''  # noqa: D300, D400, D403, D415
 
     # Meta elements
     @staticmethod
     def p_meta_kvs(p):
         '''meta_kvs : meta_kvs meta_kv
+                    | meta_kvs meta_kv comments
+                    | meta_kv comments
                     | meta_kv'''  # noqa: D205, D208, D209, D300, D400, D401, D403, D415
         logger.debug('Matched meta kvs')
 
@@ -1067,17 +1082,25 @@ class Plyara(Parser):
         logger.debug(f'Matched string modifier(s): {b64_mod}')
         self._add_element(ElementTypes.STRINGS_MODIFIER, mod_str_mod)
 
-    @staticmethod
-    def p_comments(p):
+    def p_comments(self, p):
         '''comments : COMMENT
                     | MCOMMENT'''  # noqa: D205, D208, D209, D300, D400, D401, D403, D415
         logger.debug(f'Matched a comment: {p[1]}')
+
+        if p[1][:2] == '//':
+            self._add_element(ElementTypes.COMMENT, p[1])
+        elif p[1][:2] == '/*':
+            self._add_element(ElementTypes.MCOMMENT, p[1])
+        else:
+            raise ParseTypeError('Bad comment type detected', p.lineno, p.lexpos)
 
     # Condition elements
     @staticmethod
     def p_expression(p):
         '''expression : expression term
-                      | term'''  # noqa: D205, D208, D209, D300, D400, D401, D403, D415
+                      | expression term comments
+                      | term
+                      | term comments'''  # noqa: D205, D208, D209, D300, D400, D401, D403, D415
 
     def p_condition(self, p):
         '''term : FILESIZE_SIZE
@@ -1172,7 +1195,7 @@ class Plyara(Parser):
         if not p:
             # This happens when we try to parse an empty string or file, or one with no actual rules.
             pass
-        elif p.type in ('COMMENT', 'MCOMMENT'):
+        elif p.type in ('COMMENT', 'MCOMMENT'):  # Only bytestring internal comments should fall through to here
             self.parser.errok()  # This is a method from PLY to reset the error state from parsing a comment
             self._rule_comments.append(p)
         else:

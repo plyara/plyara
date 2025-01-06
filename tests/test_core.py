@@ -87,6 +87,33 @@ class TestRuleParser(unittest.TestCase):
         self.common = importlib.resources.files('tests.data.common')
         self.unhandled_rule = 'Unhandled Test Rule: {}'
 
+    def test_comments(self):
+        """Check that all comment locations in a rule are parsed correctly."""
+        input_string = self.data.joinpath('comments_ruleset.yar').read_text()
+        expected = [
+            "// nameline",
+            "// openbrace",
+            "// metasection",
+            "// metakv",
+            "// stringssection",
+            "// bytestring",
+            "// conditionsection",
+            "// conditioninternal1",
+            "// conditioninternal2",
+            "// conditioninternal3",
+            "// condition",
+            "// closebrace",
+            "// bytestringinternal2",
+            "// bytestringinternal1"
+        ]
+
+        result = self.parser.parse_string(input_string)
+
+        for entry in result:
+            comments = entry.get('comments')
+
+            self.assertListEqual(comments, expected)
+
     def test_scopes(self):
         input_string = self.data.joinpath('scope_ruleset.yar').read_text()
 
