@@ -407,6 +407,20 @@ class TestRuleParser(unittest.TestCase):
         with self.assertRaises(ParseTypeError):
             plyara.parse_string(inputRules)
 
+    def test_illegal_rule_tag(self):
+        """Check if illegal rule tag with '.' character."""
+        inputRules = r'''
+        rule badtag : inva.lid
+        {
+            condition:
+                true
+        }
+        '''
+
+        plyara = Plyara()
+        with self.assertRaises(ParseTypeError):
+            plyara.parse_string(inputRules)
+
     def test_string_illegal_character(self):
         """Check if illegal character is in a string."""
         inputRules = r'''

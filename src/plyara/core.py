@@ -832,6 +832,7 @@ class Plyara(Parser):
                 | scopes RULE ID tag_section LBRACE rule_body RBRACE comments'''  # noqa: D300, D400, D403, D415
         if '.' in p[3]:
             raise ParseTypeError(f'Invalid rule name {p[3]}, on line {p.lineno(1)}', p.lineno, p.lexpos)
+
         logger.debug(f'Matched rule: {p[3]}')
         logger.debug(f'Rule start: {p.lineno(2)}, Rule stop: {p.lineno(7)}')
 
@@ -892,6 +893,9 @@ class Plyara(Parser):
 
     def p_tag(self, p):
         '''tag : ID'''  # noqa: D300, D400, D403, D415
+        if '.' in p[1]:
+            raise ParseTypeError(f'Invalid rule tag {p[1]}, on line {p.lineno(1)}', p.lineno, p.lexpos)
+
         logger.debug(f'Matched tag: {p[1]}')
         self._add_element(ElementTypes.TAG, p[1])
 
