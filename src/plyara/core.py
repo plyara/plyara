@@ -987,6 +987,34 @@ class Plyara(Parser):
                       | STRINGNAME EQUALS REXSTRING regex_string_modifiers comments'''  # noqa: D205, D208, D209, D300, D400, D401, D403, D415
         self._parse_string_kv(p, StringTypes.REGEX)
 
+    def _parse_string_simple_modifier(self, p):
+        mod_str = p[1]
+        prev_mod_with_args = False
+        if mod_str in self.string_modifiers:
+            raise ParseTypeError(f'Duplicate string modifier {mod_str} on line {p.lineno(1)}', p.lineno, p.lexpos)
+        if mod_str in self.EXCLUSIVE_TEXT_MODIFIERS:
+            prev_mods = {x for x in self.string_modifiers if isinstance(x, str)}
+            excluded_modifiers = prev_mods & ({mod_str} ^ self.EXCLUSIVE_TEXT_MODIFIERS)
+            if excluded_modifiers:
+                pr_mod_str = excluded_modifiers.pop()
+                msg = f'Mutually exclusive string modifier use: {mod_str}, line {p.lineno(1)}, after {pr_mod_str} usage'
+                raise ParseTypeError(msg, p.lineno, p.lexpos)
+        if self.string_modifiers:
+            # Convert previously created modifiers with args to strings
+            if mod_str.startswith('base64') and isinstance(self.string_modifiers[-1], YaraBase64):
+                if mod_str == 'base64wide':
+                    self.string_modifiers[-1].modifier_name = 'base64wide'
+                    logger.debug('Corrected base64 string modifier to base64wide')
+                self.string_modifiers[-1] = str(self.string_modifiers[-1])
+                prev_mod_with_args = True
+            elif mod_str == 'xor' and isinstance(self.string_modifiers[-1], YaraXor):
+                self.string_modifiers[-1] = str(self.string_modifiers[-1])
+                logger.debug('Modified xor string was already added')
+                prev_mod_with_args = True
+        if not prev_mod_with_args:
+            self._add_element(ElementTypes.STRINGS_MODIFIER, mod_str)
+            logger.debug(f'Matched a string modifier: {mod_str}')
+
     @staticmethod
     def p_text_string_modifiers(p):
         '''text_string_modifiers : text_string_modifiers text_string_modifier
@@ -1004,7 +1032,7 @@ class Plyara(Parser):
                                 | BASE64 base64_with_args
                                 | BASE64WIDE base64_with_args
                                 | PRIVATE'''  # noqa: D205, D208, D209, D300, D400, D401, D403, D415
-        self._add_string_modifier(p)
+        self._parse_string_simple_modifier(p)
 
     @staticmethod
     def p_regex_string_modifiers(p):
@@ -1017,7 +1045,7 @@ class Plyara(Parser):
                                 | WIDE
                                 | FULLWORD
                                 | PRIVATE'''  # noqa: D205, D208, D209, D300, D400, D401, D403, D415
-        self._add_string_modifier(p)
+        self._parse_string_simple_modifier(p)
 
     @staticmethod
     def p_byte_string_modifiers(p):
@@ -1026,7 +1054,7 @@ class Plyara(Parser):
 
     def p_byte_string_modifer(self, p):
         '''byte_string_modifer : PRIVATE'''  # noqa: D300, D400, D403, D415
-        self._add_string_modifier(p)
+        self._parse_string_simple_modifier(p)
 
     def p_xor_mod_args(self, p):
         '''xor_mod_args : LPAREN NUM RPAREN
@@ -1205,34 +1233,6 @@ class Plyara(Parser):
         elif t.lexer.escape == 1:
             raise ParseTypeError(f'Invalid escape sequence: \\{t.value}, at line: {t.lexer.lineno}',
                                  t.lexer.lineno, t.lexer.lexpos)
-
-    def _add_string_modifier(self, p):
-        mod_str = p[1]
-        prev_mod_with_args = False
-        if mod_str in self.string_modifiers:
-            raise ParseTypeError(f'Duplicate string modifier {mod_str} on line {p.lineno(1)}', p.lineno, p.lexpos)
-        if mod_str in self.EXCLUSIVE_TEXT_MODIFIERS:
-            prev_mods = {x for x in self.string_modifiers if isinstance(x, str)}
-            excluded_modifiers = prev_mods & ({mod_str} ^ self.EXCLUSIVE_TEXT_MODIFIERS)
-            if excluded_modifiers:
-                pr_mod_str = excluded_modifiers.pop()
-                msg = f'Mutually exclusive string modifier use: {mod_str}, line {p.lineno(1)}, after {pr_mod_str} usage'
-                raise ParseTypeError(msg, p.lineno, p.lexpos)
-        if self.string_modifiers:
-            # Convert previously created modifiers with args to strings
-            if mod_str.startswith('base64') and isinstance(self.string_modifiers[-1], YaraBase64):
-                if mod_str == 'base64wide':
-                    self.string_modifiers[-1].modifier_name = 'base64wide'
-                    logger.debug('Corrected base64 string modifier to base64wide')
-                self.string_modifiers[-1] = str(self.string_modifiers[-1])
-                prev_mod_with_args = True
-            elif mod_str == 'xor' and isinstance(self.string_modifiers[-1], YaraXor):
-                self.string_modifiers[-1] = str(self.string_modifiers[-1])
-                logger.debug('Modified xor string was already added')
-                prev_mod_with_args = True
-        if not prev_mod_with_args:
-            self._add_element(ElementTypes.STRINGS_MODIFIER, mod_str)
-            logger.debug(f'Matched a string modifier: {mod_str}')
 
 
 class YaraXor(str):
