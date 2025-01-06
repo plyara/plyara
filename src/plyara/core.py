@@ -541,8 +541,7 @@ class Plyara(Parser):
         r'strings\s*:'  # noqa: D300, D400, D415
         t.value = t.value
         self._strings_start = t.lexpos
-        if self._meta_end is None:
-            self._meta_end = t.lexpos
+        self._meta_end = t.lexpos
         t.lexer.section = 'strings'
 
         return t
@@ -553,8 +552,7 @@ class Plyara(Parser):
         self._condition_start = t.lexpos
         if self._meta_end is None:
             self._meta_end = t.lexpos
-        if self._strings_end is None:
-            self._strings_end = t.lexpos
+        self._strings_end = t.lexpos
         t.lexer.section = 'condition'
 
         return t
