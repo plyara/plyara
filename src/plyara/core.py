@@ -256,7 +256,7 @@ class Parser:
 
             if any(self.string_modifiers):
                 string_dict['modifiers'] = [k + v for k, v in self.string_modifiers.items()]
-                self.string_modifiers = dict()
+                self.string_modifiers.clear()
 
             if 'strings' not in self.current_rule:
                 self.current_rule['strings'] = [string_dict]
