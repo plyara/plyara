@@ -875,6 +875,40 @@ class TestYaraRules(unittest.TestCase):
                 self.assertEqual(rule['strings'][13]['value'], '{ E2AAAAAA~00 BBBBBBFB }')
                 self.assertEqual(rule['strings'][14]['value'], '{ E2AAAAAA~00BBBBBBFB }')
 
+    def test_bytestring_nocomments(self):
+        """Test that comments are stripped from bytestrings when option is set."""
+        input_rules = r'''
+        rule testName
+        {
+        strings:
+            $a1 = { E2 23 62 B4 56 // comment
+                     45 FB }
+            $a2 = { E2 23 62 B4 56 /* comment */ 45 FB }
+            $a3 = {
+                E2 23 62 B4 56 45 FB // comment
+            }
+
+        condition:
+            any of them
+        }
+        '''
+
+        plyara = Plyara(bytestring_comments=False)
+        result = plyara.parse_string(input_rules)
+
+        self.assertEqual(len(result), 1)
+        for rule in result:
+            self.assertEqual(len(rule['strings']), 3)
+            for hex_string in rule['strings']:
+                # Basic sanity check.
+                self.assertIn('E2', hex_string['value'])
+                self.assertIn('FB', hex_string['value'])
+            long_string = '{ E2 23 62 B4 56 \n                     45 FB }'
+            self.assertEqual(rule['strings'][0]['value'], long_string)
+            self.assertEqual(rule['strings'][1]['value'], '{ E2 23 62 B4 56  45 FB }')
+            long_string = '{\n                E2 23 62 B4 56 45 FB \n            }'
+            self.assertEqual(rule['strings'][2]['value'], long_string)
+
     @staticmethod
     def test_nested_bytestring():
         input_rules = r'''

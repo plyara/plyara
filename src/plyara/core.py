@@ -139,13 +139,14 @@ class Parser:
 
     FUNCTION_KEYWORDS = {'uint8', 'uint16', 'uint32', 'uint8be', 'uint16be', 'uint32be'}
 
-    def __init__(self, store_raw_sections=True, meta_as_kv=False, import_effects=False):
+    def __init__(self, store_raw_sections=True, meta_as_kv=False, import_effects=False, bytestring_comments=True):
         """Initialize the parser object.
 
         Args:
             store_raw_sections: Enable attribute storage of raw section input. (default True)
             meta_as_kv: Enable alternate structure for meta section as dictionary. (default False)
             import_effects: Enable including imports in all rules affected by the import. (default False)
+            bytestring_comments: Enable including comments in bytestring output. (default: True)
         """
         self.rules = list()
 
@@ -178,6 +179,9 @@ class Parser:
 
         # Includes imports in all rules affected by them whether or not the import is used in a condition
         self.import_effects = import_effects
+
+        # Includes comment and mcomment text in bytestring values in JSON output
+        self.bytestring_comments = bytestring_comments
 
         self.lexer = lex.lex(module=self, debug=False)
         self.parser = yacc.yacc(module=self, debug=False, outputdir=tempfile.gettempdir())
@@ -651,23 +655,27 @@ class Plyara(Parser):
     def t_BYTESTRING_group_logical_or(t):
         r'\|'  # noqa: D300, D400, D415
 
-    @staticmethod
-    def t_BYTESTRING_end(t):
+    def t_BYTESTRING_end(self, t):
         r'\}'  # noqa: D300, D400, D415
         t.type = 'BYTESTRING'
-        t.value = t.lexer.lexdata[t.lexer.bytestring_start:t.lexer.lexpos]
+        raw_value = t.lexer.lexdata[t.lexer.bytestring_start:t.lexer.lexpos]
 
         if t.lexer.bytestring_group != 0:
-            raise ParseValueError(f'Unbalanced group in bytestring: {t.value}, at line: {t.lexer.lineno}',
+            raise ParseValueError(f'Unbalanced group in bytestring: {raw_value}, at line: {t.lexer.lineno}',
                                   t.lexer.lineno, t.lexer.lexpos)
 
         t.lexer.begin('INITIAL')
 
         # Account for newlines in bytestring.
-        if '\r\n' in t.value:
-            t.lexer.lineno += t.value.count('\r\n')
+        if '\r\n' in raw_value:
+            t.lexer.lineno += raw_value.count('\r\n')
         else:
-            t.lexer.lineno += t.value.count('\n')
+            t.lexer.lineno += raw_value.count('\n')
+
+        if self.bytestring_comments:
+            t.value = raw_value
+        else:
+            t.value = re.sub(r'\/\/[^\r\n]*|/\*(.|\n|\r\n)*?\*/', '', raw_value)
 
         return t
 
