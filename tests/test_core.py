@@ -378,6 +378,22 @@ class TestRuleParser(unittest.TestCase):
             raw_condition = entry.get('raw_condition')
             self.assertEqual(raw_condition, 'condition: true')
 
+    def test_private_bytestring_modifier(self):
+        """Check if the private bytestring modifier is parsed correctly."""
+        input_rule = r'''
+        rule sample {
+            strings:
+                $a = { ABABABAB } private
+            condition:
+                $a
+        }
+        '''
+
+        result = self.parser.parse_string(input_rule)
+
+        modifier = result[0]['strings'][0]['modifiers'][0]
+        self.assertEqual(modifier, 'private')
+
     def test_illegal_rule_name(self):
         """Check if illegal rule name with '.' character."""
         inputRules = r'''
