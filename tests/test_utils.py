@@ -13,20 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Unit tests for plyara utility functions."""
-import pathlib
+import importlib.resources
 import unittest
 
+import plyara.core
 from plyara.core import Plyara
 from plyara.utils import generate_hash
 from plyara.utils import rebuild_yara_rule
 from plyara.utils import detect_imports, detect_dependencies
 from plyara.utils import is_valid_rule_name, is_valid_rule_tag
-
-PARENT = pathlib.Path(__file__).parent.joinpath('data')
-
-DATA_DIR = PARENT.joinpath('utils')
-COMMON_DATA_DIR = PARENT.joinpath('common')
-IMPORTS_DATA_DIR = PARENT.joinpath('imports')
 
 
 class TestUtilities(unittest.TestCase):
@@ -34,10 +29,14 @@ class TestUtilities(unittest.TestCase):
 
     def setUp(self):
         """Prepare for utility unit testing."""
-        self.maxDiff = None
+        self.parser = plyara.core.Plyara()
+        self.data = importlib.resources.files('tests.data.utils')
+        self.imports = importlib.resources.files('tests.data.yara_features.imports')
+        self.common = importlib.resources.files('tests.data.common')
+        # self.maxDiff = None
 
     def test_generate_hash(self):
-        input_string = DATA_DIR.joinpath('logic_collision_ruleset.yar').read_text()
+        input_string = self.data.joinpath('logic_collision_ruleset.yar').read_text()
 
         result = Plyara().parse_string(input_string)
 
@@ -57,9 +56,9 @@ class TestUtilities(unittest.TestCase):
             self.assertTrue(len(set(hashvalues)) == 1, 'Collision detection failure for {}'.format(setname))
 
     def test_generate_hash_output_legacy(self):
-        rule_hashes = DATA_DIR.joinpath('rulehashes_legacy.txt').read_text().splitlines()
+        rule_hashes = self.data.joinpath('rulehashes_legacy.txt').read_text().splitlines()
         # Rules containing "(1..#)" or similar iterators cause Unhandled String Count Condition errors
-        input_string = COMMON_DATA_DIR.joinpath('test_rules_from_yara_project.yar').read_text()
+        input_string = self.common.joinpath('test_rules_from_yara_project.yar').read_text()
 
         results = Plyara().parse_string(input_string)
 
@@ -68,9 +67,9 @@ class TestUtilities(unittest.TestCase):
             self.assertEqual(rulehash, rule_hashes[index])
 
     def test_generate_hash_output(self):
-        rule_hashes = DATA_DIR.joinpath('rulehashes.txt').read_text().splitlines()
+        rule_hashes = self.data.joinpath('rulehashes.txt').read_text().splitlines()
         # Rules containing "(1..#)" or similar iterators cause Unhandled String Count Condition errors
-        input_string = COMMON_DATA_DIR.joinpath('test_rules_from_yara_project.yar').read_text()
+        input_string = self.common.joinpath('test_rules_from_yara_project.yar').read_text()
 
         results = Plyara().parse_string(input_string)
 
@@ -113,8 +112,8 @@ class TestUtilities(unittest.TestCase):
         self.assertFalse(is_valid_rule_tag('x' * 129))
 
     def test_rebuild_yara_rule(self):
-        input_string = DATA_DIR.joinpath('rebuild_ruleset.yar').read_text(encoding='utf-8')
-        test_result = DATA_DIR.joinpath('rebuild_ruleset_good_enough.yar').read_text(encoding='utf-8')
+        input_string = self.data.joinpath('rebuild_ruleset.yar').read_text(encoding='utf-8')
+        test_result = self.data.joinpath('rebuild_ruleset_good_enough.yar').read_text(encoding='utf-8')
 
         result = Plyara().parse_string(input_string)
 
@@ -149,7 +148,7 @@ class TestUtilities(unittest.TestCase):
             self.assertIn('digit_value = 10', unparsed)
 
     def test_detect_dependencies(self):
-        input_string = DATA_DIR.joinpath('detect_dependencies_ruleset.yar').read_text()
+        input_string = self.data.joinpath('detect_dependencies_ruleset.yar').read_text()
 
         result = Plyara().parse_string(input_string)
 
@@ -173,7 +172,7 @@ class TestUtilities(unittest.TestCase):
 
     def test_detect_imports(self):
         for imp in ('androguard', 'cuckoo', 'dotnet', 'elf', 'hash', 'magic', 'math', 'pe'):
-            input_string = IMPORTS_DATA_DIR.joinpath(f'import_ruleset_{imp}.yar').read_text()
+            input_string = self.imports.joinpath(f'import_ruleset_{imp}.yar').read_text()
 
             results = Plyara().parse_string(input_string)
             for rule in results:
