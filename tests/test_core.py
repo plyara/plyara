@@ -360,6 +360,19 @@ class TestRuleParser(unittest.TestCase):
             else:
                 raise AssertionError(self.unhandled_rule.format(rulename))
 
+    def test_condition_only(self):
+        """Test that a rule with only conditions is parsed correctly."""
+        input_string = self.data.joinpath('only_condition.yar').read_text()
+
+        result = self.parser.parse_string(input_string)
+
+        for entry in result:
+            condition_terms = entry.get('condition_terms')
+            self.assertListEqual(condition_terms, ['true'])
+
+            raw_condition = entry.get('raw_condition')
+            self.assertEqual(raw_condition, 'condition: true')
+
     def test_string_bad_escaped_hex(self):
         inputRules = r'''
         rule sample {
