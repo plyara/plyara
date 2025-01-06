@@ -829,12 +829,22 @@ class Plyara(Parser):
 
     def p_rule(self, p):
         '''rule : scopes RULE ID tag_section LBRACE rule_body RBRACE
-                | scopes RULE ID tag_section LBRACE rule_body RBRACE comments'''  # noqa: D300, D400, D403, D415
+                | scopes RULE ID tag_section LBRACE rule_body RBRACE COMMENT
+                | scopes RULE ID tag_section LBRACE rule_body RBRACE MCOMMENT'''  # noqa: D300, D400, D403, D415
         if '.' in p[3]:
             raise ParseTypeError(f'Invalid rule name {p[3]}, on line {p.lineno(1)}', p.lineno, p.lexpos)
 
         logger.debug(f'Matched rule: {p[3]}')
         logger.debug(f'Rule start: {p.lineno(2)}, Rule stop: {p.lineno(7)}')
+
+        if len(p) == 9:
+            if p.lineno(7) == p.lineno(8):
+                logger.debug(f'Matched a comment: {p[8]}')
+
+                if p[8][:2] == '//':
+                    self._add_element(ElementTypes.COMMENT, p[8])
+                else:
+                    self._add_element(ElementTypes.MCOMMENT, p[8])
 
         while self._rule_comments:
             comment = self._rule_comments.pop()

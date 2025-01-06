@@ -214,6 +214,19 @@ class TestGithubIssues(unittest.TestCase):
                     ct = rule['condition_terms']
                     self.assertListEqual(ct, ['-', '1.5'])
 
+    # Reference: https://github.com/plyara/plyara/issues/150
+    def issue_150(self):
+        """Check that comments between rules are discarded and not attached to a rule."""
+        input_string = DATA_DIR.joinpath('issue150.yar').read_text()
+
+        plyara = Plyara()
+        parsed_rules = plyara.parse_string(input_string)
+
+        for rule in parsed_rules:
+            rulename = rule.get('rule_name')
+            with self.subTest(rulenum=rulename):
+                self.assertIsNone(rule.get('comments'))
+
 
 if __name__ == '__main__':
     unittest.main()
