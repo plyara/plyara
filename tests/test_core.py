@@ -842,6 +842,9 @@ class TestYaraRules(unittest.TestCase):
             $a12 = {
                 E2 23 62 B4 56 45 FB // comment
             }
+            $a13 = { E2AAAAAA ~00 BBBBBBFB }
+            $a14 = { E2AAAAAA~00 BBBBBBFB }
+            $a15 = { E2AAAAAA~00BBBBBBFB }
 
         condition:
             any of them
@@ -855,7 +858,7 @@ class TestYaraRules(unittest.TestCase):
         for rule in result:
             rule_name = rule['rule_name']
             if rule_name == 'testName':
-                self.assertEqual(len(rule['strings']), 12)
+                self.assertEqual(len(rule['strings']), 15)
                 for hex_string in rule['strings']:
                     # Basic sanity check.
                     self.assertIn('E2', hex_string['value'])
@@ -868,6 +871,9 @@ class TestYaraRules(unittest.TestCase):
                 self.assertEqual(rule['strings'][10]['value'], '{ E2 23 62 B4 56 /* comment */ 45 FB }')
                 long_string = '{\n                E2 23 62 B4 56 45 FB // comment\n            }'
                 self.assertEqual(rule['strings'][11]['value'], long_string)
+                self.assertEqual(rule['strings'][12]['value'], '{ E2AAAAAA ~00 BBBBBBFB }')
+                self.assertEqual(rule['strings'][13]['value'], '{ E2AAAAAA~00 BBBBBBFB }')
+                self.assertEqual(rule['strings'][14]['value'], '{ E2AAAAAA~00BBBBBBFB }')
 
     @staticmethod
     def test_nested_bytestring():
