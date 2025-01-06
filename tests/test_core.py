@@ -129,6 +129,48 @@ class TestRuleParser(unittest.TestCase):
 
                 self.assertListEqual(comments, expected[i])
 
+    def test_comments_crlf(self):
+        """Check that all comment locations in a rule are parsed correctly in CRLF file."""
+        input_string = self.data.joinpath('comments_ruleset_crlf.yar').read_bytes().decode()
+        lcomments = [
+            "// nameline",
+            "// openbrace",
+            "// metasection",
+            "// metakv",
+            "// stringssection",
+            "// bytestring",
+            "// conditionsection",
+            "// conditioninternal1",
+            "// conditioninternal2",
+            "// conditioninternal3",
+            "// condition",
+            "// closebrace",
+            "// bytestringinternal2",
+            "// bytestringinternal1"
+        ]
+        mcomments = [
+            "/* nameline\r\n                         secondline */",
+            "/* openbrace\r\n       secondline */",
+            "/* metasection\r\n                secondline */",
+            "/* metakv\r\n                                       secondline */",
+            "/* stringssection\r\n                secondline */",
+            "/* bytestring\r\n                                     secondline */",
+            "/* conditionsection\r\n                      secondline */",
+            "/* conditioninternal1\r\n                                                       secondline */",
+            "/* condition\r\n                                                       secondline */",
+            "/* closebrace\r\n       secondline */",
+            "/* bytestringinternal1\r\n                                     secondline */"
+        ]
+        expected = [lcomments, mcomments]
+
+        result = self.parser.parse_string(input_string)
+
+        for i, entry in enumerate(result):
+            with self.subTest(i=i):
+                comments = entry.get('comments')
+
+                self.assertListEqual(comments, expected[i])
+
     def test_scopes(self):
         input_string = self.data.joinpath('scope_ruleset.yar').read_text()
 

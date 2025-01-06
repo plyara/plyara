@@ -509,7 +509,7 @@ class Plyara(Parser):
 
     @staticmethod
     def t_COMMENT(t):
-        r'(//[^\n]*)'  # noqa: D300, D400, D415
+        r'(//[^\r\n]*)'  # noqa: D300, D400, D415
         return t
 
     @staticmethod
