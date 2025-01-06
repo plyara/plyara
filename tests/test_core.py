@@ -1286,6 +1286,23 @@ class TestYaraRules(unittest.TestCase):
         with self.assertRaisesRegex(ParseTypeError, r'Duplicate simple text string modifier xor on line \d'):
             parser.parse_string(input_rule)
 
+    def test_duplicated_complex_simple_modifier_xor(self):
+        """Test that a duplicated string modifiers of two types raises an exception."""
+        input_rule = r'''
+        rule duplicate_modifier
+        {
+            strings:
+                $a = "one" xor xor(0x10)
+            condition:
+                all of them
+        }
+        '''
+
+        parser = plyara.core.Plyara()
+
+        with self.assertRaisesRegex(ParseTypeError, r'Duplicate complex xor text string modifier xor on line \d'):
+            parser.parse_string(input_rule)
+
     def test_unexpected_xor(self):
         """Test that an xor modifier on the wrong string type raises an exception."""
         input_rule = r'''
