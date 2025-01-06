@@ -477,6 +477,21 @@ class TestRuleParser(unittest.TestCase):
         with self.assertRaises(ParseTypeError):
             self.parser.parse_string(input_rule)
 
+    def test_duplicate_string_name(self):
+        input_rule = r'''
+        rule sample
+        {
+            strings:
+                $a = "test"
+                $a = "testtest"
+            condition:
+                $a
+        }
+        '''
+
+        with self.assertRaises(ParseTypeError):
+            self.parser.parse_string(input_rule)
+
     def test_conditions(self):
         input_string = self.data.joinpath('condition_ruleset.yar').read_text()
 
