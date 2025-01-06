@@ -373,7 +373,6 @@ class Plyara(Parser):
         'RBRACE',
         'ID',
         'BACKSLASH',
-        'FORWARDSLASH',
         'PIPE',
         'PLUS',
         'SECTIONMETA',
@@ -467,7 +466,6 @@ class Plyara(Parser):
     t_PLUS = r'\+'
     t_PIPE = r'\|'
     t_BACKSLASH = r'\\'
-    t_FORWARDSLASH = r'/'
     t_COMMA = r','
     t_GREATERTHAN = r'>'
     t_LESSTHAN = r'<'
@@ -692,15 +690,10 @@ class Plyara(Parser):
     @staticmethod
     def t_begin_REXSTRING(t):
         r'/'  # noqa: D300, D400, D415
-        if hasattr(t.lexer, 'section') and t.lexer.section in ('strings', 'condition'):
-            t.lexer.rexstring_start = t.lexer.lexpos - 1
-            t.lexer.begin('REXSTRING')
-            t.lexer.escape = 0
-            t.lexer.hex_escape = 0
-        else:
-            t.type = 'FORWARDSLASH'
-
-            return t
+        t.lexer.rexstring_start = t.lexer.lexpos - 1
+        t.lexer.begin('REXSTRING')
+        t.lexer.escape = 0
+        t.lexer.hex_escape = 0
 
     @staticmethod
     def t_REXSTRING_end(t):
@@ -1117,7 +1110,6 @@ class Plyara(Parser):
                 | PLUS
                 | PIPE
                 | BACKSLASH
-                | FORWARDSLASH
                 | COMMA
                 | GREATERTHAN
                 | LESSTHAN
