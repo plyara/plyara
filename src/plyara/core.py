@@ -1007,7 +1007,7 @@ class Plyara(Parser):
         self._add_string_modifier(p)
 
     @staticmethod
-    def p_regex_text_string_modifiers(p):
+    def p_regex_string_modifiers(p):
         '''regex_string_modifiers : regex_string_modifiers regex_string_modifer
                                   | regex_string_modifer'''  # noqa: D205, D208, D209, D300, D400, D401, D403, D415
 
