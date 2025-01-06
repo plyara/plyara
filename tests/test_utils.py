@@ -17,7 +17,6 @@ import importlib.resources
 import unittest
 
 import plyara.core
-from plyara.core import Plyara
 from plyara.utils import generate_hash
 from plyara.utils import rebuild_yara_rule
 from plyara.utils import detect_imports, detect_dependencies
@@ -38,7 +37,7 @@ class TestUtilities(unittest.TestCase):
     def test_generate_hash(self):
         input_string = self.data.joinpath('logic_collision_ruleset.yar').read_text()
 
-        result = Plyara().parse_string(input_string)
+        result = plyara.core.Plyara().parse_string(input_string)
 
         rule_mapping = {}
 
@@ -60,7 +59,7 @@ class TestUtilities(unittest.TestCase):
         # Rules containing "(1..#)" or similar iterators cause Unhandled String Count Condition errors
         input_string = self.common.joinpath('test_rules_from_yara_project.yar').read_text()
 
-        results = Plyara().parse_string(input_string)
+        results = plyara.core.Plyara().parse_string(input_string)
 
         for index, result in enumerate(results):
             rulehash = generate_hash(result, legacy=True)
@@ -71,7 +70,7 @@ class TestUtilities(unittest.TestCase):
         # Rules containing "(1..#)" or similar iterators cause Unhandled String Count Condition errors
         input_string = self.common.joinpath('test_rules_from_yara_project.yar').read_text()
 
-        results = Plyara().parse_string(input_string)
+        results = plyara.core.Plyara().parse_string(input_string)
 
         for index, result in enumerate(results):
             rulehash = generate_hash(result)
@@ -115,7 +114,7 @@ class TestUtilities(unittest.TestCase):
         input_string = self.data.joinpath('rebuild_ruleset.yar').read_text(encoding='utf-8')
         test_result = self.data.joinpath('rebuild_ruleset_good_enough.yar').read_text(encoding='utf-8')
 
-        result = Plyara().parse_string(input_string)
+        result = plyara.core.Plyara().parse_string(input_string)
 
         rebuilt_rules = str()
         for rule in result:
@@ -137,7 +136,7 @@ class TestUtilities(unittest.TestCase):
                 true
         }
         """
-        parsed = Plyara().parse_string(test_rule)
+        parsed = plyara.core.Plyara().parse_string(test_rule)
         for rule in parsed:
             unparsed = rebuild_yara_rule(rule)
             self.assertIn('string_value = "TEST STRING"', unparsed)
@@ -150,7 +149,7 @@ class TestUtilities(unittest.TestCase):
     def test_detect_dependencies(self):
         input_string = self.data.joinpath('detect_dependencies_ruleset.yar').read_text()
 
-        result = Plyara().parse_string(input_string)
+        result = plyara.core.Plyara().parse_string(input_string)
 
         self.assertEqual(detect_dependencies(result[0]), list())
         self.assertEqual(detect_dependencies(result[1]), list())
@@ -174,7 +173,7 @@ class TestUtilities(unittest.TestCase):
         for imp in ('androguard', 'cuckoo', 'dotnet', 'elf', 'hash', 'magic', 'math', 'pe'):
             input_string = self.imports.joinpath(f'import_ruleset_{imp}.yar').read_text()
 
-            results = Plyara().parse_string(input_string)
+            results = plyara.core.Plyara().parse_string(input_string)
             for rule in results:
                 self.assertEqual(detect_imports(rule), [imp])
 
