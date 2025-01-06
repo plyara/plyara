@@ -373,6 +373,22 @@ class TestRuleParser(unittest.TestCase):
             raw_condition = entry.get('raw_condition')
             self.assertEqual(raw_condition, 'condition: true')
 
+    def test_string_illegal_character(self):
+        """Check if illegal character is in a string."""
+        inputRules = r'''
+        rule sample {
+            strings:
+                $ = "foo
+                bar"
+            condition:
+                all of them
+        }
+        '''
+
+        plyara = Plyara()
+        with self.assertRaises(ParseTypeError):
+            plyara.parse_string(inputRules)
+
     def test_string_bad_escaped_hex(self):
         inputRules = r'''
         rule sample {
