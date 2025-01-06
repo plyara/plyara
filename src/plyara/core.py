@@ -1001,9 +1001,8 @@ class Plyara(Parser):
 
     def p_text_string_modifier(self, p):
         '''text_string_modifier : NOCASE
-                                | ASCII
                                 | WIDE
-                                | FULLWORD
+                                | ASCII
                                 | XOR_MOD
                                 | XOR_MOD LPAREN NUM RPAREN
                                 | XOR_MOD LPAREN HEXNUM RPAREN
@@ -1015,6 +1014,7 @@ class Plyara(Parser):
                                 | BASE64WIDE
                                 | BASE64 LPAREN STRING RPAREN
                                 | BASE64WIDE LPAREN STRING RPAREN
+                                | FULLWORD
                                 | PRIVATE'''  # noqa: D205, D208, D209, D300, D400, D401, D403, D415
         if len(p) == 2:
             mod = p[1]
@@ -1038,8 +1038,8 @@ class Plyara(Parser):
 
     def p_regex_string_modifer(self, p):
         '''regex_string_modifer : NOCASE
-                                | ASCII
                                 | WIDE
+                                | ASCII
                                 | FULLWORD
                                 | PRIVATE'''  # noqa: D205, D208, D209, D300, D400, D401, D403, D415
         self._parse_string_modifier(p, p[1], 'simple regex string modifier')
