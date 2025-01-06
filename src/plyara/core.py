@@ -353,7 +353,7 @@ class Parser:
 class Plyara(Parser):
     """Define the lexer and the parser rules."""
 
-    STRING_ESCAPE_CHARS = {'"', '\\', 't', 'n', 'x', 'r'}
+    STRING_ESCAPE_CHARS = {'"', '\\', 'r', 't', 'n', 'x'}
 
     tokens = [
         'BYTESTRING',
