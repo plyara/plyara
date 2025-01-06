@@ -1030,11 +1030,11 @@ class Plyara(Parser):
 
     def p_xor_mod_args(self, p):
         '''xor_mod_args : LPAREN NUM RPAREN
-                         | LPAREN NUM HYPHEN NUM RPAREN
-                         | LPAREN HEXNUM RPAREN
-                         | LPAREN HEXNUM HYPHEN HEXNUM RPAREN
-                         | LPAREN NUM HYPHEN HEXNUM RPAREN
-                         | LPAREN HEXNUM HYPHEN NUM RPAREN'''  # noqa: D205, D208, D209, D300, D400, D401, D403, D415
+                        | LPAREN NUM HYPHEN NUM RPAREN
+                        | LPAREN HEXNUM RPAREN
+                        | LPAREN HEXNUM HYPHEN HEXNUM RPAREN
+                        | LPAREN NUM HYPHEN HEXNUM RPAREN
+                        | LPAREN HEXNUM HYPHEN NUM RPAREN'''  # noqa: D205, D208, D209, D300, D400, D401, D403, D415
         logger.debug('Matched an xor arg: {}'.format(''.join(p[1:])))
         mods = [x for x in p if x not in (None, '(', '-', ')')]
         mod_int_list = []
