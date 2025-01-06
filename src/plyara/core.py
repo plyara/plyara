@@ -151,7 +151,7 @@ class Parser:
 
         self.current_rule = dict()
 
-        self.string_modifiers = list()
+        self.string_modifiers = dict()
         self.imports = set()
         self.includes = list()
         self.terms = list()
@@ -257,8 +257,8 @@ class Parser:
             string_dict = {'name': key, 'value': value, 'type': string_type.name.lower()}
 
             if any(self.string_modifiers):
-                string_dict['modifiers'] = self.string_modifiers
-                self.string_modifiers = list()
+                string_dict['modifiers'] = [k + v for k, v in self.string_modifiers.items()]
+                self.string_modifiers = dict()
 
             if 'strings' not in self.current_rule:
                 self.current_rule['strings'] = [string_dict]
@@ -266,7 +266,8 @@ class Parser:
                 self.current_rule['strings'].append(string_dict)
 
         elif element_type == ElementTypes.STRINGS_MODIFIER:
-            self.string_modifiers.append(element_value)
+            modifier, predicate = element_value
+            self.string_modifiers[modifier] = predicate
 
         elif element_type == ElementTypes.IMPORT:
             self.imports.add(element_value)
@@ -987,12 +988,12 @@ class Plyara(Parser):
                       | STRINGNAME EQUALS REXSTRING regex_string_modifiers comments'''  # noqa: D205, D208, D209, D300, D400, D401, D403, D415
         self._parse_string_kv(p, StringTypes.REGEX)
 
-    def _parse_string_modifier(self, p, mod, mtype):
+    def _parse_string_modifier(self, mod, pred, mtype, lineno, lexpos):
         """Processes one string modifier after checking if it is a duplicate."""
         if mod in self.string_modifiers:
-            raise ParseTypeError(f'Duplicate {mtype} {mod} on line {p.lineno(1)}', p.lineno(1), p.lexpos(1))
+            raise ParseTypeError(f'Duplicate {mtype} {mod} on line {lineno}', lineno, lexpos)
         logger.debug(f'Matched {mtype}: {mod}')
-        self._add_element(ElementTypes.STRINGS_MODIFIER, mod)
+        self._add_element(ElementTypes.STRINGS_MODIFIER, (mod, pred, ))
 
     @staticmethod
     def p_text_string_modifiers(p):
@@ -1017,19 +1018,19 @@ class Plyara(Parser):
                                 | FULLWORD
                                 | PRIVATE'''  # noqa: D205, D208, D209, D300, D400, D401, D403, D415
         if len(p) == 2:
-            mod = p[1]
+            pred = str()
             mtype = 'simple text string modifier'
-        elif p[1] == 'xor':
-            mod = ''.join(p[1:])
-            mtype = 'complex xor text string modifier'
-        elif p[1] == 'base64wide':
-            mod = ''.join(p[1:])
-            mtype = 'complex base64wide text string modifier'
         else:
-            mod = ''.join(p[1:])
-            mtype = 'complex base64 text string modifier'
+            pred = ''.join(p[2:])
+            if p[1] == 'xor':
+                mtype = 'complex xor text string modifier'
+            elif p[1] == 'base64':
+                mtype = 'complex base64 text string modifier'
+            else:
+                mtype = 'complex base64wide text string modifier'
 
-        self._parse_string_modifier(p, mod, mtype)
+        mod = p[1]
+        self._parse_string_modifier(mod, pred, mtype, p.lineno(1), p.lexpos(1))
 
     @staticmethod
     def p_regex_string_modifiers(p):
@@ -1042,7 +1043,7 @@ class Plyara(Parser):
                                 | ASCII
                                 | FULLWORD
                                 | PRIVATE'''  # noqa: D205, D208, D209, D300, D400, D401, D403, D415
-        self._parse_string_modifier(p, p[1], 'simple regex string modifier')
+        self._parse_string_modifier(p[1], str(), 'simple regex string modifier', p.lineno(1), p.lexpos(1))
 
     @staticmethod
     def p_byte_string_modifiers(p):
@@ -1051,7 +1052,7 @@ class Plyara(Parser):
 
     def p_byte_string_modifer(self, p):
         '''byte_string_modifer : PRIVATE'''  # noqa: D300, D400, D403, D415
-        self._parse_string_modifier(p, p[1], 'simple byte string modifier')
+        self._parse_string_modifier(p[1], str(), 'simple byte string modifier', p.lineno(1), p.lexpos(1))
 
     def p_comments(self, p):
         '''comments : COMMENT
