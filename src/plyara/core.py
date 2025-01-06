@@ -286,7 +286,7 @@ class Parser:
         elif element_type == ElementTypes.COMMENT:
             self.comments.append(element_value)
 
-        elif element_type == ElementTypes.MCOMMENT:
+        else:
             self.comments.append(element_value)
 
     def _flush_accumulators(self):
@@ -1078,7 +1078,7 @@ class Plyara(Parser):
 
         if p[1][:2] == '//':
             self._add_element(ElementTypes.COMMENT, p[1])
-        elif p[1][:2] == '/*':
+        else:
             self._add_element(ElementTypes.MCOMMENT, p[1])
 
     # Condition elements
