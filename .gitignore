@@ -166,6 +166,7 @@ cython_debug/
 
 # Test files
 test.py
+test.yar
 
 ## macOS Section
 # General
