@@ -988,8 +988,22 @@ class Plyara(Parser):
 
     def _parse_string_modifier(self, mod, pred, mtype, lineno, lexpos):
         """Processes one string modifier after checking if it is a duplicate."""
+        incompatible = {
+            'nocase': {'xor', 'base64', 'base64wide'},
+            'xor': {'nocase', 'base64', 'base64wide'},
+            'base64': {'nocase', 'xor', 'fullword'},
+            'base64wide': {'nocase', 'xor', 'fullword'},
+            'fullword': {'base64', 'base64wide'}
+        }
+
         if mod in self.string_modifiers:
             raise ParseTypeError(f'Duplicate {mtype} {mod} on line {lineno}', lineno, lexpos)
+
+        if mod in incompatible:
+            if bad_mod := incompatible[mod].intersection(set(self.string_modifiers.keys())):
+                message = f'Incompatible modifiers [{mod}, {bad_mod.pop()}] on line {lineno}'
+                raise ParseTypeError(message, lineno, lexpos)
+
         logger.debug(f'Matched {mtype}: {mod}')
         self._add_element(ElementTypes.STRINGS_MODIFIER, (mod, pred, ))
 

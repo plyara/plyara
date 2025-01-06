@@ -1395,6 +1395,44 @@ class TestYaraRules(unittest.TestCase):
         with self.assertRaisesRegex(ParseTypeError, error_msg):
             parser.parse_string(input_rule)
 
+    def test_invalid_modifier_combination_base64_nocase(self):
+        """Test that incompatible modifiers raise an exception."""
+        error_msg = r'Incompatible modifiers \[nocase, base64\] on line \d'
+        input_rule = r'''
+        rule base64_error_nocase
+        {
+            strings:
+                $a = "one" base64("!@#$%^&*(){}[].,|ABCDEFGHIJ\x09LMNOPQRSTUVWXYZabcdefghijklmnopqrstu") nocase
+                $b = "two" base64wide("!@#$%^&*(){}[].,|ABCDEFGHIJ\x09LMNOPQRSTUVWXYZabcdefghijklmnopqrstu") nocase
+            condition:
+                all of them
+        }
+        '''
+
+        parser = plyara.core.Plyara()
+
+        with self.assertRaisesRegex(ParseTypeError, error_msg):
+            parser.parse_string(input_rule)
+
+    def test_invalid_modifier_combination_base64_xor(self):
+        """Test that incompatible modifiers raise an exception."""
+        error_msg = r'Incompatible modifiers \[xor, base64\] on line \d'
+        input_rule = r'''
+        rule base64_error_xor
+        {
+            strings:
+                $a = "one" base64("!@#$%^&*(){}[].,|ABCDEFGHIJ\x09LMNOPQRSTUVWXYZabcdefghijklmnopqrstu") xor
+                $b = "two" base64wide("!@#$%^&*(){}[].,|ABCDEFGHIJ\x09LMNOPQRSTUVWXYZabcdefghijklmnopqrstu") xor
+            condition:
+                all of them
+        }
+        '''
+
+        parser = plyara.core.Plyara()
+
+        with self.assertRaisesRegex(ParseTypeError, error_msg):
+            parser.parse_string(input_rule)
+
 
 if __name__ == '__main__':
     unittest.main()
