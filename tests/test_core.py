@@ -90,7 +90,7 @@ class TestRuleParser(unittest.TestCase):
     def test_comments(self):
         """Check that all comment locations in a rule are parsed correctly."""
         input_string = self.data.joinpath('comments_ruleset.yar').read_text()
-        expected = [
+        lcomments = [
             "// nameline",
             "// openbrace",
             "// metasection",
@@ -106,13 +106,28 @@ class TestRuleParser(unittest.TestCase):
             "// bytestringinternal2",
             "// bytestringinternal1"
         ]
+        mcomments = [
+            "/* nameline\n                         secondline */",
+            "/* openbrace\n       secondline */",
+            "/* metasection\n                secondline */",
+            "/* metakv\n                                       secondline */",
+            "/* stringssection\n                secondline */",
+            "/* bytestring\n                                     secondline */",
+            "/* conditionsection\n                      secondline */",
+            "/* conditioninternal1\n                                                       secondline */",
+            "/* condition\n                                                       secondline */",
+            "/* closebrace\n       secondline */",
+            "/* bytestringinternal1\n                                     secondline */"
+        ]
+        expected = [lcomments, mcomments]
 
         result = self.parser.parse_string(input_string)
 
-        for entry in result:
-            comments = entry.get('comments')
+        for i, entry in enumerate(result):
+            with self.subTest(i=i):
+                comments = entry.get('comments')
 
-            self.assertListEqual(comments, expected)
+                self.assertListEqual(comments, expected[i])
 
     def test_scopes(self):
         input_string = self.data.joinpath('scope_ruleset.yar').read_text()
