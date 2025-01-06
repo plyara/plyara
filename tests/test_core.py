@@ -1271,6 +1271,7 @@ class TestYaraRules(unittest.TestCase):
 
     def test_duplicated_simple_modifier_xor(self):
         """Test that a duplicated string modifier raises an exception."""
+        error_msg = r'Duplicate simple text string modifier xor on line \d'
         input_rule = r'''
         rule duplicate_modifier
         {
@@ -1283,11 +1284,12 @@ class TestYaraRules(unittest.TestCase):
 
         parser = plyara.core.Plyara()
 
-        with self.assertRaisesRegex(ParseTypeError, r'Duplicate simple text string modifier xor on line \d'):
+        with self.assertRaisesRegex(ParseTypeError, error_msg):
             parser.parse_string(input_rule)
 
     def test_duplicated_complex_simple_modifier_xor(self):
         """Test that a duplicated string modifiers of two types raises an exception."""
+        error_msg = r'Duplicate complex xor text string modifier xor on line \d'
         input_rule = r'''
         rule duplicate_modifier
         {
@@ -1300,11 +1302,48 @@ class TestYaraRules(unittest.TestCase):
 
         parser = plyara.core.Plyara()
 
-        with self.assertRaisesRegex(ParseTypeError, r'Duplicate complex xor text string modifier xor on line \d'):
+        with self.assertRaisesRegex(ParseTypeError, error_msg):
+            parser.parse_string(input_rule)
+
+    def test_duplicated_complex_simple_modifier_base64(self):
+        """Test that a duplicated string modifiers of two types raises an exception."""
+        error_msg = r'Duplicate complex base64 text string modifier base64 on line \d'
+        input_rule = r'''
+        rule duplicate_modifier
+        {
+            strings:
+                $a = "one" base64 base64("!@#$%^&*(){}[].,|ABCDEFGHIJ\x09LMNOPQRSTUVWXYZabcdefghijklmnopqrstu")
+            condition:
+                all of them
+        }
+        '''
+
+        parser = plyara.core.Plyara()
+
+        with self.assertRaisesRegex(ParseTypeError, error_msg):
+            parser.parse_string(input_rule)
+
+    def test_duplicated_complex_simple_modifier_base64wide(self):
+        """Test that a duplicated string modifiers of two types raises an exception."""
+        error_msg = r'Duplicate complex base64wide text string modifier base64wide on line \d'
+        input_rule = r'''
+        rule duplicate_modifier
+        {
+            strings:
+                $a = "one" base64wide base64wide("!@#$%^&*(){}[].,|ABCDEFGHIJ\x09LMNOPQRSTUVWXYZabcdefghijklmnopqrstu")
+            condition:
+                all of them
+        }
+        '''
+
+        parser = plyara.core.Plyara()
+
+        with self.assertRaisesRegex(ParseTypeError, error_msg):
             parser.parse_string(input_rule)
 
     def test_unexpected_xor(self):
         """Test that an xor modifier on the wrong string type raises an exception."""
+        error_msg = r'Unknown text xor for token of type XOR_MOD on line \d'
         input_rule = r'''
         rule invalid_xor_modifier
         {
@@ -1317,11 +1356,12 @@ class TestYaraRules(unittest.TestCase):
 
         parser = plyara.core.Plyara()
 
-        with self.assertRaisesRegex(ParseTypeError, r'Unknown text xor for token of type XOR_MOD on line \d'):
+        with self.assertRaisesRegex(ParseTypeError, error_msg):
             parser.parse_string(input_rule)
 
     def test_unexpected_base64(self):
         """Test that an base64 modifier on the wrong string type raises an exception."""
+        error_msg = r'Unknown text base64 for token of type BASE64 on line \d'
         input_rule = r'''
         rule invalid_base64_modifier
         {
@@ -1334,11 +1374,12 @@ class TestYaraRules(unittest.TestCase):
 
         parser = plyara.core.Plyara()
 
-        with self.assertRaisesRegex(ParseTypeError, r'Unknown text base64 for token of type BASE64 on line \d'):
+        with self.assertRaisesRegex(ParseTypeError, error_msg):
             parser.parse_string(input_rule)
 
     def test_unexpected_base64wide(self):
         """Test that an base64wide modifier on the wrong string type raises an exception."""
+        error_msg = r'Unknown text base64wide for token of type BASE64WIDE on line \d'
         input_rule = r'''
         rule invalid_base64wide_modifier
         {
@@ -1351,7 +1392,7 @@ class TestYaraRules(unittest.TestCase):
 
         parser = plyara.core.Plyara()
 
-        with self.assertRaisesRegex(ParseTypeError, r'Unknown text base64wide for token of type BASE64WIDE on line \d'):
+        with self.assertRaisesRegex(ParseTypeError, error_msg):
             parser.parse_string(input_rule)
 
 
