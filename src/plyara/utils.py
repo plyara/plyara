@@ -19,6 +19,7 @@ This module contains various utility functions for working with plyara output.
 import hashlib
 import logging
 import re
+import warnings
 
 from plyara.core import Parser
 
@@ -35,6 +36,10 @@ def is_valid_rule_name(entry):
     Returns:
         bool
     """
+    warnings.warn(
+        'Rule name validity checked by parser. is_valid_rule_name will be removed in plyara version 2.3.0',
+        DeprecationWarning
+    )
     # Check if entry is blank
     if not entry:
         return False
@@ -67,6 +72,10 @@ def is_valid_rule_tag(entry):
     Returns:
         bool
     """
+    warnings.warn(
+        'Tag name validity checked by parser. is_valid_rule_tag will be removed in plyara version 2.3.0',
+        DeprecationWarning
+    )
     # Same lexical conventions as name
     return is_valid_rule_name(entry)
 
@@ -80,6 +89,10 @@ def detect_imports(rule):
     Returns:
         list: Imports that are required.
     """
+    warnings.warn(
+        'Imports now parsed for all rules. detect_imports will be removed in plyara version 2.3.0',
+        DeprecationWarning
+    )
     detected_imports = list()
     condition_terms = rule['condition_terms']
 
@@ -103,6 +116,10 @@ def detect_dependencies(rule):
     Returns:
         list: External rule dependencies.
     """
+    warnings.warn(
+        'Deprecation: detect_dependencies will be removed in plyara version 2.3.0',
+        DeprecationWarning
+    )
     dependencies = list()
     string_iteration_variables = list()
     condition_terms = rule['condition_terms']
@@ -164,87 +181,6 @@ def detect_dependencies(rule):
                 dependencies.append(term)
 
     return dependencies
-
-
-def generate_logic_hash(rule):
-    """Calculate hash value of rule strings and condition.
-
-    Args:
-        rule: Dict output from a parsed rule.
-
-    Returns:
-        str: Hexdigest SHA-256.
-    """
-    import warnings
-    warnings.warn('Use generate_hash(); generate_logic_hash() will be removed next release', DeprecationWarning)
-    strings = rule.get('strings', list())
-    conditions = rule['condition_terms']
-
-    string_values = list()
-    condition_mapping = list()
-    string_mapping = {'anonymous': list(), 'named': dict()}
-
-    for entry in strings:
-        name = entry['name']
-        modifiers = entry.get('modifiers', list())
-
-        # Handle string modifiers
-        if modifiers:
-            value = '{}<MODIFIED>{}'.format(entry['value'], ' & '.join(sorted(modifiers)))
-        else:
-            value = entry['value']
-
-        if name == '$':
-            # Track anonymous strings
-            string_mapping['anonymous'].append(value)
-        else:
-            # Track named strings
-            string_mapping['named'][name] = value
-
-        # Track all string values
-        string_values.append(value)
-
-    # Sort all string values
-    sorted_string_values = sorted(string_values)
-
-    for condition in conditions:
-        # All string references (sort for consistency)
-        if condition == 'them' or condition == '$*':
-            condition_mapping.append('<STRINGVALUE>{}'.format(' | '.join(sorted_string_values)))
-
-        elif condition.startswith('$') and condition != '$':
-            # Exact Match
-            if condition in string_mapping['named']:
-                condition_mapping.append('<STRINGVALUE>{}'.format(string_mapping['named'][condition]))
-            # Wildcard Match
-            elif '*' in condition:
-                wildcard_strings = list()
-                condition = condition.replace('$', r'\$').replace('*', '.*')
-                pattern = re.compile(condition)
-
-                for name, value in string_mapping['named'].items():
-                    if pattern.match(name):
-                        wildcard_strings.append(value)
-
-                wildcard_strings.sort()
-                condition_mapping.append('<STRINGVALUE>{}'.format(' | '.join(wildcard_strings)))
-            else:
-                logger.error(f'Unhandled String Condition {condition}')
-
-        # Count Match
-        elif condition.startswith('#') and condition != '#':
-            condition = condition.replace('#', '$')
-
-            if condition in string_mapping['named']:
-                condition_mapping.append('<COUNTOFSTRING>{}'.format(string_mapping['named'][condition]))
-            else:
-                logger.error(f'Unhandled String Count Condition {condition}')
-
-        else:
-            condition_mapping.append(condition)
-
-    logic_hash = hashlib.sha256(''.join(condition_mapping).encode()).hexdigest()
-    return logic_hash
 
 
 def generate_hash(rule, secure_hash=None, legacy=False):

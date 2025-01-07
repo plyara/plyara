@@ -19,8 +19,6 @@ import unittest
 import plyara.core
 from plyara.utils import generate_hash
 from plyara.utils import rebuild_yara_rule
-from plyara.utils import detect_imports, detect_dependencies
-from plyara.utils import is_valid_rule_name, is_valid_rule_tag
 
 
 class TestUtilities(unittest.TestCase):
@@ -76,40 +74,6 @@ class TestUtilities(unittest.TestCase):
             rulehash = generate_hash(result)
             self.assertEqual(rulehash, rule_hashes[index])
 
-    def test_is_valid_rule_name(self):
-        self.assertTrue(is_valid_rule_name('test'))
-        self.assertTrue(is_valid_rule_name('test123'))
-        self.assertTrue(is_valid_rule_name('test_test'))
-        self.assertTrue(is_valid_rule_name('_test_'))
-        self.assertTrue(is_valid_rule_name('include_test'))
-        self.assertFalse(is_valid_rule_name('123test'))
-        self.assertFalse(is_valid_rule_name('123 test'))
-        self.assertFalse(is_valid_rule_name('test 123'))
-        self.assertFalse(is_valid_rule_name('test test'))
-        self.assertFalse(is_valid_rule_name('test-test'))
-        self.assertFalse(is_valid_rule_name('include'))
-        self.assertFalse(is_valid_rule_name('test!*@&*!&'))
-        self.assertFalse(is_valid_rule_name(''))
-        self.assertTrue(is_valid_rule_name('x' * 128))
-        self.assertFalse(is_valid_rule_name('x' * 129))
-
-    def test_is_valid_rule_tag(self):
-        self.assertTrue(is_valid_rule_tag('test'))
-        self.assertTrue(is_valid_rule_tag('test123'))
-        self.assertTrue(is_valid_rule_tag('test_test'))
-        self.assertTrue(is_valid_rule_tag('_test_'))
-        self.assertTrue(is_valid_rule_tag('include_test'))
-        self.assertFalse(is_valid_rule_tag('123test'))
-        self.assertFalse(is_valid_rule_tag('123 test'))
-        self.assertFalse(is_valid_rule_tag('test 123'))
-        self.assertFalse(is_valid_rule_tag('test test'))
-        self.assertFalse(is_valid_rule_tag('test-test'))
-        self.assertFalse(is_valid_rule_tag('include'))
-        self.assertFalse(is_valid_rule_tag('test!*@&*!&'))
-        self.assertFalse(is_valid_rule_tag(''))
-        self.assertTrue(is_valid_rule_tag('x' * 128))
-        self.assertFalse(is_valid_rule_tag('x' * 129))
-
     def test_rebuild_yara_rule(self):
         input_string = self.data.joinpath('rebuild_ruleset.yar').read_text(encoding='utf-8')
         test_result = self.data.joinpath('rebuild_ruleset_good_enough.yar').read_text(encoding='utf-8')
@@ -145,37 +109,6 @@ class TestUtilities(unittest.TestCase):
             self.assertIn('bool_value = false', unparsed)
             self.assertIn('digit_value = 5', unparsed)
             self.assertIn('digit_value = 10', unparsed)
-
-    def test_detect_dependencies(self):
-        input_string = self.data.joinpath('detect_dependencies_ruleset.yar').read_text()
-
-        result = plyara.core.Plyara().parse_string(input_string)
-
-        self.assertEqual(detect_dependencies(result[0]), list())
-        self.assertEqual(detect_dependencies(result[1]), list())
-        self.assertEqual(detect_dependencies(result[2]), list())
-        self.assertEqual(detect_dependencies(result[3]), ['is__osx', 'priv01', 'priv02', 'priv03', 'priv04'])
-        self.assertEqual(detect_dependencies(result[4]), ['is__elf', 'priv01', 'priv02', 'priv03', 'priv04'])
-        self.assertEqual(detect_dependencies(result[5]), ['is__elf', 'is__osx', 'priv01', 'priv02'])
-        self.assertEqual(detect_dependencies(result[6]), ['is__elf', 'is__osx', 'priv01'])
-        self.assertEqual(detect_dependencies(result[7]), ['is__elf'])
-        self.assertEqual(detect_dependencies(result[8]), ['is__osx', 'is__elf'])
-        self.assertEqual(detect_dependencies(result[9]), ['is__osx'])
-        self.assertEqual(detect_dependencies(result[10]), ['is__elf', 'is__osx'])
-        self.assertEqual(detect_dependencies(result[11]), ['is__osx'])
-        self.assertEqual(detect_dependencies(result[12]), list())
-        self.assertEqual(detect_dependencies(result[13]), list())
-        self.assertEqual(detect_dependencies(result[14]), ['is__osx'])
-        self.assertEqual(detect_dependencies(result[15]), ['is__osx'])
-        self.assertEqual(detect_dependencies(result[17]), ['WINDOWS_UPDATE_BDC'])
-
-    def test_detect_imports(self):
-        for imp in ('androguard', 'cuckoo', 'dotnet', 'elf', 'hash', 'magic', 'math', 'pe'):
-            input_string = self.imports.joinpath(f'import_ruleset_{imp}.yar').read_text()
-
-            results = plyara.core.Plyara().parse_string(input_string)
-            for rule in results:
-                self.assertEqual(detect_imports(rule), [imp])
 
 
 if __name__ == '__main__':
