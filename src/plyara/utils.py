@@ -183,7 +183,7 @@ def detect_dependencies(rule):
     return dependencies
 
 
-def generate_hash(rule, secure_hash=None, legacy=False):
+def generate_hash(rule, legacy=False):
     """Calculate a secure hash of the logic in the rule strings and condition.
 
     If the resultant hashes are identical for two YARA rules, the rules will match on identical content.
@@ -193,19 +193,15 @@ def generate_hash(rule, secure_hash=None, legacy=False):
 
     Args:
         rule: Dict output from a parsed rule.
-        secure_hash: Alternate hash function, defaults to SHA-256
+        legacy: Enables legacy mode with no versioning or algo name.
 
     Returns:
         str: hexdigest
     """
     version = 'v1'
 
-    if secure_hash is None:
-        hf = hashlib.sha256()
-        algo = 'sha256'
-    else:
-        hf = secure_hash()
-        algo = hf.__name__
+    hf = hashlib.sha256()
+    algo = 'sha256'
 
     condition_string_prefaces = ('$', '!', '#', '@')
     strings = rule.get('strings', list())
