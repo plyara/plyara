@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "plyara"
-version = "2.2.4"
+version = "2.2.5"
 dependencies = [
     "ply >= 3.11"
 ]
