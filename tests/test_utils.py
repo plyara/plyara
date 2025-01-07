@@ -28,7 +28,7 @@ class TestUtilities(unittest.TestCase):
         """Prepare for utility unit testing."""
         self.parser = plyara.core.Plyara()
         self.data = importlib.resources.files('tests.data.utils')
-        self.imports = importlib.resources.files('tests.data.yara_features.imports')
+        self.imports = importlib.resources.files('tests.data.imports')
         self.common = importlib.resources.files('tests.data.common')
         # self.maxDiff = None
 

@@ -24,6 +24,86 @@ from plyara.core import Plyara
 from plyara.exceptions import ParseTypeError, ParseValueError
 
 
+class TestImports(unittest.TestCase):
+    """Check parsing of import statements."""
+
+    def setUp(self):
+        self.parser = plyara.core.Plyara()
+        self.data = importlib.resources.files('tests.data.imports')
+
+    def test_import_pe(self):
+        """Check parsing of pe module import."""
+        input_string = self.data.joinpath('import_ruleset_pe.yar').read_text()
+
+        result = self.parser.parse_string(input_string)
+
+        for rule in result:
+            self.assertIn('pe', rule['imports'])
+
+    def test_import_elf(self):
+        """Check parsing of elf module import."""
+        input_string = self.data.joinpath('import_ruleset_elf.yar').read_text()
+
+        result = self.parser.parse_string(input_string)
+
+        for rule in result:
+            self.assertIn('elf', rule['imports'])
+
+    def test_import_cuckoo(self):
+        """Check parsing of cuckoo module import."""
+        input_string = self.data.joinpath('import_ruleset_cuckoo.yar').read_text()
+
+        result = self.parser.parse_string(input_string)
+
+        for rule in result:
+            self.assertIn('cuckoo', rule['imports'])
+
+    def test_import_magic(self):
+        """Check parsing of magic module import."""
+        input_string = self.data.joinpath('import_ruleset_magic.yar').read_text()
+
+        result = self.parser.parse_string(input_string)
+
+        for rule in result:
+            self.assertIn('magic', rule['imports'])
+
+    def test_import_hash(self):
+        """Check parsing of hash module import."""
+        input_string = self.data.joinpath('import_ruleset_hash.yar').read_text()
+
+        result = self.parser.parse_string(input_string)
+
+        for rule in result:
+            self.assertIn('hash', rule['imports'])
+
+    def test_import_math(self):
+        """Check parsing of math module import."""
+        input_string = self.data.joinpath('import_ruleset_math.yar').read_text()
+
+        result = self.parser.parse_string(input_string)
+
+        for rule in result:
+            self.assertIn('math', rule['imports'])
+
+    def test_import_dotnet(self):
+        """Check parsing of dotnet module import."""
+        input_string = self.data.joinpath('import_ruleset_dotnet.yar').read_text()
+
+        result = self.parser.parse_string(input_string)
+
+        for rule in result:
+            self.assertIn('dotnet', rule['imports'])
+
+    def test_import_androguard(self):
+        """Check parsing of androguard module import."""
+        input_string = self.data.joinpath('import_ruleset_androguard.yar').read_text()
+
+        result = self.parser.parse_string(input_string)
+
+        for rule in result:
+            self.assertIn('androguard', rule['imports'])
+
+
 class TestStoreRawSections(unittest.TestCase):
     """Test various raw sections are stored correctly."""
 
