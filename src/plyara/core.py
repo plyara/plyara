@@ -137,13 +137,14 @@ class Parser:
 
     FUNCTION_KEYWORDS = {'uint8', 'uint16', 'uint32', 'uint8be', 'uint16be', 'uint32be'}
 
-    def __init__(self, store_raw_sections=True, meta_as_kv=False, import_effects=False):
+    def __init__(self, store_raw_sections=True, meta_as_kv=False, import_effects=False, testmode=False):
         """Initialize the parser object.
 
         Args:
             store_raw_sections: Enable attribute storage of raw section input. (default True)
             meta_as_kv: Enable alternate structure for meta section as dictionary. (default False)
             import_effects: Enable including imports in all rules affected by the import. (default False)
+            testmode: Enable permanent accumulators for unit testing purposes. (default: False)
         """
         self.rules = list()
 
@@ -179,6 +180,10 @@ class Parser:
 
         self.lexer = lex.lex(module=self, debug=False)
         self.parser = yacc.yacc(module=self, debug=False, outputdir=tempfile.gettempdir())
+
+        self._testmode = testmode
+        if testmode:
+            self._comment_record = list()
 
     def clear(self):
         """Clear all information about previously parsed rules."""
@@ -629,6 +634,7 @@ class Plyara(Parser):
     @staticmethod
     def t_BYTESTRING_comment(t):
         r'\/\/[^\r\n]*'  # noqa: D300, D400, D415
+        t.lexer.lineno += 1
         t.type = 'COMMENT'
 
         return t
@@ -636,6 +642,10 @@ class Plyara(Parser):
     @staticmethod
     def t_BYTESTRING_mcomment(t):
         r'/\*(.|\n|\r\n)*?\*/'  # noqa: D300, D400, D415
+        if '\r\n' in t.value:
+            t.lexer.lineno += t.value.count('\r\n')
+        else:
+            t.lexer.lineno += t.value.count('\n')
         t.type = 'MCOMMENT'
 
         return t
@@ -845,6 +855,8 @@ class Plyara(Parser):
 
         while self._rule_comments:
             comment = self._rule_comments.pop()
+            if self._testmode:
+                self._comment_record.append(comment)
 
             if p.lexpos(5) < comment.lexpos < p.lexpos(7):
                 logger.debug(f'Matched a rule comment: {comment.value}')

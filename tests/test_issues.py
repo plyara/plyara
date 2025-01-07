@@ -229,6 +229,19 @@ class TestGithubIssues(unittest.TestCase):
             with self.subTest(rulenum=rulename):
                 self.assertIsNone(rule.get('comments'))
 
+    # Reference: https://github.com/plyara/plyara/issues/153
+    def test_issue_153(self):
+        """Check that bytestring comments have the correct line number."""
+        input_string = self.data.joinpath('issue153.yar').read_text()
+        expected = [5, 4]
+
+        parser = plyara.core.Plyara(testmode=True)
+        _ = parser.parse_string(input_string)
+
+        for i, record in enumerate(parser._comment_record):
+            with self.subTest(i=i):
+                self.assertEqual(record.lineno, expected[i])
+
 
 if __name__ == '__main__':
     unittest.main()
