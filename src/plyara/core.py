@@ -23,7 +23,6 @@ import enum
 import logging
 import re
 import string
-import tempfile
 
 import ply.lex as lex
 import ply.yacc as yacc
@@ -179,7 +178,7 @@ class Parser:
         self.import_effects = import_effects
 
         self.lexer = lex.lex(module=self, debug=False)
-        self.parser = yacc.yacc(module=self, debug=False, outputdir=tempfile.gettempdir())
+        self.parser = yacc.yacc(module=self, debug=False)
 
         self._testmode = testmode
         if testmode:
@@ -210,7 +209,7 @@ class Parser:
         self._stringnames.clear()
 
         self.lexer = lex.lex(module=self, debug=False)
-        self.parser = yacc.yacc(module=self, debug=False, outputdir=tempfile.gettempdir())
+        self.parser = yacc.yacc(module=self, debug=False)
 
     def _add_element(self, element_type, element_value):
         """Accept elements from the parser and uses them to construct a representation of the YARA rule.
