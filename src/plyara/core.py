@@ -588,7 +588,7 @@ class Plyara(Parser):
 
     # @staticmethod
     def t_STRING_value(self, t):
-        r'(\S|\x20)'  # noqa: D300, D400, D415
+        r'.'  # noqa: D300, D400, D415
         if t.lexer.escape == 0 and t.value == '"':
             t.type = 'STRING'
             t.value = t.lexer.lexdata[t.lexer.string_start:t.lexer.lexpos]
