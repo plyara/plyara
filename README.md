@@ -207,3 +207,11 @@ python -m unittest discover
 coverage run -m unittest discover
 coverage report -m
 ```
+
+## Cloning
+
+To properly clone this repository including the git submodule for PLY, use the following command:
+
+```bash
+git clone --recursive https://github.com/plyara/plyara.git
+```
