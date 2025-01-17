@@ -14,6 +14,7 @@
 # limitations under the License.
 """Unit tests for plyara Github issue fixes."""
 import importlib.resources
+import json
 import unittest
 
 import plyara.core
@@ -233,25 +234,35 @@ class TestGithubIssues(unittest.TestCase):
     def test_issue_153(self):
         """Check that bytestring comments have the correct line number."""
         input_string = self.data.joinpath('issue153.yar').read_text()
-        expected_lines = { "bytestringinternal1":   4,
-                           "bytestringinternal2":   6, 
-                           "bytestringinternal3a":  7,
-                           "bytestringinternal4":   10,
-                           "bytestringinternal5a":  12,
-        }
+        expected = [5, 4]
 
         parser = plyara.core.Plyara(testmode=True)
-        result = parser.parse_string(input_string)
+        _ = parser.parse_string(input_string)
 
         for i, record in enumerate(parser._comment_record):
             with self.subTest(i=i):
-                expected = [ expected_lines[key] for key in expected_lines.keys() if record.value.find(key)>0 ][0]
-                self.assertEqual(record.lineno, expected)
+                self.assertEqual(record.lineno, expected[i])
 
-        #Check if the rule has the correct stop line 
-        input_lines_num = len(input_string.split("\n"))
-        self.assertEqual(result[0]['stop_line'], input_lines_num-1)
-        
+    # Reference: https://github.com/plyara/plyara/issues/156
+    def test_issue_156(self):
+        """Check that bytestring comments have the correct line number and correct end line number."""
+        input_string = self.data.joinpath('issue156.yar').read_text()
+        expected = json.loads(self.data.joinpath('issue156.json').read_text())
+
+        parser = plyara.core.Plyara(testmode=True)
+        result = parser.parse_string(input_string).pop()
+
+        comments = list()
+        for r in parser._comment_record:
+            record = r.__dict__
+            record.pop('lexer')
+            comments.append(record)
+        comments = sorted(comments, key=lambda x: x['lineno'])
+
+        self.assertListEqual(comments, expected)
+
+        # Check if the rule has the correct stop line
+        self.assertIs(result['stop_line'], 17)
 
 
 if __name__ == '__main__':
