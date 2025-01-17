@@ -233,14 +233,25 @@ class TestGithubIssues(unittest.TestCase):
     def test_issue_153(self):
         """Check that bytestring comments have the correct line number."""
         input_string = self.data.joinpath('issue153.yar').read_text()
-        expected = [5, 4]
+        expected_lines = { "bytestringinternal1":   4,
+                           "bytestringinternal2":   6, 
+                           "bytestringinternal3a":  7,
+                           "bytestringinternal4":   10,
+                           "bytestringinternal5a":  12,
+        }
 
         parser = plyara.core.Plyara(testmode=True)
-        _ = parser.parse_string(input_string)
+        result = parser.parse_string(input_string)
 
         for i, record in enumerate(parser._comment_record):
             with self.subTest(i=i):
-                self.assertEqual(record.lineno, expected[i])
+                expected = [ expected_lines[key] for key in expected_lines.keys() if record.value.find(key)>0 ][0]
+                self.assertEqual(record.lineno, expected)
+
+        #Check if the rule has the correct stop line 
+        input_lines_num = len(input_string.split("\n"))
+        self.assertEqual(result[0]['stop_line'], input_lines_num-1)
+        
 
 
 if __name__ == '__main__':

@@ -627,13 +627,19 @@ class Plyara(Parser):
             return t
 
     @staticmethod
+    def t_BYTESTRING_NEWLINE(t):
+        r'(\n|\r\n)+'  # noqa: D300, D400, D415
+        t.lexer.lineno += t.value.count('\n')
+        pass
+
+    @staticmethod
     def t_BYTESTRING_pair(t):
-        r'\s*~?[a-fA-F0-9?]{2}\s*'  # noqa: D300, D400, D415
+        r'[\t ]*~?[a-fA-F0-9?]{2}[\t ]*'  # noqa: D300, D400, D415
+        pass
 
     @staticmethod
     def t_BYTESTRING_comment(t):
         r'\/\/[^\r\n]*'  # noqa: D300, D400, D415
-        t.lexer.lineno += 1
         t.type = 'COMMENT'
 
         return t
@@ -668,6 +674,8 @@ class Plyara(Parser):
         r'\('  # noqa: D300, D400, D415
         t.lexer.bytestring_group += 1
 
+    t_BYTESTRING_ignore = ' \t'
+
     @staticmethod
     def t_BYTESTRING_group_end(t):
         r'\)'  # noqa: D300, D400, D415
@@ -689,15 +697,7 @@ class Plyara(Parser):
 
         t.lexer.begin('INITIAL')
 
-        # Account for newlines in bytestring.
-        if '\r\n' in t.value:
-            t.lexer.lineno += t.value.count('\r\n')
-        else:
-            t.lexer.lineno += t.value.count('\n')
-
         return t
-
-    t_BYTESTRING_ignore = ' \r\n\t'
 
     @staticmethod
     def t_BYTESTRING_error(t):
