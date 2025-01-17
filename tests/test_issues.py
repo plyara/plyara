@@ -14,6 +14,7 @@
 # limitations under the License.
 """Unit tests for plyara Github issue fixes."""
 import importlib.resources
+import json
 import unittest
 
 import plyara.core
@@ -241,6 +242,27 @@ class TestGithubIssues(unittest.TestCase):
         for i, record in enumerate(parser._comment_record):
             with self.subTest(i=i):
                 self.assertEqual(record.lineno, expected[i])
+
+    # Reference: https://github.com/plyara/plyara/issues/156
+    def test_issue_156(self):
+        """Check that bytestring comments have the correct line number and correct end line number."""
+        input_string = self.data.joinpath('issue156.yar').read_text()
+        expected = json.loads(self.data.joinpath('issue156.json').read_text())
+
+        parser = plyara.core.Plyara(testmode=True)
+        result = parser.parse_string(input_string).pop()
+
+        comments = list()
+        for r in parser._comment_record:
+            record = r.__dict__
+            record.pop('lexer')
+            comments.append(record)
+        comments = sorted(comments, key=lambda x: x['lineno'])
+
+        self.assertListEqual(comments, expected)
+
+        # Check if the rule has the correct stop line
+        self.assertIs(result['stop_line'], 17)
 
 
 if __name__ == '__main__':

@@ -1,0 +1,32 @@
+[
+    {
+        "value": "// bytestringinternal1",
+        "lineno": 4,
+        "lexpos": 60,
+        "type": "COMMENT"
+    },
+    {
+        "value": "// bytestringinternal2",
+        "lineno": 6,
+        "lexpos": 152,
+        "type": "COMMENT"
+    },
+    {
+        "value": "/* bytestringinternal3a\n                                     bytestringinternal3b\n                                     bytestringinternal3c */",
+        "lineno": 7,
+        "lexpos": 209,
+        "type": "MCOMMENT"
+    },
+    {
+        "value": "// bytestringinternal4",
+        "lineno": 10,
+        "lexpos": 386,
+        "type": "COMMENT"
+    },
+    {
+        "value": "/* bytestringinternal5a\n                                     bytestringinternal5b */",
+        "lineno": 12,
+        "lexpos": 472,
+        "type": "MCOMMENT"
+    }
+]
