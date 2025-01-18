@@ -195,3 +195,6 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+
+# Files created by plyara at runtime
+parsetab.py

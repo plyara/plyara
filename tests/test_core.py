@@ -751,6 +751,51 @@ class TestYaraRules(unittest.TestCase):
         self.assertEqual(kv_list[1][1], '2015-01-01')
         self.assertEqual([x['name'] for x in result[0]['strings']], ['$a', '$b'])
 
+    def test_third_party_rules(self):
+        import os
+        import re
+        from git import Repo
+        from tempfile import TemporaryDirectory
+
+        # Perform testing against a set of public YARA rule repositories to assess parsing capability
+        DEFAULT_PATTERN = r".*\.yar(a)?"
+        projects = [
+            ("AlienVault-Labs/AlienVaultLabs", DEFAULT_PATTERN),
+            ("bartblaze/Yara-rules", r".*/rules/.*\.yar"),
+            ("The-DFIR-Report/Yara-Rules", DEFAULT_PATTERN),
+            ("ditekshen/detection", DEFAULT_PATTERN),
+            ("elastic/protections-artifacts", r".*/yara/rules/.*\.yar"),
+            ("eset/malware-ioc", DEFAULT_PATTERN),
+            ("Neo23x0/signature-base", r".*/yara/.*\.yar"),
+            ("intezer/yara-rules", DEFAULT_PATTERN),
+            ("JPCERTCC/jpcert-yara", DEFAULT_PATTERN),
+            ("malpedia/signator-rules", r".*/yara/.*\.yar"),
+            ("kevoreilly/CAPE", r".*/data/yara/.*\.yar"),
+            ("reversinglabs/reversinglabs-yara-rules", r".*/yara/.*\.yara"),
+            ("stratosphereips/yara-rules", DEFAULT_PATTERN),
+            ("advanced-threat-research/Yara-Rules", DEFAULT_PATTERN),
+            ("volexity/threat-intel", DEFAULT_PATTERN),
+        ]
+        for project, file_pattern in projects:
+            with TemporaryDirectory() as rules_directory:
+                # Clone most recent commit from project for testing
+                Repo.clone_from(
+                    f"https://github.com/{project}.git", rules_directory, depth=1
+                )
+
+                # Traverse the project in search of YARA rules to test with
+                for root, _, files in os.walk(rules_directory):
+                    for file in files:
+                        file_path = os.path.join(root, file)
+
+                        # Only test with files that match the file pattern
+                        if re.match(file_pattern, file_path):
+                            with self.subTest(msg=project, file_path=file_path):
+                                # Check to see if we run into a parsing error
+                                plyara = Plyara(testmode=True)
+                                with open(file_path) as f:
+                                    plyara.parse_string(f.read())
+
     def disable_test_rule_name_imports_and_scopes(self):
         input_string_nis = r'''
         rule four {meta: i = "j" strings: $a = "b" condition: true }
