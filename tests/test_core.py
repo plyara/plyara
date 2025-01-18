@@ -754,11 +754,14 @@ class TestYaraRules(unittest.TestCase):
     def test_third_party_rules(self):
         import os
         import re
-        from git import Repo
+        import requests
+        
+        from io import BytesIO
         from tempfile import TemporaryDirectory
+        from zipfile import ZipFile
 
         # Perform testing against a set of public YARA rule repositories to assess parsing capability
-        DEFAULT_PATTERN = r".*\.yar(a)?"
+        DEFAULT_PATTERN = r".*\.yar(a)?$"
         projects = [
             ("AlienVault-Labs/AlienVaultLabs", DEFAULT_PATTERN),
             ("bartblaze/Yara-rules", r".*/rules/.*\.yar"),
@@ -778,11 +781,15 @@ class TestYaraRules(unittest.TestCase):
         ]
         for project, file_pattern in projects:
             with TemporaryDirectory() as rules_directory:
-                # Clone most recent commit from project for testing
-                Repo.clone_from(
-                    f"https://github.com/{project}.git", rules_directory, depth=1
-                )
+                # Fetch the most recent commit from project for testing
+                for branch in ["master", "main", "develop"]:
+                    resp = requests.get(f"https://codeload.github.com/{project}/zip/refs/heads/{branch}")
+                    if resp.ok:
+                        break
 
+                with ZipFile(BytesIO(resp.content)) as zip:
+                    zip.extractall(rules_directory)
+                    
                 # Traverse the project in search of YARA rules to test with
                 for root, _, files in os.walk(rules_directory):
                     for file in files:

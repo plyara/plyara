@@ -1,4 +1,4 @@
-GitPython
 pycodestyle
 pydocstyle
 pyflakes
+requests
