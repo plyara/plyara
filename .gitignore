@@ -168,6 +168,9 @@ cython_debug/
 test.py
 test.yar
 
+# Files created by plyara at runtime
+parsetab.py
+
 ## macOS Section
 # General
 .DS_Store
@@ -209,6 +212,3 @@ Temporary Items
 
 # Built Visual Studio Code Extensions
 *.vsix
-
-# Files created by plyara at runtime
-parsetab.py
