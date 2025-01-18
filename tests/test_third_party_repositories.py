@@ -25,6 +25,8 @@ from plyara.core import Plyara
 
 
 class TestPublicYaraRules(unittest.TestCase):
+    """Check parsing of third-party YARA rules"""
+
     def test_third_party_rules(self):
         # Perform testing against a set of public YARA rule repositories to assess parsing capability
         projects = [
