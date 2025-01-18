@@ -13,5 +13,8 @@
         "-p",
         "test_*.py"
     ],
-    "python.testing.unittestEnabled": true
+    "python.testing.unittestEnabled": true,
+    "[toml]": {
+        "editor.defaultFormatter": "tamasfe.even-better-toml"
+    }
 }
