@@ -36,7 +36,7 @@ Issues = "https://github.com/plyara/plyara/issues"
 plyara = "plyara.command_line:main"
 
 [project.optional-dependencies]
-tests = ['pycodestyle', 'pydocstyle', 'pyflakes', 'requests']
+tests = ['pycodestyle', 'pydocstyle', 'pyflakes']
 
 [tool.pycodestyle]
 max-line-length = 120
