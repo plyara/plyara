@@ -28,7 +28,7 @@ class TestPublicYaraRules(unittest.TestCase):
     def test_third_party_rules(self):
         # Perform testing against a set of public YARA rule repositories to assess parsing capability
         projects = [
-            #"AlienVault-Labs/AlienVaultLabs", issue: https://github.com/plyara/plyara/issues/155
+            # "AlienVault-Labs/AlienVaultLabs", issue: https://github.com/plyara/plyara/issues/155
             "bartblaze/Yara-rules",
             "The-DFIR-Report/Yara-Rules",
             "ditekshen/detection",
@@ -47,7 +47,16 @@ class TestPublicYaraRules(unittest.TestCase):
         for project in projects:
             with TemporaryDirectory() as rules_directory:
                 # Fetch the most recent commit from project for testing
-                subprocess.run(['git', 'clone', '--depth', '1', f'https://github.com/{project}.git'], cwd=rules_directory)
+                subprocess.run(
+                    [
+                        "git",
+                        "clone",
+                        "--depth",
+                        "1",
+                        f"https://github.com/{project}.git",
+                    ],
+                    cwd=rules_directory,
+                )
 
                 # Traverse the project in search of YARA rules to test with
                 for yara_file in Path(rules_directory).rglob("*.yar*"):
