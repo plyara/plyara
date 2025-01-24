@@ -168,6 +168,9 @@ cython_debug/
 test.py
 test.yar
 
+# Files created by plyara at runtime
+parsetab.py
+
 ## macOS Section
 # General
 .DS_Store
@@ -195,3 +198,17 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+
+## VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+
+# Local History for Visual Studio Code
+.history/
+
+# Built Visual Studio Code Extensions
+*.vsix
