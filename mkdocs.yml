@@ -1,0 +1,25 @@
+site_url: https://plyara.github.io/plyara/
+site_name: plyara
+theme: readthedocs
+markdown_extensions:
+- toc:
+    permalink: true
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Usage: usage.md
+  - Contributing: contributing.md
+  # - Changelog: changelog.md        TODO: Generate changelog based on release notes
+  - Module Reference: 
+    - core: ./src/core.md
+    - exceptions: ./src/exceptions.md
+    - utils: ./src/utils.md
+
+plugins: 
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+         options:
+          show_source: false
+          show_root_heading: true

@@ -1,0 +1,16 @@
+name: plyara documentation
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.x
+      - run: pip install .[docs]
+      - run: mkdocs gh-deploy --force

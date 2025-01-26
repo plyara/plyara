@@ -215,3 +215,18 @@ To properly clone this repository including the git submodule for PLY, use the f
 ```bash
 git clone --recursive https://github.com/plyara/plyara.git
 ```
+
+## Documentation
+The documentation for this project is built using [mkdocs](https://www.mkdocs.org/).
+
+### Install dependencies
+```bash
+pip install plyara[docs]
+```
+
+### Run the documentation locally
+```bash
+mkdocs serve
+```
+
+You should find the documentation hosted locally on [http://localhost:8000](http://localhost:8000).

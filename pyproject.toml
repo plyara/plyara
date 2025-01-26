@@ -37,6 +37,7 @@ plyara = "plyara.command_line:main"
 
 [project.optional-dependencies]
 tests = ['pycodestyle', 'pydocstyle', 'pyflakes']
+docs = ['mkdocs', 'mkdocstrings-python']
 
 [tool.pycodestyle]
 max-line-length = 120
