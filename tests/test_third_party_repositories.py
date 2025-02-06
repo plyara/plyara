@@ -56,6 +56,7 @@ class TestPublicYaraRules(unittest.TestCase):
                         f"https://github.com/{project}.git",
                     ],
                     cwd=rules_directory,
+                    capture_output=True
                 )
 
                 # Traverse the project in search of YARA rules to test with
