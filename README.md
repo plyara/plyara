@@ -225,3 +225,7 @@ python -m unittest discover
 coverage run -m unittest discover
 coverage report -m
 ```
+
+## Known Issues
+
+Using non ASCII characters in metadata strings and comments does not currently work. We are working on a permanent solution for the next major release. You can read about the issue itself [here](https://github.com/plyara/plyara/issues/155), and you can read about the problem in upstream YARA [here](https://github.com/VirusTotal/yara/wiki/Unicode-characters-in-YARA).
