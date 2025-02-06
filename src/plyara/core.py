@@ -971,7 +971,7 @@ class Plyara(Parser):
         key = p[1]
         value = p[3]
         if re.match(r'".*"', value):
-            value = p[3][1:-1] if ( p[3][0] == '"' and p[3][-1] == '"') else p[3] # safe-strip double quotes
+            value = p[3].removeprefix('"').removesuffix('"')
         elif value in ('true', 'false'):
             value = True if value == 'true' else False
         elif value == '-':
