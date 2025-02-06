@@ -213,5 +213,5 @@ coverage report -m
 To properly clone this repository including the git submodule for PLY, use the following command:
 
 ```bash
-git clone --recursive https://github.com/plyara/plyara.git
+git clone --recurse-submodules https://github.com/plyara/plyara.git
 ```
