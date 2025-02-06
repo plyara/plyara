@@ -308,9 +308,11 @@ class TestRuleParser(unittest.TestCase):
             kv_list = [(k,) + (v, ) for dic in kv for k, v in dic.items()]
 
             if rulename == 'StringTypeMetadata':
-                self.assertEqual(len(kv), 1)
+                self.assertEqual(len(kv), 2)
                 self.assertEqual(kv_list[0][0], 'string_value')
                 self.assertEqual(kv_list[0][1], 'String Metadata')
+                self.assertEqual(kv_list[1][0], 'string_value2')
+                self.assertEqual(kv_list[1][1], 'String Metadata with \\"ending quotes\\"')
 
             elif rulename == 'IntegerTypeMetadata':
                 self.assertEqual(len(kv), 1)
