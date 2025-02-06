@@ -4,6 +4,7 @@ rule StringTypeMetadata
 {
     meta:
         string_value = "String Metadata"
+        string_value2 = "String Metadata with \"ending quotes\""
 
     condition: false
 }
