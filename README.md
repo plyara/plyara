@@ -134,6 +134,8 @@ JSON Output:
 ]
 ```
 
+# Additional Information
+
 ## Reusing The Parser
 
 If you want to reuse a single instance of the parser object for efficiency when parsing large quantities of rule or rulesets, the new clear() method must be used.
@@ -184,7 +186,7 @@ If the output of a particular rule looks incorrect after parsing by Plyara, you 
 yr fmt foo.yar
 ```
 
-## Contributing
+# Contributing
 
 - If you find a bug, or would like to see a new feature, [Pull Requests](https://github.com/plyara/plyara/pulls) and [Issues](https://github.com/plyara/plyara/issues) are always welcome.
 - By submitting changes, you agree to release those changes under the terms of the [LICENSE](https://github.com/plyara/plyara/blob/master/LICENSE).
@@ -194,6 +196,22 @@ yr fmt foo.yar
   - pydocstyle
   - pyflakes
 - For more information on these linters, please refer to the [Python Code Quality Authority](https://pycqa.org/)
+
+## Cloning
+
+To properly clone this repository including the git submodule for PLY, use the following command:
+
+```bash
+git clone --recurse-submodules https://github.com/plyara/plyara.git
+```
+
+## Installing for Development
+
+For coverage to work properly, the package must be installed in editable mode with the optional dependencies for `tests`.
+
+```bash
+pip install -e '.[tests]'
+```
 
 ## Unit Tests
 
@@ -206,12 +224,4 @@ python -m unittest discover
 ```bash
 coverage run -m unittest discover
 coverage report -m
-```
-
-## Cloning
-
-To properly clone this repository including the git submodule for PLY, use the following command:
-
-```bash
-git clone --recurse-submodules https://github.com/plyara/plyara.git
 ```
